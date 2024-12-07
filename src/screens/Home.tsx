@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -21,6 +21,7 @@ import Feather from "react-native-vector-icons/Feather";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 import { SafeAreaView } from "react-native-safe-area-context";
+import BottomNavBar from "../components/BottomNavBar";
 
 const { width, height } = Dimensions.get("window");
 const calculatePercentage = (percentage: number, dimension: number) =>
@@ -29,6 +30,7 @@ const calculatePercentage = (percentage: number, dimension: number) =>
 type HomeProps = NativeStackScreenProps<RootStackParamList, "Home">;
 
 const Home = ({ navigation }: HomeProps) => {
+    const [activeTab, setActiveTab] = useState('Home');
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -81,19 +83,12 @@ const Home = ({ navigation }: HomeProps) => {
         </View>
       </View>
 
-      <View style={styles.footer}>
-            <TouchableOpacity onPress={() => navigation.navigate("Home")}>
-                <FontAwesome name="home" size={24} color="white" />
-            </TouchableOpacity>
-            
-            <TouchableOpacity onPress={() => Alert.alert("Clicked stats")}>
-                <FontAwesome name="bar-chart" size={24} color="white" />
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => Alert.alert("Clicked profile")}>
-                <FontAwesome name="user" size={24} color="white" />
-            </TouchableOpacity>
-      </View>
+        {/* Bottom Navigation Bar */}
+        <BottomNavBar
+            navigation={navigation}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+        />
     </SafeAreaView>
   );
 };
