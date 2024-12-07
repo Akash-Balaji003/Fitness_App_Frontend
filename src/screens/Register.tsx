@@ -7,14 +7,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
-type LoginProps = NativeStackScreenProps<RootStackParamList, 'Register'>;
+type RegisterProps = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
-const Register = ({navigation}: LoginProps) => {
+const Register = ({navigation}: RegisterProps) => {
     return (
         <SafeAreaView>
             <View>
                 <Text>Register</Text>
-                <FontAwesome name='home' size={30} onPress={navigation.goBack}/>
+                <FontAwesome name='home' size={30} onPress={()=>navigation.navigate("Home")}/>
             </View>
         </SafeAreaView>
     )
