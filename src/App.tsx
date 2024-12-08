@@ -12,6 +12,8 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { enableScreens } from 'react-native-screens';
 import { NavigationContainer } from '@react-navigation/native';
+import { StepProvider } from "./contexts/StepCounterContext";
+
 
 import Login from './screens/Login';
 import Register from './screens/Register';
@@ -30,18 +32,16 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function App(): React.JSX.Element {
 
 	return (
-        <NavigationContainer>
-            <Stack.Navigator initialRouteName='Login'>
-                <Stack.Screen name='Login' component={Login} options={{ headerShown: false }} />
-                <Stack.Screen name='Register' component={Register} options={{ headerShown: false }} />
-                <Stack.Screen name='Home' component={Home} options={{ headerShown: false }} />
-            </Stack.Navigator>
-        </NavigationContainer>
+        <StepProvider>
+            <NavigationContainer>
+                <Stack.Navigator initialRouteName='Login'>
+                    <Stack.Screen name='Login' component={Login} options={{ headerShown: false }} />
+                    <Stack.Screen name='Register' component={Register} options={{ headerShown: false }} />
+                    <Stack.Screen name='Home' component={Home} options={{ headerShown: false }} />
+                </Stack.Navigator>
+            </NavigationContainer>
+        </StepProvider>
 	);
 }
-
-const styles = StyleSheet.create({
-  
-});
 
 export default App;
