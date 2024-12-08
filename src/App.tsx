@@ -1,47 +1,56 @@
 import React from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { enableScreens } from 'react-native-screens';
 import { NavigationContainer } from '@react-navigation/native';
 
-import Login from './screens/Login';
-import Register from './screens/Register';
-import Home from './screens/Home';
+// Import your screens
+import CalorieTracker from './screens/CalorieTracker';
+import DietRecommendation from './screens/DietRecommendation.tsx';
+import FoodSelectionPage from './screens/FoodSelectionPage';
+import ExtrasPage from './screens/ExtrasPage.tsx';
 
-enableScreens(); 
+enableScreens();
 
 export type RootStackParamList = {
-    Login: undefined;
-    Register: undefined;
-	Home: undefined;
+  CalorieTracker: undefined;
+  DietRecommendation: undefined;
+  FoodSelectionPage: undefined;
+  ExtrasPage: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App(): React.JSX.Element {
-
-	return (
-        <NavigationContainer>
-            <Stack.Navigator initialRouteName='Login'>
-                <Stack.Screen name='Login' component={Login} options={{ headerShown: false }} />
-                <Stack.Screen name='Register' component={Register} options={{ headerShown: false }} />
-                <Stack.Screen name='Home' component={Home} options={{ headerShown: false }} />
-            </Stack.Navigator>
-        </NavigationContainer>
-	);
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="CalorieTracker">
+        <Stack.Screen
+          name="CalorieTracker"
+          component={CalorieTracker}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="DietRecommendation"
+          component={DietRecommendation}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="FoodSelectionPage"
+          component={FoodSelectionPage}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ExtrasPage"
+          component={ExtrasPage}
+          options={{ headerShown: false }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
 }
 
-const styles = StyleSheet.create({
-  
-});
+const styles = StyleSheet.create({});
 
 export default App;
