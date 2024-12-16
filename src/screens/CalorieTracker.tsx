@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   calorieBar: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFA500",
+    backgroundColor: "#E37D00",
     padding: calculatePercentage(3, width),
     borderRadius: 12,
     marginBottom: calculatePercentage(3, height),
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   },
   goalValue: {
     marginTop: calculatePercentage(2, height),
-    color: "orange",
+    color: "#E37D00",
     fontWeight: "bold",
     fontSize: calculatePercentage(8, width),
   },
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   mealCalories: {
-    color: "orange",
+    color: "#E37D00",
     fontSize: calculatePercentage(3, width),
     alignSelf: "flex-end",
   },
