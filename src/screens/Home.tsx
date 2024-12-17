@@ -15,6 +15,7 @@ import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { accelerometer } from "react-native-sensors"; // Import Accelerometer from react-native-sensors
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../components/BottomNavBar";
+import { useUser } from "../contexts/UserContext";
 import { useStepCounter } from "../contexts/StepCounterContext"; // Import the StepContext
 import { useFocusEffect } from "@react-navigation/native"; // Import useFocusEffect
 
@@ -27,6 +28,7 @@ const MIN_STEP_INTERVAL = 300; // Minimum time interval between steps in ms
 const CLICK_THRESHOLD = 1.7; // Acceleration threshold to filter out clicks/taps
 
 const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) => {
+    const { user } = useUser();
   const { stepCount, setStepCount } = useStepCounter(); // Access context values
   const [isNativeModuleAvailable, setIsNativeModuleAvailable] = useState(true); // Flag for native module availability
   const [activeTab, setActiveTab] = useState('Home');
@@ -127,7 +129,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.greeting}>Welcome Akash,</Text>
+                <Text style={styles.greeting}>Welcome {user?.username},</Text>
                 <TouchableOpacity onPress={() => Alert.alert("Notifications clicked")}>
                     <FontAwesome name="bell-o" size={24} color="white" />
                 </TouchableOpacity>

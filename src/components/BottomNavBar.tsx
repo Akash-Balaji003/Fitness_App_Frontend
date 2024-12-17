@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Foundation from 'react-native-vector-icons/Foundation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const { height, width } = Dimensions.get('window');
 
@@ -14,7 +15,7 @@ type BottomNavBarProps = {
 };
 
 const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps) => {
-    const renderTabIcon = (iconName: string, tabName: keyof RootStackParamList, isFoundation = false) => (
+    const renderTabIcon = (iconName: string, tabName: keyof RootStackParamList) => (
         <TouchableOpacity
         style={[styles.navItem, activeTab === tabName && styles.activeTab]}
         onPress={() => {
@@ -24,32 +25,26 @@ const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps
         >
             <View
                 style={[
-                styles.iconContainer,
-                activeTab === tabName && styles.activeIconContainer,
+                    styles.iconContainer,
+                    activeTab === tabName && styles.activeIconContainer,
                 ]}
             >
-                {isFoundation ? (
-                <Foundation
+                <FontAwesome5
                     name={iconName}
-                    size={24}
+                    size={23}
                     color={activeTab === tabName ? '#0C284D' : '#C4C4C4'}
                 />
-                ) : (
-                <Icon
-                    name={iconName}
-                    size={24}
-                    color={activeTab === tabName ? '#0C284D' : '#C4C4C4'}
-                />
-                )}
             </View>
         </TouchableOpacity>
     );
 
     return (
         <View style={styles.bottomNav}>
-            {renderTabIcon('home-outline', 'Home')}
-            {renderTabIcon('run-fast', 'Login')}
-            {renderTabIcon('trophy-outline', 'Register')}
+            {renderTabIcon('home', 'Home')}
+            {renderTabIcon('apple-alt', 'Login')}
+            {renderTabIcon('running', 'Statistics')}
+            {renderTabIcon('trophy', 'Register')}
+            {renderTabIcon('user', 'Profile')}
         </View>
     );
 };

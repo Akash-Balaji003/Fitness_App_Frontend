@@ -111,17 +111,17 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#F2F9F5', // Light greenish background
+        backgroundColor: "#1c1c1e",
     },
     header: {
         fontSize: width * 0.08, // Dynamic font size
         fontWeight: 'bold',
-        color: '#0C284D',
+        color: 'white',
         marginBottom: height * 0.02,
     },
     subHeader: {
         fontSize: width * 0.06, // Dynamic font size
-        color: '#0C284D',
+        color: 'white',
         marginBottom: height * 0.03,
     },
     input: {
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     loginButton: {
         width: width * 0.6,
         height: height * 0.07,
-        backgroundColor: '#0C284D',
+        backgroundColor: '#F0A500',
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 10,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     forgotPassword: {
-        color: '#0C284D',
+        color: '#AAA',
         fontSize: width * 0.04,
         textDecorationLine: 'underline',
         marginBottom: height * 0.05,
@@ -164,11 +164,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     newHere: {
-        color: '#0C284D',
+        color: '#AAA',
         fontSize: width * 0.04,
     },
     signUp: {
-        color: '#0C284D',
+        color: '#AAA',
         fontSize: width * 0.04,
         textDecorationLine: 'underline',
         fontWeight: 'bold',

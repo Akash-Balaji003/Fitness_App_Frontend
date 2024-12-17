@@ -16,7 +16,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import Login from './screens/Login';
 import Register from './screens/Register';
 import Home from './screens/Home';
-import Home2 from './screens/Home2';
+import Profile from './screens/Profile';
+import Statistics from './screens/Statistics';
+
+
 import { UserProvider } from './contexts/UserContext';
 import { StepCounterProvider } from './contexts/StepCounterContext';
 
@@ -26,7 +29,8 @@ export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
 	Home: undefined;
-    Home2: undefined;
+    Profile: undefined;
+    Statistics: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -41,7 +45,8 @@ function App(): React.JSX.Element {
                         <Stack.Screen name='Login' component={Login} options={{ headerShown: false }} />
                         <Stack.Screen name='Register' component={Register} options={{ headerShown: false }} />
                         <Stack.Screen name='Home' component={Home} options={{ headerShown: false }} />
-                        <Stack.Screen name='Home2' component={Home2} options={{ headerShown: false }} />
+                        <Stack.Screen name='Profile' component={Profile} options={{ headerShown: false }} />
+                        <Stack.Screen name='Statistics' component={Statistics} options={{ headerShown: false }} />
                     </Stack.Navigator>
                 </NavigationContainer>
             </UserProvider>
