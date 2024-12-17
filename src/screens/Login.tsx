@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import BottomNavBar from '../components/BottomNavBar';
+import { useUser } from '../contexts/UserContext';
 
 type LoginProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -17,6 +17,9 @@ type LoginProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 const { width, height } = Dimensions.get('window');
 
 const LoginScreen = ({ navigation }: LoginProps) => {
+
+    const { setUser } = useUser();
+
 
     const [mobileNumber, setMobileNumber] = useState('');
     const [password, setPassword] = useState('');
@@ -38,7 +41,15 @@ const LoginScreen = ({ navigation }: LoginProps) => {
         const data = await response.json();
     
         if (response.ok) {
-            // Navigate to Home screen on successful login
+            setUser({
+                user_id: data.user_id,
+                username: data.username,
+                phone_number: data.phone_number,
+                diet: data.diet,
+                height: data.height,
+                weight: data.weight,
+                email: data.email,
+            });
             navigation.navigate("Home");
         } else {
             // Set error message from backend response

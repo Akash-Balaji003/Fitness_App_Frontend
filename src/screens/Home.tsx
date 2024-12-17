@@ -10,97 +10,119 @@ import {
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
-import Icon from "react-native-vector-icons/Ionicons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
-import FontAwesome6 from "react-native-vector-icons/FontAwesome6";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import Entypo from "react-native-vector-icons/Entypo";
-import Octicons from "react-native-vector-icons/Octicons";
-import Feather from "react-native-vector-icons/Feather";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 import { accelerometer } from "react-native-sensors"; // Import Accelerometer from react-native-sensors
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../components/BottomNavBar";
-
-import StepContext from "../contexts/StepCounterContext"; // Import the StepContext
+import { useStepCounter } from "../contexts/StepCounterContext"; // Import the StepContext
 import { useFocusEffect } from "@react-navigation/native"; // Import useFocusEffect
-
 
 const { width, height } = Dimensions.get("window");
 const calculatePercentage = (percentage: number, dimension: number) => (percentage / 100) * dimension;
 
-type HomeProps = NativeStackScreenProps<RootStackParamList, "Home">;
-
 const alpha = 0.7; // Low-pass filter constant
 const STEP_THRESHOLD = 2.5; // Adjust for more or less sensitivity
 const MIN_STEP_INTERVAL = 300; // Minimum time interval between steps in ms
-const CLICK_THRESHOLD = 1.5; // Acceleration threshold to filter out clicks/taps
+const CLICK_THRESHOLD = 1.7; // Acceleration threshold to filter out clicks/taps
 
-const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Home">) => {
-    const { stepCount, setStepCount } = useContext(StepContext) || {}; // Access context values
-    const [activeTab, setActiveTab] = useState('Home');
+const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) => {
+  const { stepCount, setStepCount } = useStepCounter(); // Access context values
+  const [isNativeModuleAvailable, setIsNativeModuleAvailable] = useState(true); // Flag for native module availability
+  const [activeTab, setActiveTab] = useState('Home');
 
-    let gravity = { x: 0, y: 0, z: 0 };
+  let gravity = { x: 0, y: 0, z: 0 };
 
-    const isSubscribed = useRef<boolean>(false);
-    const subscriptionRef = useRef<any>(null); // Use ref to store subscription
-    const lastStepTime = useRef<number>(0); // Ref for last step time
-    const lastClickTime = useRef<number>(0);
+  const isSubscribed = useRef<boolean>(false);
+  const subscriptionRef = useRef<any>(null); // Use ref to store subscription
+  const lastStepTime = useRef<number>(0); // Ref for last step time
+  const lastClickTime = useRef<number>(0);
 
-    useFocusEffect(
-        React.useCallback(() => {
-            // Subscribe to accelerometer only when screen is focused
-            if (!isSubscribed.current) {
-                subscriptionRef.current = accelerometer.subscribe(
-                    (sensorData) => {
-                        gravity.x = alpha * gravity.x + (1 - alpha) * sensorData.x;
-                        gravity.y = alpha * gravity.y + (1 - alpha) * sensorData.y;
-                        gravity.z = alpha * gravity.z + (1 - alpha) * sensorData.z;
+  // Fallback logic for accelerometer when native module is unavailable
+  const fallbackAccelerometerLogic = (sensorData: any) => {
+    gravity.x = alpha * gravity.x + (1 - alpha) * sensorData.x;
+    gravity.y = alpha * gravity.y + (1 - alpha) * sensorData.y;
+    gravity.z = alpha * gravity.z + (1 - alpha) * sensorData.z;
 
-                        const linearAcceleration = {
-                            x: sensorData.x - gravity.x,
-                            y: sensorData.y - gravity.y,
-                            z: sensorData.z - gravity.z,
-                        };
+    const linearAcceleration = {
+      x: sensorData.x - gravity.x,
+      y: sensorData.y - gravity.y,
+      z: sensorData.z - gravity.z,
+    };
 
-                        const totalAcceleration = Math.sqrt(
-                            linearAcceleration.x ** 2 +
-                            linearAcceleration.y ** 2 +
-                            linearAcceleration.z ** 2
-                        );
-
-                        const now = Date.now();
-
-                        // Filter out clicks/taps based on low acceleration and recent events
-                        if (totalAcceleration > CLICK_THRESHOLD && now - lastClickTime.current > 500) {
-                            lastClickTime.current = now; // Update click time
-                            return; // Ignore clicks/taps below acceleration threshold
-                        }
-
-                        // Check for a valid step (filter out noise like clicks)
-                        if (totalAcceleration > STEP_THRESHOLD && totalAcceleration < 3 && now - lastStepTime.current > MIN_STEP_INTERVAL) {
-                            if (setStepCount) {
-                                setStepCount((prevCount) => prevCount + 1); // Update the step count from context
-                            }
-                            lastStepTime.current = now; // Store the last step time
-                        }
-                    },
-                    (error) => console.error("Error reading accelerometer:", error)
-                );
-                isSubscribed.current = true; // Set the ref to true after subscription
-            }
-
-            // Cleanup when the screen is unfocused
-            return () => {
-                if (subscriptionRef.current) {
-                    subscriptionRef.current.unsubscribe();
-                    isSubscribed.current = false; // Reset subscription flag
-                }
-            };
-        }, [setStepCount]) // Dependencies
+    const totalAcceleration = Math.sqrt(
+      linearAcceleration.x ** 2 +
+        linearAcceleration.y ** 2 +
+        linearAcceleration.z ** 2
     );
+
+    const now = Date.now();
+
+    // Filter out clicks/taps based on low acceleration and recent events
+    if (totalAcceleration > CLICK_THRESHOLD && now - lastClickTime.current > 500) {
+      lastClickTime.current = now; // Update click time
+      return; // Ignore clicks/taps below acceleration threshold
+    }
+
+    // Check for a valid step (filter out noise like clicks)
+    if (
+      totalAcceleration > STEP_THRESHOLD &&
+      totalAcceleration < 3 &&
+      now - lastStepTime.current > MIN_STEP_INTERVAL
+    ) {
+      if (setStepCount) {
+        setStepCount((prevCount) => prevCount + 1); // Update the step count from context
+      }
+      lastStepTime.current = now; // Store the last step time
+    }
+  };
+
+  // Check for accelerometer availability (native module check)
+  useEffect(() => {
+    // Test if accelerometer from react-native-sensors is available
+    try {
+      accelerometer.subscribe(
+        () => {},
+        () => {
+          setIsNativeModuleAvailable(false); // If error occurs, set to false
+        }
+      );
+    } catch (error) {
+      setIsNativeModuleAvailable(false); // If error occurs during subscription, fall back
+    }
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (isNativeModuleAvailable) {
+        // If the native module is available, subscribe to the accelerometer
+        if (!isSubscribed.current) {
+          subscriptionRef.current = accelerometer.subscribe(
+            (sensorData) => {
+              fallbackAccelerometerLogic(sensorData); // Fallback logic or native module sensor data
+            },
+            (error) => console.error('Error reading accelerometer:', error)
+          );
+          isSubscribed.current = true; // Set the ref to true after subscription
+        }
+
+        // Cleanup when the screen is unfocused
+        return () => {
+          if (subscriptionRef.current) {
+            subscriptionRef.current.unsubscribe();
+            isSubscribed.current = false; // Reset subscription flag
+          }
+        };
+      } else {
+        // Fallback to custom accelerometer logic when the native module is unavailable
+        // Here, you'd implement the logic that simulates accelerometer data or manually triggers steps
+        const fakeSensorData = { x: 1.2, y: 1.3, z: 1.1 }; // Example fallback data
+        fallbackAccelerometerLogic(fakeSensorData); // Use fallback data for simulation
+        return () => {}; // No cleanup needed for fallback simulation
+      }
+    }, [isNativeModuleAvailable, setStepCount]) // Dependencies
+  );
+
     
     return (
         <SafeAreaView style={styles.container}>

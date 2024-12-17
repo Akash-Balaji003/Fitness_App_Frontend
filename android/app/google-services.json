@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "115771399305",
+    "project_id": "srm-fitness",
+    "storage_bucket": "srm-fitness.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:115771399305:android:bee6881e5932eab5977a58",
+        "android_client_info": {
+          "package_name": "com.fitness_app_frontend"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "115771399305-civdip3bp5413g9r7v43q0vlbv74tvre.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fitness_app_frontend",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "115771399305-4j6adddopq42g4bcg2f7n2ihe6g17jep.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBa4nMGioRQvCEkmAj0-35B1IJ5BriNyYM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "115771399305-4j6adddopq42g4bcg2f7n2ihe6g17jep.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

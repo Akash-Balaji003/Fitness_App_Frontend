@@ -12,12 +12,13 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { enableScreens } from 'react-native-screens';
 import { NavigationContainer } from '@react-navigation/native';
-import { StepProvider } from "./contexts/StepCounterContext";
-
 
 import Login from './screens/Login';
 import Register from './screens/Register';
 import Home from './screens/Home';
+import Home2 from './screens/Home2';
+import { UserProvider } from './contexts/UserContext';
+import { StepCounterProvider } from './contexts/StepCounterContext';
 
 enableScreens(); 
 
@@ -25,6 +26,7 @@ export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
 	Home: undefined;
+    Home2: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -32,15 +34,18 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function App(): React.JSX.Element {
 
 	return (
-        <StepProvider>
-            <NavigationContainer>
-                <Stack.Navigator initialRouteName='Login'>
-                    <Stack.Screen name='Login' component={Login} options={{ headerShown: false }} />
-                    <Stack.Screen name='Register' component={Register} options={{ headerShown: false }} />
-                    <Stack.Screen name='Home' component={Home} options={{ headerShown: false }} />
-                </Stack.Navigator>
-            </NavigationContainer>
-        </StepProvider>
+        <StepCounterProvider>
+            <UserProvider>
+                <NavigationContainer>
+                    <Stack.Navigator initialRouteName='Login'>
+                        <Stack.Screen name='Login' component={Login} options={{ headerShown: false }} />
+                        <Stack.Screen name='Register' component={Register} options={{ headerShown: false }} />
+                        <Stack.Screen name='Home' component={Home} options={{ headerShown: false }} />
+                        <Stack.Screen name='Home2' component={Home2} options={{ headerShown: false }} />
+                    </Stack.Navigator>
+                </NavigationContainer>
+            </UserProvider>
+        </StepCounterProvider>
 	);
 }
 

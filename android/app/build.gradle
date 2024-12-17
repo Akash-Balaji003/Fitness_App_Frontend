@@ -1,6 +1,7 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+apply plugin: 'com.google.gms.google-services'
 
 apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
 
@@ -86,6 +87,9 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        manifestPlaceholders = [
+            appAuthRedirectScheme: 'com.fitness_app_frontend'
+        ]
     }
     signingConfigs {
         debug {
@@ -118,4 +122,8 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    implementation 'com.google.android.gms:play-services-auth:20.7.0' // For Google Fit and OAuth
+    implementation 'com.google.android.gms:play-services-fitness:21.1.0'
+
 }
