@@ -29,7 +29,7 @@ const CLICK_THRESHOLD = 1.7; // Acceleration threshold to filter out clicks/taps
 
 const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) => {
     const { user } = useUser();
-    const { stepCount, setStepCount } = useStepCounter(); // Access context values
+    const { stepCount } = useStepCounter();
     const [activeTab, setActiveTab] = useState('Home');
     
     return (

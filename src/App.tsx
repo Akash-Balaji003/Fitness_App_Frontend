@@ -13,7 +13,7 @@ import Profile from './screens/Profile';
 import Statistics from './screens/Statistics';
 
 import { UserProvider } from './contexts/UserContext';
-import { StepCounterProvider } from './contexts/StepCounterContext';
+import { StepCounterProvider, useStepCounter } from './contexts/StepCounterContext';
 
 enableScreens();
 
@@ -38,8 +38,8 @@ let lastStepTime = 0;
 let lastClickTime = 0;
 let stepCount = 0;
 
-const task = async (taskData?: { delay: number }): Promise<void> => {
-  const { delay } = taskData || { delay: 1000 };
+const task = async (taskData?: { delay: number; setStepCount: (count: number) => void }) => {
+    const { delay, setStepCount } = taskData || { delay: 1000, setStepCount: () => {} };
 
   console.log('Background Step Counter Task Running...');
 
@@ -77,6 +77,7 @@ const task = async (taskData?: { delay: number }): Promise<void> => {
     ) {
       stepCount += 1;
       console.log(`Step Detected! Total Steps: ${stepCount}`);
+      setStepCount(stepCount);
       lastStepTime = now;
     }
   };
@@ -117,24 +118,22 @@ const options = {
   },
 };
 
-const startBackgroundService = async () => {
-  try {
-    console.log('Starting Background Step Counter...');
-    await BackgroundService.start(task, options);
-    console.log('Background Step Counter Started');
-  } catch (error) {
-    console.error('Error starting background task:', error);
-  }
+const startBackgroundService = async (setStepCount: (count: number) => void) => {
+    try {
+      console.log('Starting Background Step Counter...');
+      await BackgroundService.start(() => task({ delay: 500, setStepCount }), options);
+      console.log('Background Step Counter Started');
+    } catch (error) {
+      console.error('Error starting background task:', error);
+    }
 };
 
 function App(): React.JSX.Element {
-  useEffect(() => {
-    startBackgroundService();
-  }, []);
 
   return (
     <StepCounterProvider>
       <UserProvider>
+        <BackgroundTaskWrapper />
         <NavigationContainer>
           <Stack.Navigator initialRouteName="Login">
             <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
@@ -148,5 +147,15 @@ function App(): React.JSX.Element {
     </StepCounterProvider>
   );
 }
+
+function BackgroundTaskWrapper() {
+    const { setStepCount } = useStepCounter();
+  
+    useEffect(() => {
+      startBackgroundService(setStepCount);
+    }, []);
+  
+    return null; // This component does not render anything
+  }
 
 export default App;
