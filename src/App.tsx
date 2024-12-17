@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { format } from 'date-fns';  // To format date as YYYY-MM-DD
+
 import BackgroundService from 'react-native-background-actions';
 import { accelerometer } from 'react-native-sensors';
 
@@ -14,6 +16,9 @@ import Statistics from './screens/Statistics';
 
 import { UserProvider } from './contexts/UserContext';
 import { StepCounterProvider, useStepCounter } from './contexts/StepCounterContext';
+import { getUserData, getUserId } from './tasks/Storage';
+import { ActivityIndicator, View } from 'react-native';
+
 
 enableScreens();
 
@@ -128,34 +133,114 @@ const startBackgroundService = async (setStepCount: (count: number) => void) => 
     }
 };
 
-function App(): React.JSX.Element {
+const updateStepsAtEndOfDay = async (userId: string, stepCount: number) => {
+    const date = format(new Date(), 'yyyy-MM-dd');
+  
+    try {
+        const response = await fetch('https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/update-steps', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+            user_id: userId,
+            date: date,
+            steps: stepCount,
+            }),
+    });
 
-  return (
-    <StepCounterProvider>
-      <UserProvider>
-        <BackgroundTaskWrapper />
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName="Login">
-            <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
-            <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
-            <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
-            <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
-            <Stack.Screen name="Statistics" component={Statistics} options={{ headerShown: false }} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </UserProvider>
-    </StepCounterProvider>
-  );
-}
+    if (!response.ok) {
+        throw new Error('Failed to update steps');
+    }
 
-function BackgroundTaskWrapper() {
+    console.log('Steps updated successfully');
+
+    } catch (error) {
+        console.error('Error updating steps:', error);
+    }
+};
+
+  
+// Function to check and reset step count every day at 11 PM
+const checkAndResetSteps = (userId: string) => {
+
+    const intervalId = setInterval(() => {
+
+        const now = new Date();
+        if (now.getHours() === 23 && now.getMinutes() === 0) {
+
+            updateStepsAtEndOfDay(userId, stepCount);
+            stepCount = 0;  // Reset the step count for the next day
+
+        }
+    }, 60000); // Check every minute
+
+    return intervalId; // Return the intervalId for cleanup
+};
+
+const AppWrapper = () => {
     const { setStepCount } = useStepCounter();
   
     useEffect(() => {
-      startBackgroundService(setStepCount);
+        console.log('AppWrapper useEffect triggered');
+        
+        const fetchUserData = async () => {
+            const userData = await getUserData(); // Fetch all user data (not just user_id)
+            
+            if (userData) {
+                console.log('User Data found:', userData);
+                startBackgroundService(setStepCount);
+                const intervalId = checkAndResetSteps(userData.user_id);  // Use user_id from the fetched data
+                
+                // Clean up the interval when the component unmounts
+                return () => clearInterval(intervalId);
+            }
+        };
+  
+        fetchUserData(); // Fetch the user data when the component mounts
     }, []);
   
-    return null; // This component does not render anything
-  }
+    return null; // No rendering needed here
+};
+
+function App(): React.JSX.Element {
+
+    const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);  // Will hold login state
+
+    useEffect(() => {
+        const checkUserStatus = async () => {
+        const userData = await getUserData();  // Fetch user data
+        setIsLoggedIn(!!userData);  // If user data exists, set logged in to true
+        };
+        
+        checkUserStatus();  // Check on app start
+    }, []);
+
+    if (isLoggedIn === null) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+          );
+    }
+
+  return (
+    <UserProvider>
+        <StepCounterProvider>
+            <AppWrapper />
+            <NavigationContainer>
+            <Stack.Navigator initialRouteName={isLoggedIn ? 'Home' : 'Login'}>
+                <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+                <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
+                <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
+                <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
+                <Stack.Screen name="Statistics" component={Statistics} options={{ headerShown: false }} />
+            </Stack.Navigator>
+            </NavigationContainer>
+        </StepCounterProvider>
+    </UserProvider>
+
+  );
+}
 
 export default App;

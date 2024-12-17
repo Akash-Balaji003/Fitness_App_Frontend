@@ -11,6 +11,8 @@ import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useUser } from '../contexts/UserContext';
 
+import { saveUserData, saveUserId } from '../tasks/Storage';
+
 type LoginProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 // Get device dimensions for dynamic sizing
@@ -50,6 +52,19 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 weight: data.weight,
                 email: data.email,
             });
+
+            await saveUserData({
+                user_id: data.user_id,
+                username: data.username,
+                phone_number: data.phone_number,
+                diet: data.diet,
+                height: data.height,
+                weight: data.weight,
+                email: data.email,
+              });
+
+            saveUserId(data.user_id)
+
             navigation.navigate("Home");
         } else {
             // Set error message from backend response
