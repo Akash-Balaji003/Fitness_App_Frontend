@@ -11,6 +11,8 @@ import DietRecommendation from './screens/DietRecommendation.tsx';
 import FoodSelectionPage from './screens/FoodSelectionPage';
 import ExtrasPage from './screens/ExtrasPage.tsx';
 import ActivityStart from './screens/ActivityStart.tsx';
+import ActivityMap from './screens/ActivityMap.tsx';
+import ActivityHistory from './screens/ActivityHistory.tsx';
 
 enableScreens();
 
@@ -20,6 +22,8 @@ export type RootStackParamList = {
   FoodSelectionPage: undefined;
   ExtrasPage: undefined;
   ActivityStart: undefined;
+  ActivityMap: undefined;
+  ActivityHistory: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -27,7 +31,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function App(): React.JSX.Element {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="ActivityStart">
+      <Stack.Navigator initialRouteName="ActivityMap">
         <Stack.Screen
           name="CalorieTracker"
           component={CalorieTracker}
@@ -51,6 +55,16 @@ function App(): React.JSX.Element {
         <Stack.Screen 
         name="ActivityStart" 
         component={ActivityStart}
+        options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+        name="ActivityMap" 
+        component={ActivityMap}
+        options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+        name="ActivityHistory" 
+        component={ActivityHistory}
         options={{ headerShown: false }}
         />
 
