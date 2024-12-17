@@ -21,7 +21,6 @@ class MainApplication : Application(), ReactApplication {
             PackageList(this).packages.apply {
               // Packages that cannot be autolinked yet can be added manually here, for example:
               // add(MyReactNativePackage())
-              StepCounterPackage()
             }
 
         override fun getJSMainModuleName(): String = "index"
@@ -40,10 +39,6 @@ class MainApplication : Application(), ReactApplication {
 
     // Initialize the native SoLoader
     SoLoader.init(this, OpenSourceMergedSoMapping)
-
-    // Start the StepCountingService when the app is launched
-    val stepCountingServiceIntent = Intent(this, StepCountingService::class.java)
-    startService(stepCountingServiceIntent)
 
     // Load the new architecture if enabled
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
