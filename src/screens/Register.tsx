@@ -1,31 +1,141 @@
-import { View, Text } from 'react-native'
-import React, { useState } from 'react'
-
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React, { useState } from 'react';
+import {
+    Platform,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    useWindowDimensions
+} from 'react-native';
 import { RootStackParamList } from '../App';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import BottomNavBar from '../components/BottomNavBar';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 type RegisterProps = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
-const Register = ({navigation}: RegisterProps) => {
-    const [activeTab, setActiveTab] = useState('Register');
+const Register = ({ navigation }: RegisterProps) => {
+    const { width, height } = useWindowDimensions();
+
+    const [name, setName] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirm_password, setConfirmPassword] = useState('');
+    const [phone_number, setPhoneNumber] = useState('');
+    const [ email1, setEmail ] = useState('');
+
+
+    const [errorMessage, setErrorMessage] = useState('');
+
+    const navigateNext = async() => {
+        navigation.navigate('WelcomePage',{
+            username: name,
+            phone_number: phone_number,
+            email: email1,
+            password: password,
+        })
+    };
+
+    const handleNext = async () => {
+        if (!name || !phone_number || !password || !confirm_password) {
+            setErrorMessage("All fields are required.");
+            return;
+        }
+    
+        if (password !== confirm_password) {
+            setErrorMessage("Passwords don't match.");
+            return;
+        }
+    
+        // Clear error message if validations pass
+        setErrorMessage("");
+        navigateNext();
+    };
+    
+
     return (
-        <SafeAreaView style={{flex:1}}>
-            <View>
-                <Text>Register</Text>
-                <FontAwesome name='home' size={30} onPress={()=>navigation.navigate("Home")}/>
+        <SafeAreaView style={[styles.container, { width, height }]}>
+
+            {/* Form Title */}
+            <Text style={styles.title}>CREATING ACCOUNT</Text>
+
+            {/* Input Fields */}
+            <View style={[styles.inputContainer, { width: Platform.OS === 'ios' ? '80%' : 'auto'}]}>
+                <TextInput placeholder="Name" value={name} onChangeText={setName} style={styles.input} placeholderTextColor="#888" />
+                <TextInput placeholder="Mobile number" value={phone_number} onChangeText={setPhoneNumber} style={styles.input} placeholderTextColor="#888" keyboardType="phone-pad" />
+                <TextInput placeholder="Email" value={email1} onChangeText={setEmail} style={styles.input} placeholderTextColor="#888" keyboardType='email-address' />
+                <TextInput placeholder="Password" value={password} onChangeText={setPassword} style={styles.input} placeholderTextColor="#888" secureTextEntry />
+                <TextInput placeholder="Confirm password" value={confirm_password} onChangeText={setConfirmPassword} style={styles.input} placeholderTextColor="#888" secureTextEntry />
+                <Text style={[styles.stepLabel, {alignSelf:'center', color:'red'}]}>{errorMessage}</Text>
             </View>
-            {/* Bottom Navigation Bar */}
-            <BottomNavBar
-                navigation={navigation}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-            />
+
+            {/* Next Button */}
+            <View style={[{flexDirection:'row', justifyContent:'space-between'}]}>
+                <TouchableOpacity style={[styles.buttonBack]} onPress={() => navigation.goBack()}>
+                    <Text style={styles.buttonText}>CANCEL</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.buttonArrow]} onPress={handleNext}>
+                    <AntDesign name="arrowright" size={20} color="white" />
+                </TouchableOpacity>
+            </View>
         </SafeAreaView>
-    )
-}
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: "#1c1c1e",
+        justifyContent: 'space-around',
+        paddingHorizontal: '10%',
+    },
+    stepLabel: {
+        fontSize: 12,
+        color: 'black',
+        marginTop: 5,
+    },
+    title: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: 'white',
+        textAlign: 'center',
+        marginBottom: '5%',
+    },
+    inputContainer: {
+        width: '100%',
+        marginLeft: Platform.OS ==='ios' ? 'auto': '0%',
+        marginRight: Platform.OS ==='ios' ? 'auto': '0%',
+    },
+    input: {
+        backgroundColor: '#f2f2f2',
+        color:"black",
+        borderRadius: 25,
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+        fontSize: 16,
+        marginVertical: 10,
+    },
+    buttonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    buttonBack: {
+        backgroundColor: '#F0A500',
+        borderRadius: 25,
+        paddingVertical: 15,
+        alignItems: 'center',
+        marginTop: 20,
+        width:'50%'
+    },
+    buttonArrow: {
+        backgroundColor: '#F0A500',
+        borderRadius: 50,
+        paddingVertical: 15,
+        alignItems: 'center',
+        marginTop: 20,
+        width: 50
+    },
+});
 
 export default Register;

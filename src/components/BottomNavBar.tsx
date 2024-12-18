@@ -15,28 +15,45 @@ type BottomNavBarProps = {
 };
 
 const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps) => {
-    const renderTabIcon = (iconName: string, tabName: keyof RootStackParamList) => (
-        <TouchableOpacity
-        style={[styles.navItem, activeTab === tabName && styles.activeTab]}
-        onPress={() => {
-            setActiveTab(tabName);
-            navigation.navigate(tabName);
-        }}
-        >
-            <View
-                style={[
-                    styles.iconContainer,
-                    activeTab === tabName && styles.activeIconContainer,
-                ]}
+    const renderTabIcon = (iconName: string, tabName: keyof RootStackParamList) => {
+        const navigateToTab = () => {
+            // Ensure correct parameter handling for each tab
+            if (tabName === 'WelcomePage') {
+                navigation.navigate('WelcomePage', {
+                    username: 'defaultUsername',
+                    phone_number: 'defaultPhoneNumber',
+                    email: 'defaultEmail',
+                    password: 'defaultPassword',
+            });
+            } else {
+                navigation.navigate(tabName as any); // Fallback for tabs with no parameters
+            }
+        };
+    
+        return (
+            <TouchableOpacity
+                style={[styles.navItem, activeTab === tabName && styles.activeTab]}
+                onPress={() => {
+                    setActiveTab(tabName);
+                    navigateToTab();
+                }}
             >
-                <FontAwesome5
-                    name={iconName}
-                    size={23}
-                    color={activeTab === tabName ? '#0C284D' : '#C4C4C4'}
-                />
-            </View>
-        </TouchableOpacity>
-    );
+                <View
+                    style={[
+                        styles.iconContainer,
+                        activeTab === tabName && styles.activeIconContainer,
+                    ]}
+                >
+                    <FontAwesome5
+                        name={iconName}
+                        size={23}
+                        color={activeTab === tabName ? '#0C284D' : '#C4C4C4'}
+                    />
+                </View>
+            </TouchableOpacity>
+        );
+    };
+    
 
     return (
         <View style={styles.bottomNav}>

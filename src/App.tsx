@@ -13,21 +13,82 @@ import Register from './screens/Register';
 import Home from './screens/Home';
 import Profile from './screens/Profile';
 import Statistics from './screens/Statistics';
+import WelcomePage from './screens/WelcomePage';
+import ActivityLifestyle from './screens/ActivityLifestyle';
+import DietaryPreference from './screens/DietaryPreference';
+import GenderDOBPage from './screens/GenderDOBPage';
+import StepCounterPage from './screens/StepCounterPage';
+import WeightHeightPage from './screens/WeightHeightPage';
+
 
 import { UserProvider } from './contexts/UserContext';
 import { StepCounterProvider, useStepCounter } from './contexts/StepCounterContext';
-import { getUserData, getUserId } from './tasks/Storage';
+import { getUserData } from './tasks/Storage';
 import { ActivityIndicator, View } from 'react-native';
 
 
 enableScreens();
 
 export type RootStackParamList = {
-  Login: undefined;
-  Register: undefined;
-  Home: undefined;
-  Profile: undefined;
-  Statistics: undefined;
+    Login: undefined;
+    Register: undefined;
+
+    WelcomePage: {
+        username: string;
+        phone_number: string;
+        email: string;
+        password: string;
+    };
+    GenderDOBPage: {
+        username: string;
+        phone_number: string;
+        email: string;
+        password: string;
+    };
+    WeightHeightPage:{
+        username: string;
+        phone_number: string;
+        email: string;
+        password: string;
+        gender: string,
+        DOB: string,
+    };
+    DietaryPreference: {
+        username: string;
+        phone_number: string;
+        email: string;
+        password: string;
+        gender: string,
+        DOB: string,
+        height: number,
+        weight: number
+    };
+    ActivityLifestyle: {
+        username: string;
+        phone_number: string;
+        email: string;
+        password: string;
+        gender: string,
+        DOB: string,
+        height: number,
+        weight: number,
+        diet: string
+    };
+    StepCounterPage: {
+        username: string;
+        phone_number: string;
+        email: string;
+        password: string;
+        gender: string,
+        DOB: string,
+        height: number,
+        weight: number,
+        diet: string,
+        experience: string
+    };
+    Home: undefined;
+    Profile: undefined;
+    Statistics: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -235,6 +296,12 @@ function App(): React.JSX.Element {
                 <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
                 <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
                 <Stack.Screen name="Statistics" component={Statistics} options={{ headerShown: false }} />
+                <Stack.Screen name="WelcomePage" component={WelcomePage} options={{ headerShown: false }} />
+                <Stack.Screen name="ActivityLifestyle" component={ActivityLifestyle} options={{ headerShown: false }} />
+                <Stack.Screen name="DietaryPreference" component={DietaryPreference} options={{ headerShown: false }} />
+                <Stack.Screen name="GenderDOBPage" component={GenderDOBPage} options={{ headerShown: false }} />
+                <Stack.Screen name="WeightHeightPage" component={WeightHeightPage} options={{ headerShown: false }} />
+                <Stack.Screen name="StepCounterPage" component={StepCounterPage} options={{ headerShown: false }} />
             </Stack.Navigator>
             </NavigationContainer>
         </StepCounterProvider>

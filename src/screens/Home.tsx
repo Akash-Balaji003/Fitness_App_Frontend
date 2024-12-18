@@ -22,11 +22,6 @@ import { useFocusEffect } from "@react-navigation/native"; // Import useFocusEff
 const { width, height } = Dimensions.get("window");
 const calculatePercentage = (percentage: number, dimension: number) => (percentage / 100) * dimension;
 
-const alpha = 0.7; // Low-pass filter constant
-const STEP_THRESHOLD = 2.5; // Adjust for more or less sensitivity
-const MIN_STEP_INTERVAL = 300; // Minimum time interval between steps in ms
-const CLICK_THRESHOLD = 1.7; // Acceleration threshold to filter out clicks/taps
-
 const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) => {
     const { user } = useUser();
     const { stepCount } = useStepCounter();

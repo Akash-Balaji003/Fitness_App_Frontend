@@ -78,7 +78,7 @@ const LoginScreen = ({ navigation }: LoginProps) => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.header} onPress={()=>navigation.navigate("Home")}>Hi there!</Text>
+            <Text style={styles.header}>Hi there!</Text>
             <Text style={styles.subHeader}>LOGIN</Text>
 
             <TextInput
