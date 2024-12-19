@@ -6,12 +6,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  ToastAndroid,
 } from 'react-native';
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useUser } from '../contexts/UserContext';
 
-import { saveUserData, saveUserId } from '../tasks/Storage';
+import { saveUserData } from '../tasks/Storage';
 
 type LoginProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -19,7 +20,6 @@ type LoginProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 const { width, height } = Dimensions.get('window');
 
 const LoginScreen = ({ navigation }: LoginProps) => {
-
     const { setUser } = useUser();
 
 
@@ -43,6 +43,7 @@ const LoginScreen = ({ navigation }: LoginProps) => {
         const data = await response.json();
     
         if (response.ok) {
+
             setUser({
                 user_id: data.user_id,
                 username: data.username,
@@ -51,7 +52,10 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 height: data.height,
                 weight: data.weight,
                 email: data.email,
+                experience: data.experience,
+                stepgoal: data.stepgoal
             });
+
 
             await saveUserData({
                 user_id: data.user_id,
@@ -61,17 +65,20 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 height: data.height,
                 weight: data.weight,
                 email: data.email,
-              });
-
-            saveUserId(data.user_id)
+                experience: data.experience,
+                stepgoal: data.stepgoal
+            });
 
             navigation.navigate("Home");
         } else {
             // Set error message from backend response
+            ToastAndroid.show('Invalid mobile number or password', ToastAndroid.SHORT);
             setErrorMessage(data.detail || 'Invalid mobile number or password');
         }
         } catch (error) {
             setErrorMessage('Failed to connect to the server. Please try again later.');
+            ToastAndroid.show('Failed to connect to the server. Please try again later.', ToastAndroid.SHORT);
+
         }
     };
   

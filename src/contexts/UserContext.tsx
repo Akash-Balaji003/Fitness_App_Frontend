@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { getUserData } from '../tasks/Storage';
 
 // Define the type for the user data
 interface User {
@@ -9,12 +10,14 @@ interface User {
     height: string;
     weight: string;
     email: string;
+    experience: string;
+    stepgoal: number;
 }
 
 // Define the shape of the context
 interface UserContextType {
     user: User | null;
-    setUser: (user: User) => void;
+    setUser: (user: User | null) => void;
 }
 
 // Create the context with a default value
@@ -23,6 +26,18 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 // Create a provider component
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
+
+    // Load user data from AsyncStorage when the provider mounts
+    useEffect(() => {
+        const loadUserData = async () => {
+            const storedUserData = await getUserData();
+            if (storedUserData) {
+                setUser(storedUserData); // Update context with user data
+            }
+        };
+
+        loadUserData();
+    }, []);
 
     return (
         <UserContext.Provider value={{ user, setUser }}>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomNavBar from '../components/BottomNavBar';
@@ -23,11 +23,22 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
     const [activity, setActivity] = useState('Moderate');
     const [stepCount, setStepCount] = useState(10000);
 
-    const dietaryOptions = ['Vegetarian', 'Pescatarian', 'Vegan', 'Dairy-free', 'Gluten-free', 'Paleo'];
+    const dietaryOptions = ['Vegetarian', 'Non-veg', 'Vegan', 'Dairy-free', 'Gluten-free', 'Paleo'];
     const activityLevels = ['Sedentary', 'Moderate', 'Active'];
 
     const handleDietSelect = (option: string) => setDiet(option);
     const handleActivitySelect = (level: string) => setActivity(level);
+
+    if (!user) {
+        return (
+            <SafeAreaView style={[styles.container, { justifyContent: 'center' }]}>
+                <ActivityIndicator size="large" color="#ffffff" />
+                <Text style={{ color: "white", textAlign: 'center', marginTop: 10 }}>
+                    Loading...
+                </Text>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -43,12 +54,12 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
             {/* Weight Section */}
             <View style={styles.section}>
                 <Text style={styles.label}>Current Weight</Text>
-                <Text style={styles.value}>{weight} kgs</Text>
+                <Text style={styles.value}>{user?.weight} kgs</Text>
                 <Slider
                     minimumValue={40}
                     maximumValue={150}
                     step={1}
-                    value={weight}
+                    value={typeof user?.weight === 'number' ? user.weight : weight}
                     onValueChange={setWeight}
                     style={styles.slider}
                 />
@@ -57,12 +68,12 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
             {/* Height Section */}
             <View style={styles.section}>
                 <Text style={styles.label}>Current Height</Text>
-                <Text style={styles.value}>{heightValue} cm</Text>
+                <Text style={styles.value}>{user?.height} cm</Text>
                 <Slider
                     minimumValue={100}
                     maximumValue={220}
                     step={1}
-                    value={heightValue}
+                    value={typeof user?.height === 'number' ? user.height : weight}
                     onValueChange={setHeightValue}
                     style={styles.slider}
                 />
@@ -77,14 +88,14 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
                             key={option}
                             style={[
                                 styles.optionButton,
-                                diet === option && styles.selectedOption,
+                                user?.diet === option && styles.selectedOption,
                             ]}
                             onPress={() => handleDietSelect(option)}
                         >
                             <Text
                                 style={[
                                     styles.buttonText,
-                                    diet === option && styles.selectedText,
+                                    user?.diet === option && styles.selectedText,
                                 ]}
                             >
                                 {option}
@@ -103,14 +114,14 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
                             key={level}
                             style={[
                                 styles.optionButton,
-                                activity === level && styles.selectedOption,
+                                user.experience === level && styles.selectedOption,
                             ]}
                             onPress={() => handleActivitySelect(level)}
                         >
                             <Text
                                 style={[
                                     styles.buttonText,
-                                    activity === level && styles.selectedText,
+                                    user.experience === level && styles.selectedText,
                                 ]}
                             >
                                 {level}
@@ -127,7 +138,7 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
                     <TouchableOpacity onPress={() => setStepCount(Math.max(9000, stepCount - 1000))}>
                         <Text style={styles.stepButton}>-</Text>
                     </TouchableOpacity>
-                    <Text style={styles.stepValue}>{stepCount}</Text>
+                    <Text style={styles.stepValue}>{user?.stepgoal}</Text>
                     <TouchableOpacity onPress={() => setStepCount(Math.min(20000, stepCount + 1000))}>
                         <Text style={styles.stepButton}>+</Text>
                     </TouchableOpacity>

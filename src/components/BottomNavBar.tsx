@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Foundation from 'react-native-vector-icons/Foundation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 const { height, width } = Dimensions.get('window');
 
@@ -15,7 +15,7 @@ type BottomNavBarProps = {
 };
 
 const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps) => {
-    const renderTabIcon = (iconName: string, tabName: keyof RootStackParamList) => {
+    const renderTabIcon = (iconName: string, tabName: keyof RootStackParamList, iconType: 'Foundation' | 'FontAwesome5') => {
         const navigateToTab = () => {
             // Ensure correct parameter handling for each tab
             if (tabName === 'WelcomePage') {
@@ -24,7 +24,7 @@ const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps
                     phone_number: 'defaultPhoneNumber',
                     email: 'defaultEmail',
                     password: 'defaultPassword',
-            });
+                });
             } else {
                 navigation.navigate(tabName as any); // Fallback for tabs with no parameters
             }
@@ -44,24 +44,45 @@ const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps
                         activeTab === tabName && styles.activeIconContainer,
                     ]}
                 >
-                    <FontAwesome5
-                        name={iconName}
-                        size={23}
-                        color={activeTab === tabName ? '#0C284D' : '#C4C4C4'}
-                    />
+                    {/* Conditionally render icons from different packs */}
+                    {iconType === 'Foundation' ? (
+                        <Foundation
+                            name={iconName}
+                            size={23}
+                            color={activeTab === tabName ? '#0C284D' : '#C4C4C4'}
+                        />
+                    ) : iconType === 'FontAwesome5' ? (
+                        <FontAwesome5
+                            name={iconName}
+                            size={23}
+                            color={activeTab === tabName ? '#0C284D' : '#C4C4C4'}
+                        />
+                    ) : (
+                        <MaterialIcons
+                            name={iconName}
+                            size={23}
+                            color={activeTab === tabName ? '#0C284D' : '#C4C4C4'}
+                        />
+                    )}
                 </View>
             </TouchableOpacity>
         );
     };
-    
 
     return (
         <View style={styles.bottomNav}>
-            {renderTabIcon('home', 'Home')}
-            {renderTabIcon('apple-alt', 'Login')}
-            {renderTabIcon('running', 'Statistics')}
-            {renderTabIcon('trophy', 'Register')}
-            {renderTabIcon('user', 'Profile')}
+
+            {renderTabIcon('home', 'Home', 'FontAwesome5')}
+
+            {/* Activity Tracker */}
+            {renderTabIcon('running', 'Login', 'FontAwesome5')}
+
+            {renderTabIcon('graph-bar', 'Statistics', 'Foundation')}
+
+            {/* LeaderBoard */}
+            {renderTabIcon('trophy', 'Register', 'FontAwesome5')}
+            
+            {renderTabIcon('user', 'Profile', 'FontAwesome5')}
         </View>
     );
 };
@@ -70,14 +91,14 @@ const styles = StyleSheet.create({
     bottomNav: {
         position: 'absolute',
         bottom: 15,
-        left:10,
-        right:10,
+        left: 10,
+        right: 10,
         height: height * 0.075,
         backgroundColor: '#2c2c2e',
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
-        borderRadius:10,
+        borderRadius: 10,
         elevation: 3,
     },
     navItem: {

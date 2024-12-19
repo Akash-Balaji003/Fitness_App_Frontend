@@ -7,33 +7,90 @@ import {
   TouchableOpacity,
   Dimensions,
   Alert,
+  ActivityIndicator,
+  ToastAndroid,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
 
-import { accelerometer } from "react-native-sensors"; // Import Accelerometer from react-native-sensors
+import FontAwesome from "react-native-vector-icons/FontAwesome";
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../components/BottomNavBar";
-import { useUser } from "../contexts/UserContext";
+
+import { useUser } from '../contexts/UserContext';
 import { useStepCounter } from "../contexts/StepCounterContext"; // Import the StepContext
-import { useFocusEffect } from "@react-navigation/native"; // Import useFocusEffect
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+
 
 const { width, height } = Dimensions.get("window");
 const calculatePercentage = (percentage: number, dimension: number) => (percentage / 100) * dimension;
 
 const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) => {
-    const { user } = useUser();
-    const { stepCount } = useStepCounter();
+
     const [activeTab, setActiveTab] = useState('Home');
+
+    const { user, setUser } = useUser();
+    const { stepCount, setStepCount } = useStepCounter();  // Added setStepCount to update the state
+
+
+    const handleLogout = async () => {
+        try {
+            await AsyncStorage.clear();
+            navigation.navigate('Login'); // Navigate to login screen
+            setUser(null as any); // Clear the userContext
+        } catch (error) {
+            Alert.alert('Error', 'Failed to log out. Please try again.');
+            console.error(error);
+        }
+    };
+
+    const handleRefresh = async () => {
+        try {
+            console.log("Refreshing...");
+    
+            const storedStepCount = await AsyncStorage.getItem('stepCount');
+            console.log("Fetched from AsyncStorage:", storedStepCount);
+    
+            if (storedStepCount) {
+                console.log("Updating step count...");
+                setStepCount(parseInt(storedStepCount)); // Update the stepCount in state
+                console.log("Updated step count:", storedStepCount);
+            } else {
+                console.log("No stored step count found.");
+            }
+            ToastAndroid.show('Refreshing...', ToastAndroid.SHORT);
+        } catch (error) {
+            console.error("Failed to fetch updated step count", error);
+            ToastAndroid.show('Error refreshing try again', ToastAndroid.SHORT);
+        }
+    };
+
+    if (!user) {
+        return (
+            <SafeAreaView style={[styles.container, { justifyContent: 'center' }]}>
+                <ActivityIndicator size="large" color="#ffffff" />
+                <Text style={{ color: "white", textAlign: 'center', marginTop: 10 }}>
+                    Loading...
+                </Text>
+            </SafeAreaView>
+        );
+    }
     
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.greeting}>Welcome {user?.username},</Text>
-                <TouchableOpacity onPress={() => Alert.alert("Notifications clicked")}>
-                    <FontAwesome name="bell-o" size={24} color="white" />
-                </TouchableOpacity>
+                <View style={{flexDirection:"row", gap:30}}>
+                    <TouchableOpacity onPress={handleRefresh}>
+                        <FontAwesome name="refresh" size={24} color="white" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleLogout}>
+                        <MaterialIcons name="logout" size={24} color="white" />
+                    </TouchableOpacity>
+                </View>
             </View>
 
             <View style={styles.stepsSection}>
@@ -42,7 +99,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
                 <Text style={styles.stepsText}>STEPS</Text>
                 </View>
                 <Text style={styles.distance}>5 km</Text>
-                <Text style={styles.goal}>11,200 / 14,000</Text>
+                <Text style={styles.goal}> {stepCount} / {user?.stepgoal}</Text>
             </View>
 
             <View style={styles.leaderboard}>
@@ -131,13 +188,13 @@ const styles = StyleSheet.create({
         opacity: 0.8,
     },
     distance: {
-        fontSize: calculatePercentage(3, width),
+        fontSize: calculatePercentage(4, width),
         color: "white",
         opacity: 0.8,
         marginBottom: calculatePercentage(1, height),
     },
     goal: {
-        fontSize: calculatePercentage(2.5, width),
+        fontSize: calculatePercentage(3.5, width),
         color: "orange",
     },
     leaderboard: {

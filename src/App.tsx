@@ -25,6 +25,7 @@ import { UserProvider } from './contexts/UserContext';
 import { StepCounterProvider, useStepCounter } from './contexts/StepCounterContext';
 import { getUserData } from './tasks/Storage';
 import { ActivityIndicator, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 enableScreens();
@@ -148,6 +149,17 @@ const task = async (taskData?: { delay: number; setStepCount: (count: number) =>
     }
   };
 
+  // Save the updated step count to AsyncStorage
+  const saveStepCount = async () => {
+    try {
+        await AsyncStorage.setItem('stepCount', stepCount.toString());
+        console.log('Step count saved to AsyncStorage:', stepCount);
+    } catch (error) {
+        console.error('Failed to save step count to AsyncStorage', error);
+    }
+  };
+
+
   try {
     // Start accelerometer subscription
     const subscription = accelerometer.subscribe(
@@ -160,6 +172,7 @@ const task = async (taskData?: { delay: number; setStepCount: (count: number) =>
     await new Promise<void>((resolve) => {
       setInterval(() => {
         console.log('Background task still running...');
+        saveStepCount();  // Save the step count whenever it's updated
       }, delay);
     });
 
@@ -240,29 +253,51 @@ const checkAndResetSteps = (userId: string) => {
 };
 
 const AppWrapper = () => {
-    const { setStepCount } = useStepCounter();
-  
+  const { setStepCount } = useStepCounter();
+
     useEffect(() => {
         console.log('AppWrapper useEffect triggered');
-        
-        const fetchUserData = async () => {
-            const userData = await getUserData(); // Fetch all user data (not just user_id)
-            
-            if (userData) {
-                console.log('User Data found:', userData);
-                startBackgroundService(setStepCount);
-                const intervalId = checkAndResetSteps(userData.user_id);  // Use user_id from the fetched data
-                
-                // Clean up the interval when the component unmounts
-                return () => clearInterval(intervalId);
+
+        const loadStepCount = async () => {
+          try {
+            const storedStepCount = await AsyncStorage.getItem('stepCount');
+            if (storedStepCount) {
+              console.log('Step count loaded from AsyncStorage:', storedStepCount);
+              setStepCount(parseInt(storedStepCount)); // Initialize the stepCount
+            } else {
+              console.log('No step count found in AsyncStorage.');
+              setStepCount(0); // Initialize with 0 if no value is found
             }
-        };
+          } catch (error) {
+            console.error('Failed to load step count', error);
+          }
+      };
   
-        fetchUserData(); // Fetch the user data when the component mounts
-    }, []);
-  
-    return null; // No rendering needed here
+      loadStepCount(); // Load the step count on app start
+      
+      const fetchUserData = async () => {
+          const userData = await getUserData(); // Fetch all user data (not just user_id)
+          
+          if (userData) {
+              console.log('User Data found:', userData);
+
+              // Start background service for step counting
+              startBackgroundService(setStepCount);
+
+              // Check and reset steps daily
+              const intervalId = checkAndResetSteps(userData.user_id);  // Use user_id from the fetched data              
+
+              // Clean up the interval when the component unmounts
+              return () => clearInterval(intervalId);
+          }
+      };
+
+      fetchUserData(); // Fetch the user data when the component mounts
+  }, []);
+
+  return null; // No rendering needed here
 };
+
 
 function App(): React.JSX.Element {
 
