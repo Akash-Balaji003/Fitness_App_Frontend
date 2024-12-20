@@ -31,7 +31,7 @@ const WelcomePage = ({ route, navigation }: NativeStackScreenProps<RootStackPara
                     elevate your experience with us.
                 </Text>
                 <TouchableOpacity style={styles.startQuizButton} onPress={navigateNext}>
-                    <Text style={styles.startQuizButtonText}>Start quiz</Text>
+                    <Text style={styles.startQuizButtonText}>Start Journey</Text>
                 </TouchableOpacity>
             </View>
         </View>

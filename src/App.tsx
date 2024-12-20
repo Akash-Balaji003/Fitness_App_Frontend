@@ -3,6 +3,7 @@ import { format } from 'date-fns';  // To format date as YYYY-MM-DD
 
 import BackgroundService from 'react-native-background-actions';
 import { accelerometer } from 'react-native-sensors';
+const { StepCounterModule } = NativeModules;
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { enableScreens } from 'react-native-screens';
@@ -28,7 +29,7 @@ import ActivityHistory from './screens/ActivityHistory';
 import { UserProvider } from './contexts/UserContext';
 import { StepCounterProvider, useStepCounter } from './contexts/StepCounterContext';
 import { getUserData } from './tasks/Storage';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, NativeModules, PermissionsAndroid, Platform, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
@@ -247,7 +248,7 @@ const checkAndResetSteps = (userId: string) => {
     const intervalId = setInterval(() => {
 
         const now = new Date();
-        if (now.getHours() === 23 && now.getMinutes() === 0) {
+        if (now.getHours() === 23 && now.getMinutes() === 50) {
 
             updateStepsAtEndOfDay(userId, stepCount);
             stepCount = 0;  // Reset the step count for the next day
@@ -304,27 +305,90 @@ const AppWrapper = () => {
   return null; // No rendering needed here
 };
 
+const requestPermissions = async () => {
+  if (Platform.OS === 'android') {
+    // Check for Activity Recognition permission
+    const activityRecognitionGranted = await PermissionsAndroid.check(
+      PermissionsAndroid.PERMISSIONS.ACTIVITY_RECOGNITION
+    );
+
+    if (activityRecognitionGranted) {
+      console.log('Activity Recognition permission is already granted.');
+    } else {
+      const activityRecognitionResult = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACTIVITY_RECOGNITION,
+        {
+          title: 'Activity Recognition Permission',
+          message: 'The app needs to track your activity for step counting.',
+          buttonPositive: 'OK',
+        }
+      );
+      console.log(
+        activityRecognitionResult === PermissionsAndroid.RESULTS.GRANTED
+          ? 'Activity Recognition permission granted.'
+          : 'Activity Recognition permission denied.'
+      );
+    }
+
+    // Check for Foreground Service permission (Android 11+)
+    if (Platform.Version >= 30) {
+      const foregroundServiceGranted = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.FOREGROUND_SERVICE
+      );
+
+      if (foregroundServiceGranted) {
+        console.log('Foreground Service permission is already granted.');
+      } else {
+        const foregroundServiceResult = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.FOREGROUND_SERVICE,
+          {
+            title: 'Foreground Service Permission',
+            message: 'The app needs to run in the background to count steps.',
+            buttonPositive: 'OK',
+          }
+        );
+        console.log(
+          foregroundServiceResult === PermissionsAndroid.RESULTS.GRANTED
+            ? 'Foreground Service permission granted.'
+            : 'Foreground Service permission denied.'
+        );
+      }
+    }
+    if (Platform.Version >= 23) {
+      StepCounterModule.requestIgnoreBatteryOptimization()
+        .then((result: any) => {
+          console.log(result);  // Log the result of battery optimization request
+        })
+        .catch((error: any) => {
+          console.log('Error requesting battery optimization:', error);
+        });
+    }
+  }
+};
+
+
 
 function App(): React.JSX.Element {
 
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);  // Will hold login state
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);  // Will hold login state
 
-    useEffect(() => {
-        const checkUserStatus = async () => {
-        const userData = await getUserData();  // Fetch user data
-        setIsLoggedIn(!!userData);  // If user data exists, set logged in to true
-        };
-        
-        checkUserStatus();  // Check on app start
-    }, []);
+  useEffect(() => {
+      requestPermissions();
+      const checkUserStatus = async () => {
+      const userData = await getUserData();  // Fetch user data
+      setIsLoggedIn(!!userData);  // If user data exists, set logged in to true
+      };
+      
+      checkUserStatus();  // Check on app start
+  }, []);
 
-    if (isLoggedIn === null) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <ActivityIndicator size="large" color="#0000ff" />
-            </View>
-          );
-    }
+  if (isLoggedIn === null) {
+      return (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        );
+  }
 
   return (
     <UserProvider>
