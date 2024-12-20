@@ -79,7 +79,7 @@ const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps
             {renderTabIcon('graph-bar', 'Statistics', 'Foundation')}
 
             {/* LeaderBoard */}
-            {renderTabIcon('trophy', 'Register', 'FontAwesome5')}
+            {renderTabIcon('trophy', 'LeaderBoard', 'FontAwesome5')}
             
             {renderTabIcon('user', 'Profile', 'FontAwesome5')}
         </View>

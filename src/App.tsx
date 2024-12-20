@@ -22,6 +22,7 @@ import StepCounterPage from './screens/StepCounterPage';
 import WeightHeightPage from './screens/WeightHeightPage';
 import ActivityTimer from './screens/ActivityTimer';
 import ActivityHistory from './screens/ActivityHistory';
+import LeaderBoard from './screens/LeaderBoard';
 
 
 
@@ -29,7 +30,7 @@ import ActivityHistory from './screens/ActivityHistory';
 import { UserProvider } from './contexts/UserContext';
 import { StepCounterProvider, useStepCounter } from './contexts/StepCounterContext';
 import { getUserData } from './tasks/Storage';
-import { ActivityIndicator, NativeModules, PermissionsAndroid, Platform, View } from 'react-native';
+import { ActivityIndicator, Alert, NativeModules, PermissionsAndroid, Platform, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
@@ -97,6 +98,7 @@ export type RootStackParamList = {
     Statistics: undefined;
     ActivityTimer: undefined;
     ActivityHistory: undefined;
+    LeaderBoard: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -366,14 +368,16 @@ const requestPermissions = async () => {
   }
 };
 
-
-
 function App(): React.JSX.Element {
 
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);  // Will hold login state
 
   useEffect(() => {
       requestPermissions();
+      Alert.alert(
+        "Important Notice",
+        "To ensure proper functionality, please enable background activity for this app in your Battery Settings. After making the change, restart the app."
+      );
       const checkUserStatus = async () => {
       const userData = await getUserData();  // Fetch user data
       setIsLoggedIn(!!userData);  // If user data exists, set logged in to true
@@ -409,6 +413,7 @@ function App(): React.JSX.Element {
                 <Stack.Screen name="StepCounterPage" component={StepCounterPage} options={{ headerShown: false }} />
                 <Stack.Screen name="ActivityTimer" component={ActivityTimer} options={{ headerShown: false }} />
                 <Stack.Screen name="ActivityHistory" component={ActivityHistory} options={{ headerShown: false }} />
+                <Stack.Screen name="LeaderBoard" component={LeaderBoard} options={{ headerShown: false }} />
             </Stack.Navigator>
             </NavigationContainer>
         </StepCounterProvider>

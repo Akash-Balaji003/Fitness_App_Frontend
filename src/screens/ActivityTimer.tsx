@@ -22,6 +22,7 @@ const calculatePercentage = (percentage: number, dimension: number) =>
     (percentage / 100) * dimension;
 
 const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'ActivityTimer'>) => {
+    const [activeTab, setActiveTab] = useState('ActivityTimer');
     const AnimatedCircle = Animated.createAnimatedComponent(Circle);
     const [activity, setActivity] = useState("WALKING");
     const [duration, setDuration] = useState(0); // Timer in seconds
@@ -101,12 +102,12 @@ const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.topbar}>
-                <Text style={[styles.title, {textAlign:'center', padding:15}]}>Activity Tracker</Text>
+                <Text style={[styles.title, {textAlign:'center', padding:10}]}>Activity Tracker</Text>
                 <View style={{flexDirection:'row', justifyContent:'space-between', paddingHorizontal:calculatePercentage(2, width), gap:2}}>
-                    <TouchableOpacity style={[styles.navbarButton, {backgroundColor: "#E37D00"}]}>
+                    <TouchableOpacity style={[styles.navbarButton]} disabled={true}>
                         <Text style={[{textAlign:'center',color: "white", fontSize: calculatePercentage(6, width),}]}>Timer</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.navbarButton} onPress={() => navigation.navigate("ActivityHistory")}>
+                    <TouchableOpacity style={[styles.activeNavbarButton, {backgroundColor:"#2c2c2e"}]} onPress={() => navigation.navigate("ActivityHistory")}>
                         <Text style={[{textAlign:'center',color: "white", fontSize: calculatePercentage(6, width),}]}>History</Text>
                     </TouchableOpacity>
                 </View>
@@ -176,15 +177,16 @@ const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList
             {/* Bottom Navigation Bar */}
             <BottomNavBar
                 navigation={navigation}
-                activeTab="ActivityStart"
-                setActiveTab={() => {}}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
             />
         </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
-    navbarButton:{backgroundColor: "#2c2c2e", height: calculatePercentage(6, height), width:'49%', justifyContent:"center", borderTopRightRadius:5, borderTopLeftRadius:5 },
+    navbarButton:{backgroundColor: "#1c1c1e", height: calculatePercentage(6, height), width:'49%', justifyContent:"center", borderTopRightRadius:5, borderTopLeftRadius:5 },
+    activeNavbarButton:{backgroundColor: "#1c1c1e", height: calculatePercentage(6, height), width:'49%', justifyContent:"center", borderRadius:5 },
     container: {
         flex: 1,
         backgroundColor: "#1c1c1e",
@@ -199,9 +201,10 @@ const styles = StyleSheet.create({
         marginBottom: calculatePercentage(3, height),
     },
     topbar:{
-        height: calculatePercentage(13, height),
+        height: calculatePercentage(12.5, height),
         justifyContent:'space-between',
-        marginBottom: calculatePercentage(5, height),
+        marginBottom: calculatePercentage(4, height),
+        backgroundColor:"#3C3D37"
     },
     title: {
         color: "white",

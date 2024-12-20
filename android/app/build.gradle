@@ -92,6 +92,14 @@ android {
         ]
     }
     signingConfigs {
+        release {
+         if (project.hasProperty('MY_RELEASE_KEYSTORE')) {
+           storeFile file(MY_RELEASE_KEYSTORE)
+           storePassword MY_RELEASE_KEYSTORE_PASSWORD
+           keyAlias MY_RELEASE_KEY_ALIAS
+           keyPassword MY_RELEASE_KEY_PASSWORD
+         }
+       }
         debug {
             storeFile file('debug.keystore')
             storePassword 'android'
