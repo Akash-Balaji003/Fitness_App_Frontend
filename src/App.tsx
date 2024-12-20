@@ -19,6 +19,10 @@ import DietaryPreference from './screens/DietaryPreference';
 import GenderDOBPage from './screens/GenderDOBPage';
 import StepCounterPage from './screens/StepCounterPage';
 import WeightHeightPage from './screens/WeightHeightPage';
+import ActivityTimer from './screens/ActivityTimer';
+import ActivityHistory from './screens/ActivityHistory';
+
+
 
 
 import { UserProvider } from './contexts/UserContext';
@@ -90,6 +94,8 @@ export type RootStackParamList = {
     Home: undefined;
     Profile: undefined;
     Statistics: undefined;
+    ActivityTimer: undefined;
+    ActivityHistory: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -337,6 +343,8 @@ function App(): React.JSX.Element {
                 <Stack.Screen name="GenderDOBPage" component={GenderDOBPage} options={{ headerShown: false }} />
                 <Stack.Screen name="WeightHeightPage" component={WeightHeightPage} options={{ headerShown: false }} />
                 <Stack.Screen name="StepCounterPage" component={StepCounterPage} options={{ headerShown: false }} />
+                <Stack.Screen name="ActivityTimer" component={ActivityTimer} options={{ headerShown: false }} />
+                <Stack.Screen name="ActivityHistory" component={ActivityHistory} options={{ headerShown: false }} />
             </Stack.Navigator>
             </NavigationContainer>
         </StepCounterProvider>

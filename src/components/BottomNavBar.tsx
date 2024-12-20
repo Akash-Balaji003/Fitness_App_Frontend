@@ -74,8 +74,7 @@ const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps
 
             {renderTabIcon('home', 'Home', 'FontAwesome5')}
 
-            {/* Activity Tracker */}
-            {renderTabIcon('running', 'Login', 'FontAwesome5')}
+            {renderTabIcon('running', 'ActivityTimer', 'FontAwesome5')}
 
             {renderTabIcon('graph-bar', 'Statistics', 'Foundation')}
 
