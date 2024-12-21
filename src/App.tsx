@@ -23,9 +23,8 @@ import WeightHeightPage from './screens/WeightHeightPage';
 import ActivityTimer from './screens/ActivityTimer';
 import ActivityHistory from './screens/ActivityHistory';
 import LeaderBoard from './screens/LeaderBoard';
-
-
-
+import Friends from './screens/Friends';
+import EditProfile from './screens/EditProfile';
 
 import { UserProvider } from './contexts/UserContext';
 import { StepCounterProvider, useStepCounter } from './contexts/StepCounterContext';
@@ -99,6 +98,8 @@ export type RootStackParamList = {
     ActivityTimer: undefined;
     ActivityHistory: undefined;
     LeaderBoard: undefined;
+    Friends: undefined;
+    EditProfile: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -372,18 +373,54 @@ function App(): React.JSX.Element {
 
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);  // Will hold login state
 
+  const handleDoNotAskAgain = () => {
+    // Update AsyncStorage to disable future alerts
+    AsyncStorage.setItem('showImportantNotice', 'false')
+      .then(() => {
+        console.log('User chose not to show the alert again.');
+      })
+      .catch((error) => {
+        console.error('Error updating AsyncStorage:', error);
+      });
+  };  
+
   useEffect(() => {
-      requestPermissions();
-      Alert.alert(
-        "Important Notice",
-        "To ensure proper functionality, please enable background activity for this app in your Battery Settings. After making the change, restart the app."
-      );
-      const checkUserStatus = async () => {
-      const userData = await getUserData();  // Fetch user data
-      setIsLoggedIn(!!userData);  // If user data exists, set logged in to true
-      };
-      
-      checkUserStatus();  // Check on app start
+    // Check if the alert has been shown before
+    AsyncStorage.getItem('showImportantNotice')
+      .then((showNotice) => {
+        if (showNotice === null || showNotice === 'true') {
+          // Show the alert
+          Alert.alert(
+            'Important Notice',
+            'To ensure proper functionality, please enable background activity for this app in your Battery Settings. After making the change, restart the app.',
+            [
+              { text: 'OK', onPress: () => {} },
+              { text: 'Do not ask me again', onPress: handleDoNotAskAgain },
+            ],
+            { cancelable: false }
+          );
+
+          // Update the value in AsyncStorage to prevent showing it again
+          if (showNotice === null) {
+            AsyncStorage.setItem('showImportantNotice', 'true');
+          }
+        }
+      })
+      .catch((error) => {
+        console.error('Error reading AsyncStorage:', error);
+      });
+
+    // Request permissions (if required)
+    requestPermissions();
+
+    // Check user login status
+    getUserData()
+      .then((userData) => {
+        setIsLoggedIn(!!userData); // Update the login state
+      })
+      .catch((error) => {
+        console.error('Error fetching user data:', error);
+      });
   }, []);
 
   if (isLoggedIn === null) {
@@ -414,6 +451,8 @@ function App(): React.JSX.Element {
                 <Stack.Screen name="ActivityTimer" component={ActivityTimer} options={{ headerShown: false }} />
                 <Stack.Screen name="ActivityHistory" component={ActivityHistory} options={{ headerShown: false }} />
                 <Stack.Screen name="LeaderBoard" component={LeaderBoard} options={{ headerShown: false }} />
+                <Stack.Screen name="Friends" component={Friends} options={{ headerShown: false }} />
+                <Stack.Screen name="EditProfile" component={EditProfile} options={{ headerShown: false }} />
             </Stack.Navigator>
             </NavigationContainer>
         </StepCounterProvider>

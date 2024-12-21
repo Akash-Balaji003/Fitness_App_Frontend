@@ -1,37 +1,116 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
-import Slider from '@react-native-community/slider';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import BottomNavBar from '../components/BottomNavBar';
-import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React, { useEffect, useState } from 'react';
+import {
+  SafeAreaView,
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+  ActivityIndicator,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome'; // Import FontAwesome for icons
+import { RootStackParamList } from '../App';
+import BottomNavBar from '../components/BottomNavBar';
+import { BarChart } from 'react-native-chart-kit';
+import { getUserData } from '../tasks/Storage';
 import { useUser } from '../contexts/UserContext';
 
-const { width, height } = Dimensions.get("window");
+interface WeeklyData {
+    labels: string[];
+    steps: number[];
+}
 
-// Helper function for percentage-based sizing
-const wp = (percentage: number) => (width * percentage) / 100;
-const hp = (percentage: number) => (height * percentage) / 100;
+interface ProcessedData {
+    labels: string[];
+    steps: number[];
+}
 
-const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Profile'>) => {
+const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Profile">) => {
     const { user } = useUser();
-
+    const [userData, setUserData] = useState<any>(null);  // State to store the fetched user data
+    const [stepData, setStepData] = useState<ProcessedData | undefined>(undefined);
     const [activeTab, setActiveTab] = useState('Profile');
-    const [weight, setWeight] = useState(60); // Default weight
-    const [heightValue, setHeightValue] = useState(150); // Default height
-    const [diet, setDiet] = useState('Paleo');
-    const [activity, setActivity] = useState('Moderate');
-    const [stepCount, setStepCount] = useState(10000);
 
-    const dietaryOptions = ['Vegetarian', 'Non-veg', 'Vegan', 'Dairy-free', 'Gluten-free', 'Paleo'];
-    const activityLevels = ['Sedentary', 'Moderate', 'Active'];
+    const fetchUserData = async () => {
 
-    const handleDietSelect = (option: string) => setDiet(option);
-    const handleActivitySelect = (level: string) => setActivity(level);
+        const data = await getUserData(); // Fetch all user data
 
-    if (!user) {
+        if (data) {
+            console.log('User Data found:', data);
+            setUserData(data); // Store user data in state
+        }
+    };
+
+    const processWeeklyData = (rawData: WeeklyData): ProcessedData => {
+        const fullWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const stepsByDay: Record<string, number> = {};
+    
+        // Ensure rawData has labels and steps before proceeding
+        if (!rawData.labels || !rawData.steps) {
+            console.error("Missing labels or steps in the data.");
+            return {
+                labels: fullWeek,
+                steps: new Array(7).fill(0), // Default to 0 steps for each day
+            };
+        }
+    
+        rawData.labels.forEach((day, index) => {
+            stepsByDay[day] = rawData.steps[index];
+        });
+    
+        const processedSteps = fullWeek.map((day) => stepsByDay[day] || 0);
+    
+        return {
+            labels: fullWeek,
+            steps: processedSteps,
+        };
+    };
+
+    useEffect(() => {
+        // First fetch user data
+        fetchUserData();
+    }, []);
+    
+
+    useEffect(() => {
+        // Fetch weekly data once user data is available
+        const fetchWeeklyData = async () => {
+          if (!userData?.user_id) {
+            console.error('User ID is missing!');
+            return;
+          }
+    
+          try {
+            console.log("Fetching weekly data for user ID:", userData.user_id);
+            const response = await fetch(
+              `https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/weekly-steps?id=${userData.user_id}`
+            );
+            const rawData: WeeklyData = await response.json(); // Cast the response data
+            console.log('rawData: ', rawData);
+    
+            const processedData = processWeeklyData(rawData);
+            setStepData(processedData);
+          } catch (error) {
+            console.error('Error fetching weekly data:', error);
+          }
+        };
+    
+        if (userData) {
+          fetchWeeklyData(); // Fetch weekly data once user data is available
+        }
+    }, [userData]); // Triggered when userData changes
+
+
+    const calculateAverageSteps = (steps: number[]): number => {
+        const totalSteps = steps.reduce((acc, curr) => acc + curr, 0);
+        return totalSteps / steps.length;
+    };
+    if (!stepData) {
         return (
-            <SafeAreaView style={[styles.container, { justifyContent: 'center' }]}>
+            <SafeAreaView style={[{ justifyContent: 'center', flex: 1, padding: 10, backgroundColor: '#2B2B2B' }]}>
                 <ActivityIndicator size="large" color="#ffffff" />
                 <Text style={{ color: "white", textAlign: 'center', marginTop: 10 }}>
                     Loading...
@@ -39,205 +118,243 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
             </SafeAreaView>
         );
     }
+    const averageSteps = calculateAverageSteps(stepData.steps);
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.scrollView}>
+        <View style={styles.container}>
+          {/* Header */}
+          <Text style={styles.headerText}>YOUR PROFILE</Text>
 
-    return (
-        <SafeAreaView style={styles.container}>
-            {/* Profile Header */}
-            <View style={styles.profileHeader}>
-                <View>
-                    <Text style={styles.userName}>{user?.username}</Text>
-                    <Text style={styles.userName}>{user?.email}</Text>
-                </View>
-                <View style={styles.avatarPlaceholder} />
+          {/* Top Section (Profile Picture and Info) */}
+          <View style={styles.topSection}>
+            <View style={styles.imageWrapper}>
+              <Image
+                source={{ uri: 'https://via.placeholder.com/100' }} // Replace with the actual image URL
+                style={styles.profileImage}
+              />
+              <TouchableOpacity style={styles.editIcon}>
+                {/* Changed to pencil icon */}
+                <Icon name="pencil" size={20} color="#fff" />
+              </TouchableOpacity>
             </View>
+            <View style={styles.basicInfo}>
+              <Text style={styles.nameText}>{user?.username}</Text>
+              <Text style={styles.genderText}>MALE</Text>
+              <TouchableOpacity style={styles.editButton} onPress={()=> navigation.navigate("EditProfile")}>
+                <Text style={styles.editButtonText}>Edit Details</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
 
-            {/* Weight Section */}
-            <View style={styles.section}>
-                <Text style={styles.label}>Current Weight</Text>
-                <Text style={styles.value}>{user?.weight} kgs</Text>
-                <Slider
-                    minimumValue={40}
-                    maximumValue={150}
-                    step={1}
-                    value={typeof user?.weight === 'number' ? user.weight : weight}
-                    onValueChange={setWeight}
-                    style={styles.slider}
+          {/* Information Section */}
+          <View style={styles.infoContainer}>
+            <InfoItem icon="phone" text={user?.phone_number || "NULL"} />
+            <InfoItem icon="envelope" text={user?.email || "NULL"} />
+            <InfoItem icon="calendar" text="00-00-2004" />
+            <InfoItem icon="leaf" text={user?.diet || "NULL"} />
+
+            {/* Height, Weight, and BMI in one row with spacing */}
+            <View style={styles.inlineInfo}>
+              <InfoItem icon="arrows-v" text={user?.height || "NULL"} style={styles.inlineInfoItem} />
+              {/* Replaced icon with letter "W" for Weight */}
+              <View style={[styles.infoItem, styles.inlineInfoItem]}>
+                <Text style={styles.icon}>W</Text>
+                <Text style={styles.infoText}>{user?.weight} kg</Text>
+              </View>
+              {/* Removed icon for BMI */}
+              <View style={[styles.infoItem, styles.inlineInfoItem]}>
+                <Text style={styles.infoText}>BMI: 19.3</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Graph Section */}
+          <View style={styles.graphSection}>
+            <Text style={styles.graphTitle}>Overall Progress</Text>
+            <View style={styles.graphContainer}>
+                <Text style={styles.cardTitle}>Step Count</Text>
+                <Text style={styles.averageText}>AVERAGE</Text>
+                <Text style={styles.highlightText}>{averageSteps.toFixed(0)} Steps</Text>
+                <BarChart
+                    data={{
+                        labels: stepData.labels, // Full week labels
+                        datasets: [{ data: stepData.steps }], // Full week steps
+                    }}
+                    width={Dimensions.get('window').width - 40}
+                    height={180}
+                    chartConfig={{
+                        backgroundGradientFrom: '#2E2C2C',
+                        backgroundGradientTo: '#1F1F1F',
+                        color: (opacity = 1) => `rgba(255, 153, 51, ${opacity})`,
+                        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                        barPercentage: 0.7,
+                        formatYLabel: (yLabel) => parseInt(yLabel).toString(),
+                    }}
+                    style={styles.chart}
+                    yAxisLabel=""
+                    yAxisSuffix=""
                 />
             </View>
-
-            {/* Height Section */}
-            <View style={styles.section}>
-                <Text style={styles.label}>Current Height</Text>
-                <Text style={styles.value}>{user?.height} cm</Text>
-                <Slider
-                    minimumValue={100}
-                    maximumValue={220}
-                    step={1}
-                    value={typeof user?.height === 'number' ? user.height : weight}
-                    onValueChange={setHeightValue}
-                    style={styles.slider}
-                />
-            </View>
-
-            {/* Dietary Preferences */}
-            <View style={styles.section}>
-                <Text style={styles.label}>Dietary Preferences</Text>
-                <View style={styles.buttonContainer}>
-                    {dietaryOptions.map((option) => (
-                        <TouchableOpacity
-                            key={option}
-                            style={[
-                                styles.optionButton,
-                                user?.diet === option && styles.selectedOption,
-                            ]}
-                            onPress={() => handleDietSelect(option)}
-                        >
-                            <Text
-                                style={[
-                                    styles.buttonText,
-                                    user?.diet === option && styles.selectedText,
-                                ]}
-                            >
-                                {option}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            </View>
-
-            {/* Activity Level */}
-            <View style={styles.section}>
-                <Text style={styles.label}>Activity Level</Text>
-                <View style={styles.buttonContainer}>
-                    {activityLevels.map((level) => (
-                        <TouchableOpacity
-                            key={level}
-                            style={[
-                                styles.optionButton,
-                                user.experience === level && styles.selectedOption,
-                            ]}
-                            onPress={() => handleActivitySelect(level)}
-                        >
-                            <Text
-                                style={[
-                                    styles.buttonText,
-                                    user.experience === level && styles.selectedText,
-                                ]}
-                            >
-                                {level}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            </View>
-
-            {/* Step Count */}
-            <View style={styles.bottomSection}>
-                <Text style={styles.label}>Daily Step Count</Text>
-                <View style={styles.stepContainer}>
-                    <TouchableOpacity onPress={() => setStepCount(Math.max(9000, stepCount - 1000))}>
-                        <Text style={styles.stepButton}>-</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.stepValue}>{user?.stepgoal}</Text>
-                    <TouchableOpacity onPress={() => setStepCount(Math.min(20000, stepCount + 1000))}>
-                        <Text style={styles.stepButton}>+</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        <BottomNavBar
+          </View>
+        </View>
+      </ScrollView>
+      <BottomNavBar
             navigation={navigation}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
         />
-        </SafeAreaView>
-    );
+    </SafeAreaView>
+  );
 };
 
-export default EditProfile;
+const InfoItem: React.FC<{ icon: string; text: string; style?: any }> = ({ icon, text, style }) => (
+    <View style={[styles.infoItem, style]}>
+      {/* Dynamically render icons */}
+      <Icon name={icon} size={18} color="#f7941d" style={styles.icon} />
+      <Text style={styles.infoText}>{text}</Text>
+    </View>
+  );
+  
 
-// Styles
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#1c1c1e",
-        paddingHorizontal: wp(5),
-        paddingTop: hp(1),
-    },
-    profileHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginVertical: hp(2),
-    },
-    avatarPlaceholder: {
-        width: wp(20),
-        height: wp(20),
-        borderRadius: wp(10),
-        backgroundColor: 'grey',
-    },
-    userName: {
-        fontSize: wp(5),
-        fontWeight: 'bold',
-        color: '#FFF',
-        marginTop: hp(1),
-    },
-    section: {
-        marginVertical: hp(2),
-    },
-    bottomSection: {
-        marginVertical: hp(2),
-        marginBottom: 100
-    },
-    label: {
-        fontSize: wp(4.2),
-        color: '#AAA',
-        marginBottom: hp(1),
-    },
-    value: {
-        fontSize: wp(5),
-        fontWeight: 'bold',
-        color: '#F0A500',
-        textAlign: 'center',
-    },
-    slider: {
-        marginTop: hp(1),
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-    },
-    optionButton: {
-        backgroundColor: '#333',
-        paddingVertical: hp(1.2),
-        marginVertical: hp(0.5),
-        borderRadius: wp(2),
-        width: '30%',
-        alignItems: 'center',
-    },
-    selectedOption: {
-        backgroundColor: '#F0A500',
-    },
-    buttonText: {
-        color: '#FFF',
-        fontSize: wp(3.5),
-    },
-    selectedText: {
-        color: '#000',
-        fontWeight: 'bold',
-    },
-    stepContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    stepButton: {
-        fontSize: wp(8),
-        color: '#F0A500',
-        marginHorizontal: wp(5),
-    },
-    stepValue: {
-        fontSize: wp(6),
-        color: '#FFF',
-        fontWeight: 'bold',
-    },
+
+    card: { backgroundColor: '#3A3A3A', padding: 5, borderRadius: 10, marginBottom:'auto', marginTop:'auto', height:190 },
+    BottomCard: { backgroundColor: '#3A3A3A', padding: 5, borderRadius: 10, marginBottom: 100 },
+    cardTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold', marginBottom: 5 },
+    chart: { borderRadius: 10, marginTop: 10, marginRight:0, },
+    text: { color: '#BBBBBB', fontSize: 14, marginTop: 5 },
+    highlightText: { color: '#FF9933', fontSize: 16, fontWeight: 'bold' },
+    averageText: { color: '#BBBBBB', fontSize: 12, marginTop: 5 },
+    subtitle: { color: '#BBBBBB', fontSize: 12, marginTop: 5 },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#1c1c1e', // Updated background color
+  },
+  scrollView: {
+    flexGrow: 1,
+    paddingBottom: 80, // Adjust padding to accommodate content
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 15,
+  },
+  headerText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  topSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    marginLeft:10
+  },
+  imageWrapper: {
+    position: 'relative',
+    width: 120,
+    height: 120,
+    marginRight: 20,
+  },
+  profileImage: {
+    width: '90%',
+    height: '90%',
+    borderRadius: 60,
+  },
+  editIcon: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    backgroundColor: '#f7941d',
+    borderRadius: 30,
+    padding: 7,
+  },
+  basicInfo: {
+    flex: 1,
+  },
+  nameText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  genderText: {
+    fontSize: 14,
+    color: '#aaa',
+    marginBottom: 10,
+  },
+  editButton: {
+    backgroundColor: '#f7941d',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    alignSelf: 'flex-start',
+  },
+  editButtonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  infoContainer: {
+    marginBottom: 5,
+    paddingHorizontal: 15,
+
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#444',
+    paddingVertical: 13,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  inlineInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 1,
+    paddingHorizontal: 1,
+    gap:5
+  },
+  inlineInfoItem: {
+    flex: 1,
+    marginHorizontal: 1,
+  },
+  icon: {
+    fontSize: 18,
+    color: '#f7941d',
+    marginRight: 10,
+  },
+  infoText: {
+    fontSize: 13,
+    color: '#fff',
+  },
+  graphSection: {
+    marginTop: 5,
+  },
+  graphTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  graphContainer: {
+    height: 275,
+    width: "98%",
+    backgroundColor: '#444',
+    borderRadius: 10,
+    paddingLeft:5,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    alignSelf:"center"
+  },
+  graphPlaceholderText: {
+    color: '#aaa',
+    fontSize: 14,
+  },
 });
+
+export default ProfileScreen;

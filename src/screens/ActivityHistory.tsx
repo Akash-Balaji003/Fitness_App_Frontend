@@ -23,7 +23,6 @@ const calculatePercentage = (percentage: number, dimension: number) =>
 
 const ActivityHistory = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'ActivityHistory'>) => {
     const [activeTab, setActiveTab] = useState('ActivityTimer');
-    const AnimatedCircle = Animated.createAnimatedComponent(Circle);
     const [activity, setActivity] = useState("WALKING");
     const [duration, setDuration] = useState(0); // Timer in seconds
     const [isPlaying, setIsPlaying] = useState(false);
