@@ -15,7 +15,6 @@ import Icon from 'react-native-vector-icons/FontAwesome'; // Import FontAwesome 
 import { RootStackParamList } from '../App';
 import BottomNavBar from '../components/BottomNavBar';
 import { BarChart } from 'react-native-chart-kit';
-import { getUserData } from '../tasks/Storage';
 import { useUser } from '../contexts/UserContext';
 
 interface WeeklyData {
@@ -30,19 +29,8 @@ interface ProcessedData {
 
 const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Profile">) => {
     const { user } = useUser();
-    const [userData, setUserData] = useState<any>(null);  // State to store the fetched user data
     const [stepData, setStepData] = useState<ProcessedData | undefined>(undefined);
     const [activeTab, setActiveTab] = useState('Profile');
-
-    const fetchUserData = async () => {
-
-        const data = await getUserData(); // Fetch all user data
-
-        if (data) {
-            console.log('User Data found:', data);
-            setUserData(data); // Store user data in state
-        }
-    };
 
     const processWeeklyData = (rawData: WeeklyData): ProcessedData => {
         const fullWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -68,25 +56,19 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
             steps: processedSteps,
         };
     };
-
-    useEffect(() => {
-        // First fetch user data
-        fetchUserData();
-    }, []);
     
-
     useEffect(() => {
         // Fetch weekly data once user data is available
         const fetchWeeklyData = async () => {
-          if (!userData?.user_id) {
+          if (!user?.user_id) {
             console.error('User ID is missing!');
             return;
           }
     
           try {
-            console.log("Fetching weekly data for user ID:", userData.user_id);
+            console.log("Fetching weekly data for user ID:", user?.user_id);
             const response = await fetch(
-              `https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/weekly-steps?id=${userData.user_id}`
+              `https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/weekly-steps?id=${user?.user_id}`
             );
             const rawData: WeeklyData = await response.json(); // Cast the response data
             console.log('rawData: ', rawData);
@@ -98,10 +80,10 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
           }
         };
     
-        if (userData) {
+        if (user) {
           fetchWeeklyData(); // Fetch weekly data once user data is available
         }
-    }, [userData]); // Triggered when userData changes
+    }, [user]); // Triggered when userData changes
 
 
     const calculateAverageSteps = (steps: number[]): number => {

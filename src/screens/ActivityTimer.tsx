@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     Dimensions,
     Animated,
+    ToastAndroid,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -121,14 +122,18 @@ const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList
             if (response.ok) {
                 const data = await response.json();
                 console.log("Activity stored successfully:", data.message);
+                ToastAndroid.show('Activity stored successfully', ToastAndroid.SHORT);
                 
             } else {
                 const errorData = await response.json();
                 console.error("Error storing activity:", errorData.detail);
+                ToastAndroid.show('"Error storing activity', ToastAndroid.SHORT);
+
                 
             }
         } catch (error) {
             console.error("Request failed:", error);
+            ToastAndroid.show('Failed to connect to the server. Please try again later.', ToastAndroid.SHORT);
             
         }
 
