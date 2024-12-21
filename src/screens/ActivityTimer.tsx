@@ -10,23 +10,26 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Entypo from "react-native-vector-icons/Entypo";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import Feather from "react-native-vector-icons/Feather";
 import BottomNavBar from "../components/BottomNavBar";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
 import Svg, { Circle } from "react-native-svg";
+import { useUser } from "../contexts/UserContext";
 
 const { width, height } = Dimensions.get("window");
 const calculatePercentage = (percentage: number, dimension: number) =>
     (percentage / 100) * dimension;
 
 const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'ActivityTimer'>) => {
+    const { user } = useUser();
+
     const [activeTab, setActiveTab] = useState('ActivityTimer');
     const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-    const [activity, setActivity] = useState("WALKING");
-    const [duration, setDuration] = useState(0); // Timer in seconds
+    const [user_activity, setActivity] = useState("WALKING");
+    const [user_duration, setDuration] = useState(0); // Timer in seconds
     const [isPlaying, setIsPlaying] = useState(false);
+    const [formattedTime, setFormattedTime] = useState("00:00:00");
 
     const progress = useRef(new Animated.Value(0)).current; // This will control the progress
 
@@ -52,28 +55,36 @@ const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList
         if (isPlaying) {
             // Animate progress based on time
             Animated.timing(progress, {
-                toValue:  duration/60, // Adjust the duration limit as needed (e.g., 300 seconds for 5 minutes)
+                toValue:  user_duration/60, // Adjust the duration limit as needed (e.g., 300 seconds for 5 minutes)
                 duration: 1000, // Update every second
                 useNativeDriver: false,
             }).start();
         } else {
         }
-    }, [isPlaying, duration]);
+    }, [isPlaying, user_duration]);
 
     // Convert seconds to "HH:MM:SS"
     const formatTime = (seconds: number) => {
         const hrs = Math.floor(seconds / 3600);
         const mins = Math.floor((seconds % 3600) / 60);
         const secs = seconds % 60;
-        return `${hrs.toString().padStart(2, "0")}:${mins
+        const formattedString = `${hrs.toString().padStart(2, "0")}:${mins
             .toString()
             .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+        
+          // Return the formatted string variable
+
+        return formattedString;
     };
+
+    useEffect(() => {
+        setFormattedTime(formatTime(user_duration));
+    }, [user_duration]);
 
     // Handle activity switching
     const handleArrowPress = (direction: string) => {
-        const activities = ["WALKING", "RUNNING", "CYCLING"];
-        const currentIndex = activities.indexOf(activity);
+        const activities = ["WALKING", "RUNNING", "CYCLING", "SWIMMING"];
+        const currentIndex = activities.indexOf(user_activity);
         const nextIndex =
             direction === "left"
                 ? (currentIndex - 1 + activities.length) % activities.length
@@ -86,6 +97,41 @@ const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList
     };
 
     const handleStop = () => {
+        setIsPlaying(false);
+        setDuration(0); // Reset timer
+        progress.setValue(0); // Reset animation
+    };
+
+    const handleSubmit = async () => {
+
+        // Call API and store in DB
+        try {
+            const response = await fetch('https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/store-activity', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    activity: user_activity,  // or 'RUNNING', 'CYCLING', etc.
+                    duration: user_duration,       // Duration in seconds
+                    user_id: user?.user_id
+                }), // The activity data to be sent in the body
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Activity stored successfully:", data.message);
+                
+            } else {
+                const errorData = await response.json();
+                console.error("Error storing activity:", errorData.detail);
+                
+            }
+        } catch (error) {
+            console.error("Request failed:", error);
+            
+        }
+
         setIsPlaying(false);
         setDuration(0); // Reset timer
         progress.setValue(0); // Reset animation
@@ -118,7 +164,7 @@ const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList
                     <TouchableOpacity onPress={() => handleArrowPress("left")}>
                         <Entypo name="arrow-left" size={24} color="white" />
                     </TouchableOpacity>
-                    <Text style={styles.title}>{activity}</Text>
+                    <Text style={styles.title}>{user_activity}</Text>
                     <TouchableOpacity onPress={() => handleArrowPress("right")}>
                         <Entypo name="arrow-right" size={24} color="white" />
                     </TouchableOpacity>
@@ -154,13 +200,16 @@ const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList
                                     fontSize: calculatePercentage(7, width),
                                 }]}
                             >
-                                {formatTime(duration)} {/* Update this with dynamic time */}
+                                {formatTime(user_duration)} {/* Update this with dynamic time */}
                             </Text>
                         </Svg>
                 </View>
 
                 {/* Controls */}
                 <View style={styles.controlsContainer}>
+                    <TouchableOpacity style={styles.stopButton} onPress={handleStop}>
+                        <FontAwesome name="stop" size={24} color="white" style={{textAlign:'center'}}/>
+                    </TouchableOpacity>
                     <TouchableOpacity style={styles.playPauseButton} onPress={handlePlayPause}>
                         <FontAwesome
                             name={isPlaying ? "pause" : "play"}
@@ -169,8 +218,13 @@ const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList
                             style={{textAlign:'center'}}
                         />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.stopButton} onPress={handleStop}>
-                        <FontAwesome name="stop" size={24} color="white" style={{textAlign:'center'}}/>
+                    <TouchableOpacity style={[styles.playPauseButton, { backgroundColor: formattedTime === '00:00:00' ? 'black' : 'green' }]} onPress={handleSubmit} disabled={formattedTime === '00:00:00'}>
+                        <Feather
+                            name={"check"}
+                            size={30}
+                            color="white"
+                            style={{textAlign:'center'}}
+                        />
                     </TouchableOpacity>
                 </View>
             </View>
