@@ -53,7 +53,8 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 weight: data.weight,
                 email: data.email,
                 experience: data.experience,
-                stepgoal: data.stepgoal
+                stepgoal: data.stepgoal,
+                gender: data.gender
             });
 
 
@@ -66,7 +67,8 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 weight: data.weight,
                 email: data.email,
                 experience: data.experience,
-                stepgoal: data.stepgoal
+                stepgoal: data.stepgoal,
+                gender: data.gender
             });
 
             navigation.navigate("Home");

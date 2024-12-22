@@ -32,7 +32,8 @@ export const saveUserData = async (userData: {
     weight: number;
     email: string;
     experience: string,
-    stepgoal: number
+    stepgoal: number,
+    gender: string
 }) => {
     try {
         await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(userData));

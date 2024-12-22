@@ -7,11 +7,12 @@ interface User {
     username: string;
     phone_number: string;
     diet: string;
-    height: string;
-    weight: string;
+    height: number;
+    weight: number;
     email: string;
     experience: string;
     stepgoal: number;
+    gender: string;
 }
 
 // Define the shape of the context

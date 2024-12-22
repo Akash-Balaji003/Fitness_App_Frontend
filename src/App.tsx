@@ -373,55 +373,19 @@ function App(): React.JSX.Element {
 
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);  // Will hold login state
 
-  const handleDoNotAskAgain = () => {
-    // Update AsyncStorage to disable future alerts
-    AsyncStorage.setItem('showImportantNotice', 'false')
-      .then(() => {
-        console.log('User chose not to show the alert again.');
-      })
-      .catch((error) => {
-        console.error('Error updating AsyncStorage:', error);
-      });
-  };  
-
   useEffect(() => {
-    // Check if the alert has been shown before
-    AsyncStorage.getItem('showImportantNotice')
-      .then((showNotice) => {
-        if (showNotice === null || showNotice === 'true') {
-          // Show the alert
-          Alert.alert(
-            'Important Notice',
-            'To ensure proper functionality, please enable background activity for this app in your Battery Settings. After making the change, restart the app.',
-            [
-              { text: 'OK', onPress: () => {} },
-              { text: 'Do not ask me again', onPress: handleDoNotAskAgain },
-            ],
-            { cancelable: false }
-          );
-
-          // Update the value in AsyncStorage to prevent showing it again
-          if (showNotice === null) {
-            AsyncStorage.setItem('showImportantNotice', 'true');
-          }
-        }
-      })
-      .catch((error) => {
-        console.error('Error reading AsyncStorage:', error);
-      });
-
-    // Request permissions (if required)
     requestPermissions();
+    Alert.alert(
+      "Important Notice",
+      "To ensure proper functionality, please enable background activity for this app in your Battery Settings. After making the change, restart the app."
+    );
+    const checkUserStatus = async () => {
+    const userData = await getUserData();  // Fetch user data
+    setIsLoggedIn(!!userData);  // If user data exists, set logged in to true
+    };
 
-    // Check user login status
-    getUserData()
-      .then((userData) => {
-        setIsLoggedIn(!!userData); // Update the login state
-      })
-      .catch((error) => {
-        console.error('Error fetching user data:', error);
-      });
-  }, []);
+    checkUserStatus();  // Check on app start
+}, []);
 
   if (isLoggedIn === null) {
       return (

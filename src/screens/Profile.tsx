@@ -90,7 +90,7 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
         const totalSteps = steps.reduce((acc, curr) => acc + curr, 0);
         return totalSteps / steps.length;
     };
-    if (!stepData) {
+    if (!stepData || !user) {
         return (
             <SafeAreaView style={[{ justifyContent: 'center', flex: 1, padding: 10, backgroundColor: '#2B2B2B' }]}>
                 <ActivityIndicator size="large" color="#ffffff" />
@@ -122,7 +122,7 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
             </View>
             <View style={styles.basicInfo}>
               <Text style={styles.nameText}>{user?.username}</Text>
-              <Text style={styles.genderText}>MALE</Text>
+              <Text style={styles.genderText}>{user.gender}</Text>
               <TouchableOpacity style={styles.editButton} onPress={()=> navigation.navigate("EditProfile")}>
                 <Text style={styles.editButtonText}>Edit Details</Text>
               </TouchableOpacity>
@@ -138,7 +138,7 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
 
             {/* Height, Weight, and BMI in one row with spacing */}
             <View style={styles.inlineInfo}>
-              <InfoItem icon="arrows-v" text={user?.height || "NULL"} style={styles.inlineInfoItem} />
+              <InfoItem icon="arrows-v" text={String(user?.height) || "NULL"} style={styles.inlineInfoItem} />
               {/* Replaced icon with letter "W" for Weight */}
               <View style={[styles.infoItem, styles.inlineInfoItem]}>
                 <Text style={styles.icon}>W</Text>
