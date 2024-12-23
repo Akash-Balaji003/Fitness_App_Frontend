@@ -152,16 +152,21 @@ const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.topbar}>
-                <Text style={[styles.title, {textAlign:'center', padding:10}]}>Activity Tracker</Text>
-                <View style={{flexDirection:'row', justifyContent:'space-between', paddingHorizontal:calculatePercentage(2, width), gap:2}}>
-                    <TouchableOpacity style={[styles.navbarButton]} disabled={true}>
-                        <Text style={[{textAlign:'center',color: "white", fontSize: calculatePercentage(6, width),}]}>Timer</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[styles.activeNavbarButton, {backgroundColor:"#2c2c2e"}]} onPress={() => navigation.navigate("ActivityHistory")}>
-                        <Text style={[{textAlign:'center',color: "white", fontSize: calculatePercentage(6, width),}]}>History</Text>
-                    </TouchableOpacity>
-                </View>
+            <Text style={styles.screenTitle}>Track Your Activity</Text>
+            {/* Header with Tabs */}
+            <View style={styles.headerContainer}>
+                <TouchableOpacity
+                style={[styles.tab, activeTab === "ActivityTimer" && styles.activeTab]}
+                onPress={() => setActiveTab("ActivityTimer")}
+                >
+                <Text style={[styles.tabText, activeTab === "ActivityTimer" && styles.activeTabText]}>Stop Watch</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                style={[styles.tab, activeTab === "ActivityHistory" && styles.activeTab]}
+                onPress={() => setActiveTab("ActivityHistory")}
+                >
+                <Text style={[styles.tabText, activeTab === "ActivityHistory" && styles.activeTabText]}>History</Text>
+                </TouchableOpacity>
             </View>
             <View style={styles.containerBody}>
                 {/* Title Section */}
@@ -236,7 +241,7 @@ const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList
             {/* Bottom Navigation Bar */}
             <BottomNavBar
                 navigation={navigation}
-                activeTab={activeTab}
+                activeTab="ActivityTimer"
                 setActiveTab={setActiveTab}
             />
         </SafeAreaView>
@@ -244,11 +249,50 @@ const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList
 };
 
 const styles = StyleSheet.create({
+
+
+    headerContainer: {
+        flexDirection: "row",
+        justifyContent: "space-around",
+        backgroundColor: "#333",
+        paddingVertical: 10,
+        borderRadius: 8,
+        marginBottom: 16,
+        paddingHorizontal:10
+      },
+      tab: {
+        flex: 1,
+        alignItems: "center",
+        paddingVertical: 8,
+      },
+      activeTab: {
+        backgroundColor: "#555",
+        borderRadius: 8,
+      },
+      tabText: {
+        color: "#fff",
+        fontSize: 16,
+        fontWeight: "bold",
+      },
+      activeTabText: {
+        color: "#ffd700",
+      },
+
+      screenTitle: {
+        color: "white",
+        fontSize: 24,
+        textAlign: "center",
+        marginBottom: 16,
+      },
+
+
     navbarButton:{backgroundColor: "#1c1c1e", height: calculatePercentage(6, height), width:'49%', justifyContent:"center", borderTopRightRadius:5, borderTopLeftRadius:5 },
     activeNavbarButton:{backgroundColor: "#1c1c1e", height: calculatePercentage(6, height), width:'49%', justifyContent:"center", borderRadius:5 },
     container: {
         flex: 1,
         backgroundColor: "#1c1c1e",
+        paddingHorizontal: calculatePercentage(2, width),
+        paddingTop: calculatePercentage(2, height),
     },
     containerBody:{
         paddingHorizontal: calculatePercentage(10, width),

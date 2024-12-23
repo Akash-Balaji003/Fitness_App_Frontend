@@ -25,7 +25,6 @@ import ActivityHistory from './screens/ActivityHistory';
 import LeaderBoard from './screens/LeaderBoard';
 import Friends from './screens/Friends';
 import EditProfile from './screens/EditProfile';
-import PendingRequests from './screens/PendingRequests';
 
 import { UserProvider } from './contexts/UserContext';
 import { StepCounterProvider, useStepCounter } from './contexts/StepCounterContext';
@@ -101,7 +100,6 @@ export type RootStackParamList = {
     LeaderBoard: undefined;
     Friends: undefined;
     EditProfile: undefined;
-    PendingRequests: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -419,8 +417,6 @@ function App(): React.JSX.Element {
                 <Stack.Screen name="LeaderBoard" component={LeaderBoard} options={{ headerShown: false }} />
                 <Stack.Screen name="Friends" component={Friends} options={{ headerShown: false }} />
                 <Stack.Screen name="EditProfile" component={EditProfile} options={{ headerShown: false }} />
-                <Stack.Screen name="PendingRequests" component={PendingRequests} options={{ headerShown: false }} />
-
             </Stack.Navigator>
             </NavigationContainer>
         </StepCounterProvider>
