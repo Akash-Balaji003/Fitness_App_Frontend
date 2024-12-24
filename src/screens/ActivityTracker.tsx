@@ -24,7 +24,7 @@ const { width, height } = Dimensions.get("window");
 const calculatePercentage = (percentage: number, dimension: number) =>
     (percentage / 100) * dimension;
 
-const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'ActivityTimer'>) => {
+const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'ActivityTracker'>) => {
     const { user } = useUser();
 
     const [activeTab, setActiveTab] = useState('ActivityTimer');
@@ -487,4 +487,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default ActivityTimer;
+export default ActivityTracker;

@@ -49,7 +49,6 @@ const SearchUser = () => {
     
     // Function to call the API for sending the friend request
     const sendFriendRequest = async (recipientId: number) => {
-        setUsers([]);
         try {    
             const response = await fetch(
                 `https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/send-request?req_id=${user?.user_id}&rec_id=${recipientId}`,
@@ -63,6 +62,8 @@ const SearchUser = () => {
             if (response.ok) {
                 console.log('Friend request sent:', data);
                 Alert.alert("Success", "Friend request sent successfully!");
+                setSearchQuery('');  // Clear the search query
+                setUsers([]);
             } else {
                 console.error('Failed to send friend request:', data);
                 Alert.alert("Error", "Failed to send friend request.");

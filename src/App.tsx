@@ -13,14 +13,13 @@ import Login from './screens/Login';
 import Register from './screens/Register';
 import Home from './screens/Home';
 import Profile from './screens/Profile';
-import Statistics from './screens/Statistics';
-import WelcomePage from './screens/WelcomePage';
-import ActivityLifestyle from './screens/ActivityLifestyle';
-import DietaryPreference from './screens/DietaryPreference';
-import GenderDOBPage from './screens/GenderDOBPage';
-import StepCounterPage from './screens/StepCounterPage';
-import WeightHeightPage from './screens/WeightHeightPage';
-import ActivityTimer from './screens/ActivityTimer';
+import WelcomePage from './screens/quizScreens/WelcomePage';
+import ActivityLifestyle from './screens/quizScreens/ActivityLifestyle';
+import DietaryPreference from './screens/quizScreens/DietaryPreference';
+import GenderDOBPage from './screens/quizScreens/GenderDOBPage';
+import StepCounterPage from './screens/quizScreens/StepCounterPage';
+import WeightHeightPage from './screens/quizScreens/WeightHeightPage';
+import ActivityTracker from './screens/ActivityTracker';
 import LeaderBoard from './screens/LeaderBoard';
 import Friends from './screens/Friends';
 import EditProfile from './screens/EditProfile';
@@ -93,8 +92,7 @@ export type RootStackParamList = {
     };
     Home: undefined;
     Profile: undefined;
-    Statistics: undefined;
-    ActivityTimer: undefined;
+    ActivityTracker: undefined;
     LeaderBoard: undefined;
     Friends: undefined;
     EditProfile: undefined;
@@ -403,14 +401,13 @@ function App(): React.JSX.Element {
                 <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
                 <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
                 <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
-                <Stack.Screen name="Statistics" component={Statistics} options={{ headerShown: false }} />
                 <Stack.Screen name="WelcomePage" component={WelcomePage} options={{ headerShown: false }} />
                 <Stack.Screen name="ActivityLifestyle" component={ActivityLifestyle} options={{ headerShown: false }} />
                 <Stack.Screen name="DietaryPreference" component={DietaryPreference} options={{ headerShown: false }} />
                 <Stack.Screen name="GenderDOBPage" component={GenderDOBPage} options={{ headerShown: false }} />
                 <Stack.Screen name="WeightHeightPage" component={WeightHeightPage} options={{ headerShown: false }} />
                 <Stack.Screen name="StepCounterPage" component={StepCounterPage} options={{ headerShown: false }} />
-                <Stack.Screen name="ActivityTimer" component={ActivityTimer} options={{ headerShown: false }} />
+                <Stack.Screen name="ActivityTracker" component={ActivityTracker} options={{ headerShown: false }} />
                 <Stack.Screen name="LeaderBoard" component={LeaderBoard} options={{ headerShown: false }} />
                 <Stack.Screen name="Friends" component={Friends} options={{ headerShown: false }} />
                 <Stack.Screen name="EditProfile" component={EditProfile} options={{ headerShown: false }} />

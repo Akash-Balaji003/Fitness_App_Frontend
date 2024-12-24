@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { RootStackParamList } from '../App';
+import { RootStackParamList } from "../../App";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Icon from "react-native-vector-icons/FontAwesome";
 
-const ActivityLifestyle = ({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'ActivityLifestyle'>) => {
 
-  const { username, phone_number, password, DOB, gender, height, weight, diet, email } = route.params;
+const DietaryPreference = ({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'DietaryPreference'>) => {
 
-  const [activity, setActivity] = useState('Moderate');
+  const { username, phone_number, password, DOB, gender, height, weight, email } = route.params;
 
-  const activityLevels = ['Sedentary', 'Moderate', 'Active'];
+  const [diet, setDiet] = useState('None');
+
+  const dietaryOptions = ['Vegetarian', 'Pescatarian', 'Vegan', 'Dairy-free', 'Gluten-free', 'Paleo', 'Ovo-veg', 'Non-veg', 'None'];
 
   const navigateNext = async() => {
-    navigation.navigate('StepCounterPage',{
+    navigation.navigate('ActivityLifestyle',{
         username: username,
         phone_number: phone_number,
         email: email,
@@ -24,22 +25,21 @@ const ActivityLifestyle = ({ route, navigation }: NativeStackScreenProps<RootSta
         DOB: DOB,
         height: height,
         weight: weight,
-        diet: diet,
-        experience: activity
+        diet: diet
     })
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>How active are you in your daily lifestyle?</Text>
+      <Text style={styles.title}>What is your dietary preference?</Text>
       <View style={styles.buttonContainer}>
-        {activityLevels.map((level) => (
+        {dietaryOptions.map((option) => (
           <TouchableOpacity
-            key={level}
-            style={[styles.optionButton, activity === level && styles.selectedOption]}
-            onPress={() => setActivity(level)}
+            key={option}
+            style={[styles.optionButton, diet === option && styles.selectedOption]}
+            onPress={() => setDiet(option)}
           >
-            <Text style={[styles.buttonText, activity === level && styles.selectedText]}>{level}</Text>
+            <Text style={[styles.buttonText, diet === option && styles.selectedText]}>{option}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -55,13 +55,13 @@ const ActivityLifestyle = ({ route, navigation }: NativeStackScreenProps<RootSta
   );
 };
 
-export default ActivityLifestyle;
+export default DietaryPreference;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000', padding: 20 },
+  container: { flex: 1, backgroundColor: '#000', padding: 20, justifyContent:"center" },
   title: { fontSize: 20, color: '#FFF', textAlign: 'center', marginVertical: 20 },
-  buttonContainer: { flexDirection: 'row', justifyContent: 'space-around' },
-  optionButton: { backgroundColor: '#333', padding: 15, borderRadius: 8, width: '30%', alignItems: 'center' },
+  buttonContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  optionButton: { backgroundColor: '#333', padding: 10, marginVertical: 5, borderRadius: 8, width: '30%', alignItems: 'center' },
   selectedOption: { backgroundColor: '#F0A500' },
   buttonText: { color: '#FFF' },
   selectedText: { color: '#000', fontWeight: 'bold' },
