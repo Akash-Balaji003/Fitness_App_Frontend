@@ -4,59 +4,57 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   Dimensions,
+  ActivityIndicator,
+  SafeAreaView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { RootStackParamList } from "../App";
 import BottomNavBar from "../components/BottomNavBar";
+import { useUser } from "../contexts/UserContext";
 
 const { width } = Dimensions.get("window");
 
 type LeaderboardEntry = {
-  id: number;
-  name: string;
-  kcal: number;
-  crown?: boolean;
-  profilePic: string;
+  step_count: number;
+  user_id: number;
+  username: string;
 };
 
-const LeaderBoard = ({ navigation }: NativeStackScreenProps<RootStackParamList, "LeaderBoard">) => {
-  const [activeTab, setActiveTab] = useState('LeaderBoard');
+const LeaderBoard = ({
+  navigation,
+}: NativeStackScreenProps<RootStackParamList, "LeaderBoard">) => {
+  const { user } = useUser();
+
+  const [activeTab, setActiveTab] = useState("LeaderBoard");
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchLeaderboardData = async () => {
+    try {
+      const response = await fetch(
+        `https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/get-leaderboard?id=${user?.user_id}`
+      );
+      const data: LeaderboardEntry[] = await response.json();
+      // Sort the data by step_count in descending order
+      const sortedData = data.sort((a, b) => b.step_count - a.step_count);
+      setLeaderboardData(sortedData);
+    } catch (error) {
+      console.error("Error fetching leaderboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      const data: LeaderboardEntry[] = [
-        { id: 1, name: "Akash Balaji", kcal: 500, crown: true, profilePic: "https://example.com/akash.jpg" },
-        { id: 2, name: "Deekshit Parathasarathy", kcal: 430, profilePic: "https://example.com/deekshit.jpg" },
-        { id: 3, name: "Abishek", kcal: 425, profilePic: "https://example.com/abishek.jpg" },
-        { id: 4, name: "Marsha Fisher", kcal: 420, profilePic: "https://example.com/marsha.jpg" },
-        { id: 5, name: "Juanita Cormier", kcal: 410, profilePic: "https://example.com/juanita.jpg" },
-        { id: 6, name: "You", kcal: 400, profilePic: "https://example.com/you.jpg" },
-        { id: 7, name: "Tamara Schmidt", kcal: 380, profilePic: "https://example.com/tamara.jpg" },
-        { id: 8, name: "Ricardo Veum", kcal: 299, profilePic: "https://example.com/ricardo.jpg" },
-        { id: 9, name: "Gary Sanford", kcal: 180, profilePic: "https://example.com/gary.jpg" },
-        { id: 10, name: "Becky Bartell", kcal: 100, profilePic: "https://example.com/becky.jpg" },
-      ];
-      setLeaderboardData(data);
-    };
-
-    fetchData();
+    fetchLeaderboardData();
   }, []);
 
   const renderItem = (item: LeaderboardEntry, index: number) => (
-    <View
-      key={item.id}  // Added the key prop here
-      style={[
-        styles.itemContainer,
-        item.name === "You" && styles.highlight,
-      ]}
-    >
+    <View key={item.user_id} style={[styles.itemContainer]}>
       <Text style={styles.positionList}>{index + 4}</Text>
-      <Image source={{ uri: item.profilePic }} style={styles.profilePic} />
       <View style={styles.textContainer}>
-        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.name}>{item.username}</Text>
+        <Text style={styles.kcal}>{item.step_count} steps</Text>
       </View>
     </View>
   );
@@ -64,57 +62,45 @@ const LeaderBoard = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
   const topThree = leaderboardData.slice(0, 3);
   const others = leaderboardData.slice(3);
 
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#ffffff" />
+        <Text style={styles.loadingText}>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Title and Top Three */}
       <Text style={styles.title}>LEADER BOARDS</Text>
 
-      {/* Render Dynamic Circles */}
-        <View style={{ height: 125, width: "100%", flexDirection: "row" }}>
-            {topThree.map((item, index) => (
-            <View
-                key={item.id}  // Added the key prop here
-                style={{
-                height: 200,
-                width: "32%",
-                justifyContent: index === 1 ? "flex-start" : "flex-end",
-                marginRight: index === 1 ? 0 : index === 0 ? 0 : -15,
-                marginLeft: index === 0 ? 30 : 0,
-                }}
-            >
-                <View
-                    style={[
-                        styles.circle,
-                        index === 1 && styles.firstPlaceCircle,
-                        index === 0 && styles.secondPlaceCircle,
-                        index === 2 && styles.thirdPlaceCircle,
-                        index === 1 && styles.firstPlaceCircleSize,
-                        (index === 0 || index === 2) && styles.otherPlaceCircleSize,
-                        (index === 0 || index === 2) && styles.moveUp, // Apply moveUp to both circle and name container
-                        (index === 1 ) && styles.moveRight, // Apply moveUp to both circle and name container
-
-                    ]}
-                >
-                    {index === 1 && <Text style={styles.crownIcon}>👑</Text>}
-                    <Image
-                        source={{ uri: item.profilePic }}
-                        style={index === 1 ? styles.firstPlaceProfilePic : styles.profilePicLarge}
-                    />
-                    <Text style={styles.position}>{index === 1 ? 1 : index === 0 ? 2 : 3}</Text>
-                </View>
-                <Text style={[styles.nameLarge, (index === 0 || index === 2) && styles.moveUp, styles.moveRight]} numberOfLines={1} ellipsizeMode="tail">
-                {item.name}
-                </Text>
-        </View>
+      {/* Top Three Display */}
+      <View style={styles.topThreeContainer}>
+        {topThree.map((item, index) => (
+          <View
+            key={item.user_id}
+            style={[
+              styles.circleContainer,
+              index === 0 && styles.firstPlaceCircle,
+              index === 1 && styles.secondPlaceCircle,
+              index === 2 && styles.thirdPlaceCircle,
+            ]}
+          >
+            <Text style={styles.crownIcon}>{index === 0 ? "👑" : ""}</Text>
+            <Text style={styles.stepCountText}>{item.step_count}</Text>
+            <Text style={styles.nameLarge} numberOfLines={1}>
+              {item.username}
+            </Text>
+          </View>
         ))}
-        </View>
+      </View>
 
-      {/* Static List for Others */}
+      {/* Others List */}
       <View style={styles.listContent}>
         {others.map((item, index) => renderItem(item, index))}
       </View>
 
-      {/* Bottom Navigation Bar */}
       <BottomNavBar
         navigation={navigation}
         activeTab={activeTab}
@@ -125,14 +111,6 @@ const LeaderBoard = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
 };
 
 const styles = StyleSheet.create({
-    moveUp: {
-        top: -80, // Adjust this value to make the circle move higher
-    },
-
-    moveRight: {
-        right: 10, // Adjust this value to make the circle move higher
-    },
-
   container: {
     flex: 1,
     backgroundColor: "#1c1c1e",
@@ -146,131 +124,100 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 30,
   },
-  circleContainer: {
+  loadingContainer: {
     flex: 1,
-    alignItems: "center",
     justifyContent: "center",
-    marginHorizontal: 10,
+    alignItems: "center",
+    backgroundColor: "#2B2B2B",
   },
-  circle: {
-    justifyContent: "center",
+  loadingText: {
+    color: "white",
+    textAlign: "center",
+    marginTop: 10,
+  },
+  topThreeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "flex-end",
+    marginBottom: 20,
+  },
+  circleContainer: {
     alignItems: "center",
-    marginBottom: 8,
-    position: "relative",
+    justifyContent: "center",
   },
   firstPlaceCircle: {
     backgroundColor: "#FFD700",
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    justifyContent: "center",
+    alignItems: "center",
   },
   secondPlaceCircle: {
     backgroundColor: "#C0C0C0",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
   },
   thirdPlaceCircle: {
     backgroundColor: "#CD7F32",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  firstPlaceCircleSize: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-  },
-  otherPlaceCircleSize: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
-  firstPlaceProfilePic: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-  },
-  profilePicLarge: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  position: {
+  crownIcon: {
+    fontSize: 22,
+    color: "gold",
     position: "absolute",
-    bottom: -10,
-    fontSize: 14,
-    fontWeight: "bold",
+    top: -25,
+  },
+  stepCountText: {
     color: "white",
-    backgroundColor: "rgba(0,0,0,0.6)",
-    paddingHorizontal: 5,
-    borderRadius: 10,
+    fontSize: 14,
+    fontWeight: "600",
   },
   nameLarge: {
     color: "white",
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "600",
+    marginTop: 8,
     textAlign: "center",
     maxWidth: 80,
   },
-  kcalLarge: {
-    color: "#A1A1A1",
-    fontSize: 14,
-    fontWeight: "400",
-    textAlign: "center",
-  },
-  crownIconLarge: {
-    marginTop: 0,
-    fontSize: 24,
-    color: "gold",
-  },
   listContent: {
-    marginBottom: 90, // Adjust to add space for BottomNavBar
+    marginBottom: 90, // Space for the BottomNavBar
   },
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
     backgroundColor: "#333",
-    height:48,
     borderRadius: 15,
     marginVertical: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  highlight: {
-    backgroundColor: "#FFB400",
-  },
-  profilePic: {
-    width: 31,
-    height: 31,
-    borderRadius: 15.5,
-    marginRight: 16,
-    borderWidth: 2,
-    borderColor: "#FFB400",
-  },
-  textContainer: {
-    height:45,
-    justifyContent:"center"
-  },
-  name: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "500",
-    marginBottom: 4,
-  },
-  kcal: {
-    color: "#A1A1A1",
-    fontSize: 16,
-    fontWeight: "400",
-  },
-  crownIcon: {
-    fontSize: 22,
-    color: "gold",
-    textAlign: "center",
   },
   positionList: {
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
     marginRight: 14,
-    paddingTop:10,
-    height:45,
-    justifyContent:"center"
+  },
+  textContainer: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  name: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  kcal: {
+    color: "#A1A1A1",
+    fontSize: 14,
+    fontWeight: "400",
   },
 });
 

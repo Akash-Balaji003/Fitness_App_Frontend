@@ -10,12 +10,6 @@ const { width, height } = Dimensions.get("window");
 // Helper function for percentage calculation
 const calculatePercentage = (percentage: number, dimension: number) => (percentage / 100) * dimension;
 
-// Define type for the items in Friends and Pending tabs
-type FriendOrPending = {
-  id: string;
-  name: string;
-};
-
 const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Friends">) => {
     const [activeTab, setActiveTab] = useState("Friends");
 
