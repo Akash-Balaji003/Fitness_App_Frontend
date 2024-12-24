@@ -7,6 +7,8 @@ import {
     Dimensions,
     Animated,
     ToastAndroid,
+    FlatList,
+    ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -30,9 +32,52 @@ const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList
     const [user_activity, setActivity] = useState("WALKING");
     const [user_duration, setDuration] = useState(0); // Timer in seconds
     const [isPlaying, setIsPlaying] = useState(false);
-    const [formattedTime, setFormattedTime] = useState("00:00:00");
 
     const progress = useRef(new Animated.Value(0)).current; // This will control the progress
+
+    const [loading, setLoading] = useState(true);
+    const [activities, setActivities] = useState([]);
+
+    useEffect(() => {
+            const fetchActivities = async () => {
+                try {
+                    const response = await fetch(`https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/fetch-activities?id=${user?.user_id}`, {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    });
+                    const data = await response.json();
+                    console.log("Fetched data:", data); // Debugging
+                    setActivities(data || []); // Use the data directly since it's already an array
+                } catch (error) {
+                    console.error("Error fetching activities:", error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+        
+            fetchActivities();
+        }, []);
+    
+        const formatDuration = (seconds: number) => {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${hrs.toString().padStart(2, "0")}:${mins
+                .toString()
+                .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+        };
+        
+        
+    
+        const renderActivityCard = ({ item, index }: { item: any; index: number }) => (
+            <View style={styles.card}>
+                <Text style={styles.cardText}>{index + 1}</Text>
+                <Text style={styles.cardText}>{item.activity}</Text>
+                <Text style={styles.cardText}>{formatDuration(item.duration)}</Text>
+            </View>
+        );
 
     // Timer management
     useEffect(() => {
@@ -69,18 +114,12 @@ const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList
         const hrs = Math.floor(seconds / 3600);
         const mins = Math.floor((seconds % 3600) / 60);
         const secs = seconds % 60;
-        const formattedString = `${hrs.toString().padStart(2, "0")}:${mins
+        return `${hrs.toString().padStart(2, "0")}:${mins
             .toString()
             .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
         
           // Return the formatted string variable
-
-        return formattedString;
     };
-
-    useEffect(() => {
-        setFormattedTime(formatTime(user_duration));
-    }, [user_duration]);
 
     // Handle activity switching
     const handleArrowPress = (direction: string) => {
@@ -168,75 +207,107 @@ const ActivityTimer = ({ navigation }: NativeStackScreenProps<RootStackParamList
                 <Text style={[styles.tabText, activeTab === "ActivityHistory" && styles.activeTabText]}>History</Text>
                 </TouchableOpacity>
             </View>
-            <View style={styles.containerBody}>
-                {/* Title Section */}
-                <View style={styles.titleContainer}>
-                    <TouchableOpacity onPress={() => handleArrowPress("left")}>
-                        <Entypo name="arrow-left" size={24} color="white" />
-                    </TouchableOpacity>
-                    <Text style={styles.title}>{user_activity}</Text>
-                    <TouchableOpacity onPress={() => handleArrowPress("right")}>
-                        <Entypo name="arrow-right" size={24} color="white" />
-                    </TouchableOpacity>
-                </View>
+            <View style={{}}>
+                {activeTab === "ActivityTimer" ? (
+                    
+                   <View style={styles.containerBodyTimer}>
+                        {/* Title Section */}
+                        <View style={styles.titleContainer}>
+                            <TouchableOpacity onPress={() => handleArrowPress("left")}>
+                                <Entypo name="arrow-left" size={24} color="white" />
+                            </TouchableOpacity>
+                            <Text style={styles.title}>{user_activity}</Text>
+                            <TouchableOpacity onPress={() => handleArrowPress("right")}>
+                                <Entypo name="arrow-right" size={24} color="white" />
+                            </TouchableOpacity>
+                        </View>
 
-                {/* Distance Widget with Circular Animation */}
-                <View style={styles.distanceWidget}>
-                        <Svg height={calculatePercentage(70, width)} width={calculatePercentage(70, width)} style={{}}>
-                            <Circle
-                                cx={calculatePercentage(35, width)}
-                                cy={calculatePercentage(35, width)}
-                                r={circleRadius}
-                                stroke="black"
-                                strokeWidth="8"
-                                fill="none"
-                            />
-                            <AnimatedCircle
-                                cx={calculatePercentage(35, width)}
-                                cy={calculatePercentage(35, width)}
-                                r={circleRadius}
-                                stroke="#E37D00"
-                                strokeWidth="8"
-                                fill="none"
-                                strokeDasharray={`${strokeDasharray}, ${strokeDasharray}`}
-                                strokeDashoffset={strokeDashoffset}
-                            />
-                            <Text
-                                style={[styles.distanceValue, {
-                                    position: 'absolute',
-                                    top: calculatePercentage(15, height),
-                                    left: calculatePercentage(20, width),
-                                    textAlign: 'center',
-                                    fontSize: calculatePercentage(7, width),
-                                }]}
-                            >
-                                {formatTime(user_duration)} {/* Update this with dynamic time */}
-                            </Text>
-                        </Svg>
-                </View>
+                        {/* Distance Widget with Circular Animation */}
+                        <View style={styles.distanceWidget}>
+                                <Svg height={calculatePercentage(70, width)} width={calculatePercentage(70, width)} style={{}}>
+                                    <Circle
+                                        cx={calculatePercentage(35, width)}
+                                        cy={calculatePercentage(35, width)}
+                                        r={circleRadius}
+                                        stroke="black"
+                                        strokeWidth="8"
+                                        fill="none"
+                                    />
+                                    <AnimatedCircle
+                                        cx={calculatePercentage(35, width)}
+                                        cy={calculatePercentage(35, width)}
+                                        r={circleRadius}
+                                        stroke="#E37D00"
+                                        strokeWidth="8"
+                                        fill="none"
+                                        strokeDasharray={`${strokeDasharray}, ${strokeDasharray}`}
+                                        strokeDashoffset={strokeDashoffset}
+                                    />
+                                    <Text
+                                        style={[styles.distanceValue, {
+                                            position: 'absolute',
+                                            top: calculatePercentage(15, height),
+                                            left: calculatePercentage(20, width),
+                                            textAlign: 'center',
+                                            fontSize: calculatePercentage(7, width),
+                                        }]}
+                                    >
+                                        {formatTime(user_duration)} {/* Update this with dynamic time */}
+                                    </Text>
+                                </Svg>
+                        </View>
 
-                {/* Controls */}
-                <View style={styles.controlsContainer}>
-                    <TouchableOpacity style={styles.stopButton} onPress={handleStop}>
-                        <FontAwesome name="stop" size={24} color="white" style={{textAlign:'center'}}/>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.playPauseButton} onPress={handlePlayPause}>
-                        <FontAwesome
-                            name={isPlaying ? "pause" : "play"}
-                            size={30}
-                            color="white"
-                            style={{textAlign:'center'}}
-                        />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[styles.playPauseButton, { backgroundColor: formattedTime === '00:00:00' ? 'black' : 'green' }]} onPress={handleSubmit} disabled={formattedTime === '00:00:00'}>
-                        <Feather
-                            name={"check"}
-                            size={30}
-                            color="white"
-                            style={{textAlign:'center'}}
-                        />
-                    </TouchableOpacity>
-                </View>
+                        {/* Controls */}
+                        <View style={styles.controlsContainer}>
+                            <TouchableOpacity style={styles.stopButton} onPress={handleStop}>
+                                <FontAwesome name="stop" size={24} color="white" style={{textAlign:'center'}}/>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.playPauseButton} onPress={handlePlayPause}>
+                                <FontAwesome
+                                    name={isPlaying ? "pause" : "play"}
+                                    size={30}
+                                    color="white"
+                                    style={{textAlign:'center'}}
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.playPauseButton, { backgroundColor: user_duration === 0 ? 'black' : 'green', }]} onPress={handleSubmit} disabled={user_duration === 0}>
+                                <Feather
+                                    name={"check"}
+                                    size={30}
+                                    color="white"
+                                    style={{textAlign:'center'}}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                   </View>
+                ) :
+                (
+                    <View style={styles.containerBodyHistory}>
+                        <View style={{flexDirection:"row", padding: calculatePercentage(2.5, width), justifyContent:"space-around"}}>
+                            <Text style={styles.cardTitle}>Sn.No</Text>
+                            <Text style={[styles.cardTitle, {marginRight:calculatePercentage(12, width)}]}>Activity</Text>
+                            <Text style={[styles.cardTitle, {marginRight:calculatePercentage(8, width)}]}>Time</Text>
+                        </View>
+                        {loading ? (
+                            <View>
+                                <ActivityIndicator size="large" color="#ffffff" />
+                                <Text style={{ color: "white", textAlign: 'center', marginTop: 10 }}>
+                                    Loading...
+                                </Text>
+                            </View>
+                            
+                        ) : activities.length > 0 ? (
+                            <FlatList
+                                data={activities}
+                                keyExtractor={(item, index) => index.toString()}
+                                renderItem={renderActivityCard}
+                            />
+                        ) : (
+                            <Text style={styles.noDataText}>No activities found.</Text>
+                        )}
+                    </View>
+                )}
+
             </View>
             {/* Bottom Navigation Bar */}
             <BottomNavBar
@@ -294,8 +365,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: calculatePercentage(2, width),
         paddingTop: calculatePercentage(2, height),
     },
-    containerBody:{
+    containerBodyTimer:{
         paddingHorizontal: calculatePercentage(10, width),
+        marginTop: calculatePercentage(6, width),
+
+    },
+    containerBodyHistory: {
+        paddingHorizontal: calculatePercentage(0, width),
     },
     titleContainer: {
         flexDirection: "row",
@@ -383,6 +459,31 @@ const styles = StyleSheet.create({
         width: calculatePercentage(15, width),
         borderRadius: calculatePercentage(7.5, width),
         justifyContent:'center',
+    },
+    noDataText: {
+        color: "gray",
+        fontSize: calculatePercentage(3, width),
+        textAlign: "center",
+        marginTop: calculatePercentage(5, height),
+    },
+    card: {
+        backgroundColor: "#2c2c2e",
+        flexDirection:"row",
+        justifyContent:"space-around",
+        padding: calculatePercentage(2.5, width),
+        borderRadius: 10,
+        marginBottom: calculatePercentage(2, height),
+    },
+    cardText: {
+        color: "white",
+        fontSize: calculatePercentage(3.5, width),
+        marginBottom: 5,
+    },
+    cardTitle: {
+        color: "white",
+        fontSize: calculatePercentage(5, width),
+        marginBottom: 5,
+        marginRight:calculatePercentage(6, width),
     },
 });
 
