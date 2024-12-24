@@ -1,7 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ToastAndroid } from 'react-native';
-import { RootStackParamList } from '../../App';
+import { RootStackParamList } from '../App';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const StepCounterPage = ({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'StepCounterPage'>) => {

@@ -6,7 +6,7 @@ import { RootStackParamList } from '../App';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-const { height, width } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 type BottomNavBarProps = {
     navigation: NativeStackNavigationProp<RootStackParamList, keyof RootStackParamList>;
@@ -74,7 +74,7 @@ const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps
 
             {renderTabIcon('home', 'Home', 'FontAwesome5')}
 
-            {renderTabIcon('running', 'ActivityTimer', 'FontAwesome5')}
+            {renderTabIcon('running', 'ActivityTracker', 'FontAwesome5')}
 
             {renderTabIcon('trophy', 'LeaderBoard', 'FontAwesome5')}
 
