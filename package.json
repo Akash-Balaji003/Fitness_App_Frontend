@@ -30,6 +30,7 @@
     "react-native-screens": "^4.3.0",
     "react-native-sensors": "^7.3.6",
     "react-native-svg": "^15.10.1",
+    "react-native-svg-circular-progress": "^1.0.4",
     "react-native-url-polyfill": "^2.0.0",
     "react-native-vector-icons": "^10.2.0",
     "react-native-webview": "^13.12.5"

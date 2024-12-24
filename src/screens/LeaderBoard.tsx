@@ -78,34 +78,37 @@ const LeaderBoard = ({
       {/* Top Three Display */}
       <View style={styles.topThreeContainer}>
         {topThree.map((item, index) => (
-          <View
-            key={item.user_id}
-            style={[
-              styles.circleContainer,
-              index === 0 && styles.firstPlaceCircle,
-              index === 1 && styles.secondPlaceCircle,
-              index === 2 && styles.thirdPlaceCircle,
-            ]}
-          >
-            <Text style={styles.crownIcon}>{index === 0 ? "👑" : ""}</Text>
-            <Text style={styles.stepCountText}>{item.step_count}</Text>
-            <Text style={styles.nameLarge} numberOfLines={1}>
-              {item.username}
+            <View key={item.user_id}>
+            <View
+                style={[
+                styles.circleContainer,
+                index === 0 && styles.firstPlaceCircle,
+                index === 1 && styles.secondPlaceCircle,
+                index === 2 && styles.thirdPlaceCircle,
+                ]}
+            >
+                <Text style={styles.crownIcon}>{index === 0 ? "👑" : ""}</Text>
+                
+                <Text style={styles.stepCountText}>{item.step_count}</Text>
+            </View>
+            <Text style={[styles.positionListTop, { textAlign: "center" }]}>
+                {item.username}
             </Text>
-          </View>
+            </View>
         ))}
-      </View>
+        </View>
 
-      {/* Others List */}
-      <View style={styles.listContent}>
-        {others.map((item, index) => renderItem(item, index))}
-      </View>
 
-      <BottomNavBar
-        navigation={navigation}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+        {/* Others List */}
+        <View style={styles.listContent}>
+            {others.map((item, index) => renderItem(item, index))}
+        </View>
+
+        <BottomNavBar
+            navigation={navigation}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+        />
     </SafeAreaView>
   );
 };
@@ -147,25 +150,25 @@ const styles = StyleSheet.create({
   },
   firstPlaceCircle: {
     backgroundColor: "#FFD700",
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
     justifyContent: "center",
     alignItems: "center",
   },
   secondPlaceCircle: {
     backgroundColor: "#C0C0C0",
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     justifyContent: "center",
     alignItems: "center",
   },
   thirdPlaceCircle: {
     backgroundColor: "#CD7F32",
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -177,12 +180,12 @@ const styles = StyleSheet.create({
   },
   stepCountText: {
     color: "white",
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: "600",
   },
   nameLarge: {
     color: "white",
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: "600",
     marginTop: 8,
     textAlign: "center",
@@ -204,6 +207,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginRight: 14,
+  },
+  positionListTop: {
+    color: "white",
+    fontSize: 18,
   },
   textContainer: {
     flex: 1,

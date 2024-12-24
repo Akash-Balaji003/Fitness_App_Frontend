@@ -22,7 +22,7 @@ import BottomNavBar from "../components/BottomNavBar";
 import { useUser } from '../contexts/UserContext';
 import { useStepCounter } from "../contexts/StepCounterContext"; // Import the StepContext
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import StepProgressCircle from "../components/StepProgress";
 
 
 const { width, height } = Dimensions.get("window");
@@ -82,7 +82,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.greeting}>Welcome {user?.username},</Text>
+                <Text style={styles.greeting}>Welcome {user.username},</Text>
                 <View style={{flexDirection:"row", gap:30}}>
                     <TouchableOpacity onPress={handleRefresh}>
                         <FontAwesome name="refresh" size={24} color="white" />
@@ -93,14 +93,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
                 </View>
             </View>
 
-            <View style={styles.stepsSection}>
-                <View style={styles.stepsCircle}>
-                <Text style={styles.stepsCount}>{stepCount}</Text>
-                <Text style={styles.stepsText}>STEPS</Text>
-                </View>
-                <Text style={styles.distance}>5 km</Text>
-                <Text style={styles.goal}> {stepCount} / {user?.stepgoal}</Text>
-            </View>
+            <StepProgressCircle stepCount={stepCount} stepGoal={user.stepgoal} />
 
             <View style={styles.leaderboard}>
                 <Text style={styles.rank}>#1</Text>

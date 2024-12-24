@@ -4,6 +4,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
 import BottomNavBar from "../components/BottomNavBar";
 import { useUser } from '../contexts/UserContext';
+import SearchBar from "../components/SearchBar";
 
 const { width, height } = Dimensions.get("window");
 
@@ -133,24 +134,31 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Screen Title */}
-      <Text style={styles.screenTitle}>Manage Your Friends</Text>
+        {/* Screen Title */}
+        <Text style={styles.screenTitle}>Manage Your Friends</Text>
 
-      {/* Header with Tabs */}
-      <View style={styles.headerContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === "Friends" && styles.activeTab]}
-          onPress={() => setActiveTab("Friends")}
-        >
-          <Text style={[styles.tabText, activeTab === "Friends" && styles.activeTabText]}>Friends</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === "Pending" && styles.activeTab]}
-          onPress={() => setActiveTab("Pending")}
-        >
-          <Text style={[styles.tabText, activeTab === "Pending" && styles.activeTabText]}>Pending</Text>
-        </TouchableOpacity>
-      </View>
+        {/* Header with Tabs */}
+        <View style={styles.headerContainer}>
+
+            <TouchableOpacity
+            style={[styles.tab, activeTab === "Friends" && styles.activeTab]}
+            onPress={() => setActiveTab("Friends")}
+            >
+                <Text style={[styles.tabText, activeTab === "Friends" && styles.activeTabText]}>Friends</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+            style={[styles.tab, activeTab === "Pending" && styles.activeTab]}
+            onPress={() => setActiveTab("Pending")}
+            >
+                <Text style={[styles.tabText, activeTab === "Pending" && styles.activeTabText]}>Pending</Text>
+            </TouchableOpacity>
+        </View>
+
+        {/* Search Bar - Adjusted for positioning */}
+        <View style={styles.searchBarContainer}>
+            <SearchBar />
+        </View>
 
         {/* Content */}
         <View style={styles.contentContainer}>
@@ -179,8 +187,8 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
             )}
         </View>
 
-      {/* Bottom Navigation Bar */}
-      <BottomNavBar navigation={navigation} activeTab="Friends" setActiveTab={setActiveTab} />
+        {/* Bottom Navigation Bar */}
+        <BottomNavBar navigation={navigation} activeTab="Friends" setActiveTab={setActiveTab} />
     </SafeAreaView>
   );
 };
@@ -224,8 +232,18 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: "#ffd700",
   },
+  searchBarContainer: {
+    position: "absolute",
+    marginTop: calculatePercentage(18, height),
+    width: "100%",
+    zIndex:1,
+    alignSelf:"center",
+    marginBottom:60
+},
   contentContainer: {
     flex: 1,
+    marginTop: calculatePercentage(10, height),
+
   },
   sectionItem: {
     backgroundColor: "#e0f7fa",
@@ -248,9 +266,6 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     textAlign:"center"
   },
-
-
-
   card: {
     backgroundColor: "#2c2c2e",
     flexDirection: "row",

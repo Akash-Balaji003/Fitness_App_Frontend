@@ -21,7 +21,6 @@ import GenderDOBPage from './screens/GenderDOBPage';
 import StepCounterPage from './screens/StepCounterPage';
 import WeightHeightPage from './screens/WeightHeightPage';
 import ActivityTimer from './screens/ActivityTimer';
-import ActivityHistory from './screens/ActivityHistory';
 import LeaderBoard from './screens/LeaderBoard';
 import Friends from './screens/Friends';
 import EditProfile from './screens/EditProfile';
@@ -96,7 +95,6 @@ export type RootStackParamList = {
     Profile: undefined;
     Statistics: undefined;
     ActivityTimer: undefined;
-    ActivityHistory: undefined;
     LeaderBoard: undefined;
     Friends: undefined;
     EditProfile: undefined;
@@ -413,7 +411,6 @@ function App(): React.JSX.Element {
                 <Stack.Screen name="WeightHeightPage" component={WeightHeightPage} options={{ headerShown: false }} />
                 <Stack.Screen name="StepCounterPage" component={StepCounterPage} options={{ headerShown: false }} />
                 <Stack.Screen name="ActivityTimer" component={ActivityTimer} options={{ headerShown: false }} />
-                <Stack.Screen name="ActivityHistory" component={ActivityHistory} options={{ headerShown: false }} />
                 <Stack.Screen name="LeaderBoard" component={LeaderBoard} options={{ headerShown: false }} />
                 <Stack.Screen name="Friends" component={Friends} options={{ headerShown: false }} />
                 <Stack.Screen name="EditProfile" component={EditProfile} options={{ headerShown: false }} />
