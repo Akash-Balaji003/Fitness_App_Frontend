@@ -1,6 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import {
+    Alert,
     Platform,
     SafeAreaView,
     StyleSheet,
@@ -22,7 +23,7 @@ const Register = ({ navigation }: RegisterProps) => {
     const [password, setPassword] = useState('');
     const [confirm_password, setConfirmPassword] = useState('');
     const [phone_number, setPhoneNumber] = useState('');
-    const [ email1, setEmail ] = useState('');
+    const [ email, setEmail ] = useState('');
 
 
     const [errorMessage, setErrorMessage] = useState('');
@@ -31,13 +32,13 @@ const Register = ({ navigation }: RegisterProps) => {
         navigation.navigate('WelcomePage',{
             username: name,
             phone_number: phone_number,
-            email: email1,
+            email: email,
             password: password,
         })
     };
 
     const handleNext = async () => {
-        if (!name || !phone_number || !password || !confirm_password) {
+        if (!name || !phone_number || !password || !confirm_password || !email) {
             setErrorMessage("All fields are required.");
             return;
         }
@@ -47,10 +48,37 @@ const Register = ({ navigation }: RegisterProps) => {
             return;
         }
     
-        // Clear error message if validations pass
-        setErrorMessage("");
-        navigateNext();
+        try {
+            // Make an API call to check if the phone number or email is already in use
+            const response = await fetch("https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/check-user", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ phone_number, email }),
+            });
+    
+            const data = await response.json();
+    
+            if (response.ok) {
+                // Backend returned success but also a message
+                if (data.message === "This number or email already has an account") {
+                    Alert.alert("Account Already Exists",data.message); // Alert the user about the account conflict
+                    return; // Stop execution to prevent navigation
+                }
+    
+                // Clear error and navigate to the next page if no account exists
+                setErrorMessage("");
+                navigateNext();
+            } else {
+                // Display the error message from the backend
+                setErrorMessage(data.detail || "An error occurred.");
+            }
+        } catch (error) {
+            setErrorMessage("Failed to connect to the server. Please try again later.");
+        }
     };
+    
     
 
     return (
@@ -63,7 +91,7 @@ const Register = ({ navigation }: RegisterProps) => {
             <View style={[styles.inputContainer, { width: Platform.OS === 'ios' ? '80%' : 'auto'}]}>
                 <TextInput placeholder="Name" value={name} onChangeText={setName} style={styles.input} placeholderTextColor="#888" />
                 <TextInput placeholder="Mobile number" value={phone_number} onChangeText={setPhoneNumber} style={styles.input} placeholderTextColor="#888" keyboardType="phone-pad" />
-                <TextInput placeholder="Email" value={email1} onChangeText={setEmail} style={styles.input} placeholderTextColor="#888" keyboardType='email-address' />
+                <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.input} placeholderTextColor="#888" keyboardType='email-address' />
                 <TextInput placeholder="Password" value={password} onChangeText={setPassword} style={styles.input} placeholderTextColor="#888" secureTextEntry />
                 <TextInput placeholder="Confirm password" value={confirm_password} onChangeText={setConfirmPassword} style={styles.input} placeholderTextColor="#888" secureTextEntry />
                 <Text style={[styles.stepLabel, {alignSelf:'center', color:'red'}]}>{errorMessage}</Text>

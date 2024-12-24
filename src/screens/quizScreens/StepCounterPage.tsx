@@ -1,7 +1,7 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ToastAndroid } from 'react-native';
-import { RootStackParamList } from '../App';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ToastAndroid, ActivityIndicator } from 'react-native';
+import { RootStackParamList } from '../../App';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const StepCounterPage = ({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'StepCounterPage'>) => {
@@ -12,8 +12,11 @@ const StepCounterPage = ({ route, navigation }: NativeStackScreenProps<RootStack
 
   const [errorMessage, setErrorMessage] = useState('');
 
+  const [loading, setLoading] = useState(false); // Loader state
+
   
   const registerUser = async() => {
+    setLoading(true); // Show loader
     try {
         const response = await fetch('https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/register', {
             method: 'POST',
@@ -36,13 +39,19 @@ const StepCounterPage = ({ route, navigation }: NativeStackScreenProps<RootStack
         });
 
         if (response.ok){
-            navigation.navigate("Login");
             ToastAndroid.show('Account Created Successfully', ToastAndroid.SHORT);
+            navigation.navigate("Login");
+            console.log("DONE");
         }
     }
     catch (error) {
         setErrorMessage('Failed to connect to the server. Please try again later.');
         ToastAndroid.show('Failed to connect to the server. Please try again later.', ToastAndroid.SHORT);
+        console.log("error");
+
+    }
+    finally{
+      setLoading(false); // Hide loader
     }
   };
 
@@ -59,15 +68,19 @@ const StepCounterPage = ({ route, navigation }: NativeStackScreenProps<RootStack
           <Text style={styles.stepButton}>+</Text>
         </TouchableOpacity>
       </View>
-      <Text style={[styles.stepLabel, {alignSelf:'center', color:'red'}]}>{errorMessage}</Text>
-      <View style={{flexDirection:"row", justifyContent:"space-between", margin:10}}>
-        <TouchableOpacity style={styles.nextButton} onPress={()=>navigation.goBack()}>
-          <Icon name="arrow-left" size={24} color="#FFF" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.nextButton} onPress={registerUser}>
-          <Icon name="arrow-right" size={24} color="#FFF" />
-        </TouchableOpacity>
-      </View>
+      <Text style={[styles.stepLabel, { alignSelf: 'center', color: 'red' }]}>{errorMessage}</Text>
+      {loading ? ( // Show loader when loading
+        <ActivityIndicator size="large" color="#FF8C00" style={{ marginVertical: 20 }} />
+      ) : (
+        <View style={{ flexDirection: "row", justifyContent: "space-between", margin: 10 }}>
+          <TouchableOpacity style={styles.nextButton} onPress={() => navigation.goBack()}>
+            <Icon name="arrow-left" size={24} color="#FFF" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.nextButton} onPress={registerUser}>
+            <Icon name="arrow-right" size={24} color="#FFF" />
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 };

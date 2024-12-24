@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, View, Text, Image, TouchableOpacity } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../App";
+import { RootStackParamList } from "../../App";
 
 const WelcomePage = ({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'WelcomePage'>) => {
 
@@ -19,7 +19,7 @@ const WelcomePage = ({ route, navigation }: NativeStackScreenProps<RootStackPara
     return (
         <View style={styles.container}>
             <Image
-                source={require('../assets/Sample.jpeg')} // Replace with local image file
+                source={require('../../assets/Sample.jpeg')} // Replace with local image file
                 style={styles.profileImage}
             />
             <View style={styles.overlay}>

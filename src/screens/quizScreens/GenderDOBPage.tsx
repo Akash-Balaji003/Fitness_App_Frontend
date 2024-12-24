@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { StyleSheet, View, Text, TouchableOpacity, Alert } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { RootStackParamList } from "../App";
+import { RootStackParamList } from "../../App";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 const GenderDOBPage = ({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'GenderDOBPage'>) => {
