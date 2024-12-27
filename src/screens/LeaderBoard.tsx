@@ -7,6 +7,7 @@ import {
   Dimensions,
   ActivityIndicator,
   SafeAreaView,
+  ScrollView,
 } from "react-native";
 import { RootStackParamList } from "../App";
 import BottomNavBar from "../components/BottomNavBar";
@@ -100,9 +101,9 @@ const LeaderBoard = ({
 
 
         {/* Others List */}
-        <View style={styles.listContent}>
+        <ScrollView style={styles.listContent}>
             {others.map((item, index) => renderItem(item, index))}
-        </View>
+        </ScrollView>
 
         <BottomNavBar
             navigation={navigation}
