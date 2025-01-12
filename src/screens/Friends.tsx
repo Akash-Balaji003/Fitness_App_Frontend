@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, SafeAreaView, Dimensions, ActivityIndicator } from "react-native";
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, RefreshControl, Dimensions, ActivityIndicator, ToastAndroid, ScrollView } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
 import BottomNavBar from "../components/BottomNavBar";
@@ -29,6 +29,7 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
     const [pendingRequests, setPendingRequests] = useState([]); // State to store fetched requests
     const [loadingPending, setLoadingPending] = useState(true); // Loading for pending requests
     const [loadingFriends, setLoadingFriends] = useState(true); // Loading for friends
+    const [refreshing, setRefreshing] = useState(false); // State for pull-to-refresh
 
     const removeDuplicates = (array: any[], key: string | number) => {
         return array.filter((item, index, self) => 
@@ -90,6 +91,7 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
     // Function to handle friend request response
     const handleResponse = async (friendship_id: number, status: string) => {
         try {
+            console.log("friendship_id : ", friendship_id)
             const response = await fetch(`https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/respond-request?id=${friendship_id}&status=${status}`, {
                 headers: {
                     "Content-Type": "application/json",
@@ -102,6 +104,8 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
                 console.log(`Friend request ${status} successfully!`, result);
                 fetchFriends(); // Re-fetch friends after accepting or rejecting
                 fetchPendingRequests();
+                ToastAndroid.show('Friendship Status Updated', ToastAndroid.SHORT);
+                
             } else {
                 console.error("Error responding to request:", result.detail || "Unknown error");
             }
@@ -110,9 +114,14 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
         }
     };
 
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await Promise.all([fetchFriends(), fetchPendingRequests()]);
+        setRefreshing(false);
+    };
+
     // Render a single friend card
     const renderFriendCard = ({ item, index }: { item: any; index: number }) => {
-        console.log("Data From Backend: ", item); // Log the item object to check its structure and data
     
         return (
             <View style={[styles.card, { justifyContent: "space-between" }]}>
@@ -132,7 +141,7 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
 
     // Render a single request card
     const renderRequestCard = ({ item, index }: { item: any; index: number }) => {
-        console.log(item); // Log the item object to check its structure and data
+        console.log("Pending Data From Backend: ", item); // Log the item object to check its structure and data
     
         return (
             <View style={styles.card}>
@@ -140,13 +149,13 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
                 <Text style={styles.cardText}>{item.requester_name}</Text>
                 <View style={styles.actionButtons}>
                     <TouchableOpacity
-                        onPress={() => handleResponse(item.friend_id, "accepted")}
+                        onPress={() => handleResponse(item.friendship_id, "accepted")}
                         style={styles.acceptButton}
                     >
                         <Text style={styles.actionText}>✔</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        onPress={() => handleResponse(item.friend_id, "rejected")}
+                        onPress={() => handleResponse(item.friendship_id, "rejected")}
                         style={styles.rejectButton}
                     >
                         <Text style={styles.actionText}>✖</Text>
@@ -197,30 +206,65 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
         <View style={styles.contentContainer}>
             {activeTab === "Friends" ? (
                 loadingFriends ? (
-                    <ActivityIndicator size="large" color="#007BFF" />
+                <ActivityIndicator size="large" color="#007BFF" />
                 ) : friends.length === 0 ? (
-                    <Text style={styles.emptyText}>No friends added yet.</Text>
-                ) : (
-                    <FlatList
-                        data={friends}
-                        renderItem={renderFriendCard}
-                        keyExtractor={(item, index) => `${item.user_id}_${index}`}
+                <ScrollView
+                    contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}
+                    refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        colors={["#007BFF"]}
                     />
-
+                    }
+                >
+                    <Text style={styles.emptyText}>No friends added yet.</Text>
+                </ScrollView>
+                ) : (
+                <FlatList
+                    data={friends}
+                    renderItem={renderFriendCard}
+                    keyExtractor={(item, index) => `${item.user_id}_${index}`}
+                    refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        colors={["#007BFF"]}
+                    />
+                    }
+                />
                 )
             ) : loadingPending ? (
                 <ActivityIndicator size="large" color="#007BFF" />
             ) : pendingRequests.length === 0 ? (
+                <ScrollView
+                contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}
+                refreshControl={
+                    <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    colors={["#007BFF"]}
+                    />
+                }
+                >
                 <Text style={styles.emptyText}>No pending requests.</Text>
+                </ScrollView>
             ) : (
                 <FlatList
-                    data={pendingRequests}
-                    renderItem={renderRequestCard}
-                    keyExtractor={(item, index) => `${item.friend_id}_${index}`}
+                data={pendingRequests}
+                renderItem={renderRequestCard}
+                keyExtractor={(item, index) => `${item.friend_id}_${index}`}
+                refreshControl={
+                    <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    colors={["#007BFF"]}
+                    />
+                }
                 />
-
             )}
-        </View>
+            </View>
+
 
         {/* Bottom Navigation Bar */}
         <BottomNavBar navigation={navigation} activeTab="Friends" setActiveTab={setActiveTab} />

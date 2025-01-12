@@ -49,11 +49,11 @@ const SearchUser = () => {
     
     // Function to call the API for sending the friend request
     const sendFriendRequest = async (recipientId: number) => {
-        try {    
+        try {
             const response = await fetch(
                 `https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/send-request?req_id=${user?.user_id}&rec_id=${recipientId}`,
                 {
-                    method: 'GET', // You can also use POST depending on the API design
+                    method: 'GET', // Adjust to POST if your API design prefers POST for this endpoint
                 }
             );
     
@@ -61,18 +61,33 @@ const SearchUser = () => {
     
             if (response.ok) {
                 console.log('Friend request sent:', data);
-                Alert.alert("Success", "Friend request sent successfully!");
-                setSearchQuery('');  // Clear the search query
-                setUsers([]);
+                Alert.alert("Success", data.message); // Display the backend success message
+                setSearchQuery(''); // Clear the search query
+                setUsers([]); // Clear user list
             } else {
-                console.error('Failed to send friend request:', data);
-                Alert.alert("Error", "Failed to send friend request.");
+                // Handle different error cases based on the backend's response
+                if (data.detail === "Friend request already sent.") {
+                    Alert.alert("Info", "You have already sent a friend request to this user.");
+                    setSearchQuery(''); // Clear the search query
+                    setUsers([]); // Clear user list
+                } else if (data.detail === "You are already friends.") {
+                    Alert.alert("Info", "You are already friends with this user.");
+                    setSearchQuery(''); // Clear the search query
+                    setUsers([]); // Clear user list
+                } else if (data.detail === "This user has already sent you a friend request.") {
+                    Alert.alert("Info", "This user has already sent you a friend request. Please accept it.");
+                    setSearchQuery(''); // Clear the search query
+                    setUsers([]); // Clear user list
+                } else {
+                    Alert.alert("Error", "Failed to send friend request.");
+                }
             }
         } catch (error) {
             console.error('Error sending friend request:', error);
             Alert.alert("Error", "An error occurred while sending the friend request.");
         }
-    };
+    };    
+    
 
     return (
         <View style={styles.container}>
