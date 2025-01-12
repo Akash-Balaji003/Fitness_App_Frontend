@@ -81,6 +81,8 @@ const SearchUser = () => {
                 value={searchQuery}
                 onChangeText={setSearchQuery}  // Update the search query as the user types
                 style={styles.searchInput}
+                placeholderTextColor="#A0A0A0"
+
             />
             <FlatList
                 data={users}
@@ -99,18 +101,17 @@ const SearchUser = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1c1c1e',  // Dark background to match the theme '#1c1c1e'
 
     },
     searchInput: {
         paddingHorizontal: 15,
         paddingVertical: 12,
         borderWidth: 1,
-        borderColor: '#444',  // Darker gray border to fit the dark theme
+        borderColor: '#A0D8FF',  // Light blue border to match the light theme
         borderRadius: 8,
-        backgroundColor: '#333',  // Dark background for the input box
+        backgroundColor: '#FFFFFF',  // White background for the search bar for a clean, bright look
         fontSize: 16,
-        color: '#fff',  // White text for input to contrast with the dark background
+        color: '#333',  // Dark text for contrast
         marginBottom: 0,  // Remove margin to eliminate space between the input and the list
     },
     listContainer: {
@@ -119,10 +120,10 @@ const styles = StyleSheet.create({
     card: {
         padding: 15,
         marginBottom: 1,
-        backgroundColor: '#333',  // Dark background for the card
+        backgroundColor: '#FFFFFF',  // White background for the card
         borderRadius: 8,
         borderWidth: 1,
-        borderColor: '#444',  // Border color matching the dark theme
+        borderColor: '#E1E1E1',  // Light grey border for the cards
         shadowColor: '#000',
         shadowOpacity: 0.2,
         shadowRadius: 5,
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     username: {
         fontSize: 16,
         fontWeight: '500',  // Lighter font weight to make it less bold and more elegant
-        color: '#fff',  // White text for the username to contrast with dark background
+        color: '#333',  // Dark text for the username
     },
 });
 

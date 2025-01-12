@@ -49,19 +49,19 @@ const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps
                         <Foundation
                             name={iconName}
                             size={23}
-                            color={activeTab === tabName ? '#0C284D' : '#C4C4C4'}
+                            color={activeTab === tabName ? '#333333' : '#333333'}
                         />
                     ) : iconType === 'FontAwesome5' ? (
                         <FontAwesome5
                             name={iconName}
                             size={23}
-                            color={activeTab === tabName ? '#0C284D' : '#C4C4C4'}
+                            color={activeTab === tabName ? '#333333' : '#333333'}
                         />
                     ) : (
                         <MaterialIcons
                             name={iconName}
                             size={23}
-                            color={activeTab === tabName ? '#0C284D' : '#C4C4C4'}
+                            color={activeTab === tabName ? '#333333' : '#333333'}
                         />
                     )}
                 </View>
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
         left: 10,
         right: 10,
         height: height * 0.075,
-        backgroundColor: '#2c2c2e',
+        backgroundColor: '#A1C6D0',
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',

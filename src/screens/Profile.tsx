@@ -16,6 +16,7 @@ import { RootStackParamList } from '../App';
 import BottomNavBar from '../components/BottomNavBar';
 import { BarChart } from 'react-native-chart-kit';
 import { useUser } from '../contexts/UserContext';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface WeeklyData {
     labels: string[];
@@ -56,6 +57,20 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
             steps: processedSteps,
         };
     };
+
+    function calculateBMI(weight: number, height: number): number {
+      console.log("Weight: ", weight)
+      console.log("Height: ", height)
+      height = height / 100;
+      console.log("Height (converted to meters): ", height);
+      if (height <= 0 || weight <= 0) {
+        throw new Error("Invalid input. Weight and height must be positive numbers.");
+      }
+    
+      const bmi = weight / (height * height); // height in meters
+      console.log("BMI: ", bmi)
+      return parseFloat(bmi.toFixed(1)); // Return BMI rounded to one decimal place
+    }    
     
     useEffect(() => {
         // Fetch weekly data once user data is available
@@ -94,15 +109,21 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
         return (
             <SafeAreaView style={[{ justifyContent: 'center', flex: 1, padding: 10, backgroundColor: '#2B2B2B' }]}>
                 <ActivityIndicator size="large" color="#ffffff" />
-                <Text style={{ color: "white", textAlign: 'center', marginTop: 10 }}>
+                <Text style={{ color: "black", textAlign: 'center', marginTop: 10 }}>
                     Loading...
                 </Text>
             </SafeAreaView>
         );
     }
     const averageSteps = calculateAverageSteps(stepData.steps);
+    const userBMI = calculateBMI(user?.weight, user?.height);
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <LinearGradient
+          colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+          style={styles.safeArea}
+          start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+          end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+      >
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.container}>
           {/* Header */}
@@ -146,7 +167,7 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
               </View>
               {/* Removed icon for BMI */}
               <View style={[styles.infoItem, styles.inlineInfoItem]}>
-                <Text style={styles.infoText}>BMI: 19.3</Text>
+                <Text style={styles.infoText}>BMI: {userBMI}</Text>
               </View>
             </View>
           </View>
@@ -166,17 +187,30 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
                     width={Dimensions.get('window').width - 40}
                     height={180}
                     chartConfig={{
-                        backgroundGradientFrom: '#2E2C2C',
-                        backgroundGradientTo: '#1F1F1F',
-                        color: (opacity = 1) => `rgba(255, 153, 51, ${opacity})`,
-                        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                        backgroundGradientFrom: '#B1F0F7',
+                        backgroundGradientTo: '#B1F0F7',
+                        color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // Set bars to black
+                        labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // Set labels to black
                         barPercentage: 0.7,
                         formatYLabel: (yLabel) => parseInt(yLabel).toString(),
+                        propsForDots: {
+                            r: '6',
+                            strokeWidth: '2',
+                            stroke: '#000000', // Set dot border color to black
+                        },
+                        propsForBackgroundLines: {
+                            stroke: '#000000', // Set grid line color to black
+                            strokeWidth: 0.5, // Line thickness
+                        },
+                        propsForLabels: {
+                            fontSize: 12, // Adjust label font size if needed
+                        },
                     }}
                     style={styles.chart}
                     yAxisLabel=""
                     yAxisSuffix=""
                 />
+
             </View>
           </View>
         </View>
@@ -186,7 +220,7 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
             activeTab={activeTab}
             setActiveTab={setActiveTab}
         />
-    </SafeAreaView>
+    </LinearGradient>
   );
 };
 
@@ -201,12 +235,12 @@ const InfoItem: React.FC<{ icon: string; text: string; style?: any }> = ({ icon,
 
 const styles = StyleSheet.create({
 
-    card: { backgroundColor: '#3A3A3A', padding: 5, borderRadius: 10, marginBottom:'auto', marginTop:'auto', height:190 },
+    card: { backgroundColor: '#EAF8FF', padding: 5, borderRadius: 10, marginBottom:'auto', marginTop:'auto', height:190 },
     BottomCard: { backgroundColor: '#3A3A3A', padding: 5, borderRadius: 10, marginBottom: 100 },
-    cardTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold', marginBottom: 5 },
+    cardTitle: { color: 'black', fontSize: 18, fontWeight: 'bold', marginBottom: 5 },
     chart: { borderRadius: 10, marginTop: 10, marginRight:0, },
-    text: { color: '#BBBBBB', fontSize: 14, marginTop: 5 },
-    highlightText: { color: '#FF9933', fontSize: 16, fontWeight: 'bold' },
+    text: { color: '#333', fontSize: 14, marginTop: 5 },
+    highlightText: { color: 'black', fontSize: 16, fontWeight: 'bold' },
     averageText: { color: '#BBBBBB', fontSize: 12, marginTop: 5 },
     subtitle: { color: '#BBBBBB', fontSize: 12, marginTop: 5 },
   safeArea: {
@@ -225,7 +259,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
+    color: 'black',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -250,7 +284,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 10,
     right: 10,
-    backgroundColor: '#f7941d',
+    backgroundColor: '#133E87',
     borderRadius: 30,
     padding: 7,
   },
@@ -260,7 +294,7 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: 'black',
   },
   genderText: {
     fontSize: 14,
@@ -268,7 +302,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   editButton: {
-    backgroundColor: '#f7941d',
+    backgroundColor: '#133E87',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 25,
@@ -287,11 +321,12 @@ const styles = StyleSheet.create({
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#444',
+    backgroundColor: '#EAF8FF',
     paddingVertical: 13,
     paddingHorizontal: 10,
     borderRadius: 10,
     marginBottom: 10,
+    elevation:3
   },
   inlineInfo: {
     flexDirection: 'row',
@@ -306,12 +341,12 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 18,
-    color: '#f7941d',
+    color: '#133E87',
     marginRight: 10,
   },
   infoText: {
     fontSize: 13,
-    color: '#fff',
+    color: 'black',
   },
   graphSection: {
     marginTop: 5,
@@ -319,19 +354,20 @@ const styles = StyleSheet.create({
   graphTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#fff',
+    color: 'black',
     marginBottom: 10,
     textAlign: 'center',
   },
   graphContainer: {
     height: 275,
     width: "98%",
-    backgroundColor: '#444',
+    backgroundColor: '#EAF8FF',
     borderRadius: 10,
     paddingLeft:5,
     justifyContent: 'center',
     alignItems: 'flex-start',
-    alignSelf:"center"
+    alignSelf:"center",
+    elevation:3
   },
   graphPlaceholderText: {
     color: '#aaa',

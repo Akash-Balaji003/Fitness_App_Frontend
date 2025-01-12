@@ -10,20 +10,23 @@ import {
   ActivityIndicator,
   ToastAndroid,
 } from "react-native";
+import LinearGradient from 'react-native-linear-gradient';
+
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
 
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../components/BottomNavBar";
 
 import { useUser } from '../contexts/UserContext';
-import { useStepCounter } from "../contexts/StepCounterContext"; // Import the StepContext
+import { useStepCounter } from "../contexts/StepCounterContext"; 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import StepProgressCircle from "../components/StepProgress";
-
+import StepCountGrid from "../components/MonthlySteps";
 
 const { width, height } = Dimensions.get("window");
 const calculatePercentage = (percentage: number, dimension: number) => (percentage / 100) * dimension;
@@ -31,16 +34,14 @@ const calculatePercentage = (percentage: number, dimension: number) => (percenta
 const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) => {
 
     const [activeTab, setActiveTab] = useState('Home');
-
     const { user, setUser } = useUser();
-    const { stepCount, setStepCount } = useStepCounter();  // Added setStepCount to update the state
-
+    const { stepCount, setStepCount } = useStepCounter();
 
     const handleLogout = async () => {
         try {
             await AsyncStorage.clear();
-            navigation.navigate('Login'); // Navigate to login screen
-            setUser(null as any); // Clear the userContext
+            navigation.navigate('Login');
+            setUser(null as any);
         } catch (error) {
             Alert.alert('Error', 'Failed to log out. Please try again.');
             console.error(error);
@@ -56,7 +57,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     
             if (storedStepCount) {
                 console.log("Updating step count...");
-                setStepCount(parseInt(storedStepCount)); // Update the stepCount in state
+                setStepCount(parseInt(storedStepCount));
                 console.log("Updated step count:", storedStepCount);
             } else {
                 console.log("No stored step count found.");
@@ -64,10 +65,24 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
             ToastAndroid.show('Refreshing...', ToastAndroid.SHORT);
         } catch (error) {
             console.error("Failed to fetch updated step count", error);
-            ToastAndroid.show('Error refreshing try again', ToastAndroid.SHORT);
+            ToastAndroid.show('Error refreshing, try again', ToastAndroid.SHORT);
         }
     };
 
+    const calculateMetrics = (steps: number, weight: number, height: number): { distance: number, calories: number } => {
+        const heightInMeters = height / 100; 
+        const STRIDE_LENGTH = heightInMeters * 0.414; // Stride length in meters
+        const distanceInMeters = steps * STRIDE_LENGTH; // Distance in meters
+        const distanceInKm = distanceInMeters / 1000; // Convert to kilometers
+      
+        const caloriesBurned = 0.57 * weight * distanceInKm;
+      
+        return {
+          distance: distanceInKm, // Distance in km
+          calories: caloriesBurned, // Calories burned
+        };
+    };
+    
     if (!user) {
         return (
             <SafeAreaView style={[styles.container, { justifyContent: 'center' }]}>
@@ -78,64 +93,57 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
             </SafeAreaView>
         );
     }
-    
+
+    const metrics = calculateMetrics(stepCount, user?.weight, user?.height);
+
     return (
-        <SafeAreaView style={styles.container}>
+        <LinearGradient
+            colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+            style={styles.container}
+            start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+            end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+        >
             <View style={styles.header}>
                 <Text style={styles.greeting}>Welcome {user.username},</Text>
                 <View style={{flexDirection:"row", gap:30}}>
                     <TouchableOpacity onPress={handleRefresh}>
-                        <FontAwesome name="refresh" size={24} color="white" />
+                        <FontAwesome name="refresh" size={24} color="black" />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={handleLogout}>
-                        <MaterialIcons name="logout" size={24} color="white" />
+                        <MaterialIcons name="logout" size={24} color="black" />
                     </TouchableOpacity>
                 </View>
             </View>
 
             <StepProgressCircle stepCount={stepCount} stepGoal={user.stepgoal} />
 
-            <View style={styles.leaderboard}>
-                <Text style={styles.rank}>#1</Text>
-                <Text style={styles.rankText}>Your position in leaderboard</Text>
-            </View>
-
             <View style={styles.statsContainer}>
                 <TouchableOpacity style={styles.statBox}>
-                    <FontAwesome name="heart" size={24} color="red" />
-                    <Text style={styles.statValue}>120 bpm</Text>
-                    <Text style={styles.statLabel}>Heart Rate</Text>
+                    <FontAwesome name="fire" size={24} color="orange" />
+                    <Text style={styles.statValue}>{metrics.calories.toFixed(0)} cals</Text>
+                    <Text style={styles.statLabel}>Calories Burned Today</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.statBox}>
-                    <FontAwesome name="fire" size={24} color="orange" />
-                    <Text style={styles.statValue}>1567 kcals</Text>
-                    <Text style={styles.statLabel}>Calories Today</Text>
+                    <Ionicons name="footsteps" size={24} color="#1E3E62" />
+                    <Text style={styles.statValue}>15 Days</Text>
+                    <Text style={styles.statLabel}>Longest Streak</Text>
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.foodSection}>
-                <Image
-                source={{ uri: "https://via.placeholder.com/150" }}
-                style={styles.foodImage}
-                />
-                <View>
-                <Text style={styles.foodTitle}>Plan Well, Eat Well</Text>
-                <Text style={styles.foodSubtitle}>Healthy food makes you feel good</Text>
-                <TouchableOpacity
-                    onPress={() => Alert.alert("Clicked food")}
-                >
-                    <Text style={styles.scheduleButton}>Schedule Now</Text>
+            {/*
+                <TouchableOpacity style={[styles.statBoxBig,{width:"100%"}]}>
+                    <Text style={[styles.statValue, {fontSize:20, textAlign:"left", marginTop:1}]}>January</Text>
+                    <Text style={[styles.statLabel, {alignSelf:"center", marginTop:"20%", fontSize:14}]}>Current Month Steps Data Will Be Displayed Here</Text>
                 </TouchableOpacity>
-                </View>
-            </View>
+            */}
+            <StepCountGrid />
 
-            {/* Bottom Navigation Bar */}
             <BottomNavBar
                 navigation={navigation}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
             />
-        </SafeAreaView>
+        </LinearGradient>
     );
 };
 
@@ -153,112 +161,55 @@ const styles = StyleSheet.create({
         marginBottom: calculatePercentage(2, height),
     },
     greeting: {
-        color: "white",
+        color: "black",
         fontSize: calculatePercentage(5, width),
         fontWeight: "bold",
-    },
-    stepsSection: {
-        alignItems: "center",
-        marginBottom: calculatePercentage(4, height),
-    },
-    stepsCircle: {
-        width: calculatePercentage(40, width),
-        height: calculatePercentage(40, width),
-        borderRadius: calculatePercentage(20, width),
-        backgroundColor: "rgba(255, 255, 255, 0.1)",
-        justifyContent: "center",
-        alignItems: "center",
-        marginBottom: calculatePercentage(2, height),
-    },
-    stepsCount: {
-        fontSize: calculatePercentage(5, width),
-        fontWeight: "bold",
-        color: "white",
-    },
-    stepsText: {
-        fontSize: calculatePercentage(2, width),
-        color: "white",
-        opacity: 0.8,
-    },
-    distance: {
-        fontSize: calculatePercentage(4, width),
-        color: "white",
-        opacity: 0.8,
-        marginBottom: calculatePercentage(1, height),
-    },
-    goal: {
-        fontSize: calculatePercentage(3.5, width),
-        color: "orange",
-    },
-    leaderboard: {
-        alignItems: "center",
-        marginBottom: calculatePercentage(3, height),
-    },
-    rank: {
-        fontSize: calculatePercentage(8, width),
-        fontWeight: "bold",
-        color: "white",
-    },
-    rankText: {
-        fontSize: calculatePercentage(2.5, width),
-        color: "white",
-        opacity: 0.7,
     },
     statsContainer: {
         flexDirection: "row",
         justifyContent: "space-between",
+        alignItems:"center",
         marginBottom: calculatePercentage(3, height),
     },
     statBox: {
         alignItems: "center",
-        backgroundColor: "#2c2c2e",
+        alignSelf:"center",
+        backgroundColor: "#ffffff",
         padding: calculatePercentage(3, width),
         borderRadius: 10,
         width: "48%",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation:3
+    },
+    statBoxBig: {
+        alignSelf:"center",
+        backgroundColor: "#EAF8FF",
+        padding: calculatePercentage(2, width),
+        borderRadius: 10,
+        width: "48%",
+        height: "30%",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation:3
     },
     statValue: {
         fontSize: calculatePercentage(3.5, width),
         fontWeight: "bold",
-        color: "white",
+        color: "black",
         marginTop: calculatePercentage(1, height),
     },
     statLabel: {
         fontSize: calculatePercentage(2, width),
-        color: "white",
+        color: "black",
         opacity: 0.8,
-    },
-    foodSection: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#2c2c2e",
-        padding: calculatePercentage(3, width),
-        borderRadius: 10,
-        marginBottom: calculatePercentage(1, height),
-    },
-    foodImage: {
-        width: calculatePercentage(20, width),
-        height: calculatePercentage(20, width),
-        borderRadius: 10,
-        marginRight: calculatePercentage(3, width),
-    },
-    foodTitle: {
-        fontSize: calculatePercentage(3, width),
-        fontWeight: "bold",
-        color: "white",
-    },
-    foodSubtitle: {
-        fontSize: calculatePercentage(2.5, width),
-        color: "white",
-        opacity: 0.8,
-        marginBottom: calculatePercentage(1, height),
-    },
-    scheduleButton: {
-        color: "orange",
-        fontSize: calculatePercentage(2.5, width),
-        fontWeight: "bold",
     },
     footer: {
-        position: 'absolute', // Makes the bottom navigation stick to the bottom
+        position: 'absolute',
         bottom: 15,
         left: 10,
         right: 10,

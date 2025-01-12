@@ -13,6 +13,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useUser } from '../contexts/UserContext';
 
 import { saveUserData } from '../tasks/Storage';
+import LinearGradient from 'react-native-linear-gradient';
 
 type LoginProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -86,7 +87,12 @@ const LoginScreen = ({ navigation }: LoginProps) => {
   
 
     return (
-        <View style={styles.container}>
+        <LinearGradient
+            colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+            style={styles.container}
+            start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+            end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+        >
             <Text style={styles.header}>Hi there!</Text>
             <Text style={styles.subHeader}>LOGIN</Text>
 
@@ -126,7 +132,7 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 <Text style={styles.signUp}>sign up</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </LinearGradient>
     );
 };
 
@@ -140,12 +146,12 @@ const styles = StyleSheet.create({
     header: {
         fontSize: width * 0.08, // Dynamic font size
         fontWeight: 'bold',
-        color: 'white',
+        color: 'black',
         marginBottom: height * 0.02,
     },
     subHeader: {
         fontSize: width * 0.06, // Dynamic font size
-        color: 'white',
+        color: 'black',
         marginBottom: height * 0.03,
     },
     input: {
@@ -155,7 +161,7 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         paddingHorizontal: 20,
         fontSize: width * 0.045, // Dynamic font size for input text
-        color: '#0C284D',
+        color: '#black',
         marginBottom: height * 0.02,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -166,7 +172,7 @@ const styles = StyleSheet.create({
     loginButton: {
         width: width * 0.6,
         height: height * 0.07,
-        backgroundColor: '#F0A500',
+        backgroundColor: '#133E87',
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 10,
@@ -179,7 +185,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     forgotPassword: {
-        color: '#AAA',
+        color: '#333',
         fontSize: width * 0.04,
         textDecorationLine: 'underline',
         marginBottom: height * 0.05,
@@ -188,11 +194,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     newHere: {
-        color: '#AAA',
+        color: '#333',
         fontSize: width * 0.04,
     },
     signUp: {
-        color: '#AAA',
+        color: '#333',
         fontSize: width * 0.04,
         textDecorationLine: 'underline',
         fontWeight: 'bold',

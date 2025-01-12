@@ -19,6 +19,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
 import Svg, { Circle } from "react-native-svg";
 import { useUser } from "../contexts/UserContext";
+import LinearGradient from "react-native-linear-gradient";
 
 const { width, height } = Dimensions.get("window");
 const calculatePercentage = (percentage: number, dimension: number) =>
@@ -190,7 +191,12 @@ const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamLi
     });
 
     return (
-        <SafeAreaView style={styles.container}>
+        <LinearGradient
+            colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+            style={styles.container}
+            start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+            end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+        >
             <Text style={styles.screenTitle}>Track Your Activity</Text>
             {/* Header with Tabs */}
             <View style={styles.headerContainer}>
@@ -214,11 +220,11 @@ const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamLi
                         {/* Title Section */}
                         <View style={styles.titleContainer}>
                             <TouchableOpacity onPress={() => handleArrowPress("left")}>
-                                <Entypo name="arrow-left" size={24} color="white" />
+                                <Entypo name="arrow-left" size={24} color="black" />
                             </TouchableOpacity>
                             <Text style={styles.title}>{user_activity}</Text>
                             <TouchableOpacity onPress={() => handleArrowPress("right")}>
-                                <Entypo name="arrow-right" size={24} color="white" />
+                                <Entypo name="arrow-right" size={24} color="black" />
                             </TouchableOpacity>
                         </View>
 
@@ -229,7 +235,7 @@ const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamLi
                                         cx={calculatePercentage(35, width)}
                                         cy={calculatePercentage(35, width)}
                                         r={circleRadius}
-                                        stroke="black"
+                                        stroke="#e6e6e6"
                                         strokeWidth="8"
                                         fill="none"
                                     />
@@ -237,7 +243,7 @@ const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamLi
                                         cx={calculatePercentage(35, width)}
                                         cy={calculatePercentage(35, width)}
                                         r={circleRadius}
-                                        stroke="#E37D00"
+                                        stroke="#133E87"
                                         strokeWidth="8"
                                         fill="none"
                                         strokeDasharray={`${strokeDasharray}, ${strokeDasharray}`}
@@ -315,7 +321,7 @@ const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamLi
                 activeTab="ActivityTimer"
                 setActiveTab={setActiveTab}
             />
-        </SafeAreaView>
+        </LinearGradient>
     );
 };
 
@@ -325,7 +331,7 @@ const styles = StyleSheet.create({
     headerContainer: {
         flexDirection: "row",
         justifyContent: "space-around",
-        backgroundColor: "#333",
+        backgroundColor: "#B8E0E7",
         paddingVertical: 10,
         borderRadius: 8,
         marginBottom: 16,
@@ -337,28 +343,25 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
       },
       activeTab: {
-        backgroundColor: "#555",
+        backgroundColor: "#133E87",
         borderRadius: 8,
       },
       tabText: {
-        color: "#fff",
+        color: "#333",
         fontSize: 16,
         fontWeight: "bold",
       },
       activeTabText: {
-        color: "#ffd700",
+        color: "#ffffff",
       },
 
       screenTitle: {
-        color: "white",
+        color: "black",
         fontSize: 24,
         textAlign: "center",
         marginBottom: 16,
       },
 
-
-    navbarButton:{backgroundColor: "#1c1c1e", height: calculatePercentage(6, height), width:'49%', justifyContent:"center", borderTopRightRadius:5, borderTopLeftRadius:5 },
-    activeNavbarButton:{backgroundColor: "#1c1c1e", height: calculatePercentage(6, height), width:'49%', justifyContent:"center", borderRadius:5 },
     container: {
         flex: 1,
         backgroundColor: "#1c1c1e",
@@ -386,7 +389,7 @@ const styles = StyleSheet.create({
         backgroundColor:"#3C3D37"
     },
     title: {
-        color: "white",
+        color: "#333",
         fontSize: calculatePercentage(6, width),
         fontWeight: "bold",
     },
@@ -409,7 +412,7 @@ const styles = StyleSheet.create({
         width: "40%",
     },
     infoLabel: {
-        color: "white",
+        color: "black",
         fontSize: calculatePercentage(3, width),
         marginTop: calculatePercentage(1, height),
         marginBottom: calculatePercentage(1, height),
@@ -436,7 +439,7 @@ const styles = StyleSheet.create({
         position: "relative",
     },
     distanceValue: {
-        color: "white",
+        color: "#333",
         fontSize: calculatePercentage(8, width),
         fontWeight: "bold",
     },
@@ -447,14 +450,14 @@ const styles = StyleSheet.create({
         gap: 10
     },
     playPauseButton: {
-        backgroundColor: "#E37D00",
+        backgroundColor: "#133E87",
         height: calculatePercentage(15, width),
         width: calculatePercentage(15, width),
         borderRadius: calculatePercentage(7.5, width),
         justifyContent:'center',
     },
     stopButton: {
-        backgroundColor: "black",
+        backgroundColor: "#C62E2E",
         height: calculatePercentage(15, width),
         width: calculatePercentage(15, width),
         borderRadius: calculatePercentage(7.5, width),
@@ -467,20 +470,21 @@ const styles = StyleSheet.create({
         marginTop: calculatePercentage(5, height),
     },
     card: {
-        backgroundColor: "#2c2c2e",
+        backgroundColor: "#EAF8FF",
         flexDirection:"row",
         justifyContent:"space-around",
         padding: calculatePercentage(2.5, width),
         borderRadius: 10,
         marginBottom: calculatePercentage(2, height),
+        elevation:3
     },
     cardText: {
-        color: "white",
+        color: "black",
         fontSize: calculatePercentage(3.5, width),
         marginBottom: 5,
     },
     cardTitle: {
-        color: "white",
+        color: "black",
         fontSize: calculatePercentage(5, width),
         marginBottom: 5,
         marginRight:calculatePercentage(6, width),

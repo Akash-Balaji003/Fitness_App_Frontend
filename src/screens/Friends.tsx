@@ -5,11 +5,19 @@ import { RootStackParamList } from "../App";
 import BottomNavBar from "../components/BottomNavBar";
 import { useUser } from '../contexts/UserContext';
 import SearchBar from "../components/SearchBar";
+import LinearGradient from "react-native-linear-gradient";
 
 const { width, height } = Dimensions.get("window");
 
 // Helper function for percentage calculation
 const calculatePercentage = (percentage: number, dimension: number) => (percentage / 100) * dimension;
+
+interface Friend {
+    user_id: string;
+    friend_id: string;
+    username: string;
+    // Add other properties as needed
+}
 
 const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Friends">) => {
     const [activeTab, setActiveTab] = useState("Friends");
@@ -17,11 +25,17 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
     // Access the user context
     const { user } = useUser();
 
-    const [friends, setFriends] = useState([]); // State to store friends list
+    const [friends, setFriends] = useState<Friend[]>([]); // Typing the state
     const [pendingRequests, setPendingRequests] = useState([]); // State to store fetched requests
     const [loadingPending, setLoadingPending] = useState(true); // Loading for pending requests
     const [loadingFriends, setLoadingFriends] = useState(true); // Loading for friends
 
+    const removeDuplicates = (array: any[], key: string | number) => {
+        return array.filter((item, index, self) => 
+            index === self.findIndex((t) => t[key] === item[key])
+        );
+    };
+    
     // Function to fetch friends
     const fetchFriends = async () => {
         try {
@@ -34,9 +48,14 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
                     },
                 }
             );
-            const data = await response.json();
+            let data = await response.json();
             console.log("Fetched friends list:", data); // Debugging
-            setFriends(data || []);
+    
+            // Remove duplicates based on 'user_id'
+            const uniqueFriends = removeDuplicates(data, "user_id");
+    
+            // Update the friends state with unique values
+            setFriends(uniqueFriends || []);
         } catch (error) {
             console.error("Error fetching friends list:", error);
         } finally {
@@ -81,7 +100,8 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
 
             if (response.ok) {
                 console.log(`Friend request ${status} successfully!`, result);
-                fetchPendingRequests(); // Refresh the list after responding
+                fetchFriends(); // Re-fetch friends after accepting or rejecting
+                fetchPendingRequests();
             } else {
                 console.error("Error responding to request:", result.detail || "Unknown error");
             }
@@ -91,49 +111,62 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
     };
 
     // Render a single friend card
-    const renderFriendCard = ({ item, index }: { item: any; index: number }) => (
-        <View style={[styles.card, {justifyContent:"space-between",}]}>
-            <View style={{flexDirection:"row", justifyContent:"space-between", width:"35%"}}>
-                <Text style={styles.cardText}>{index + 1}</Text>
-                <Text style={styles.cardText}>{item.username}</Text>
-            </View>
-            <TouchableOpacity
-                onPress={() => handleResponse(item.friendship_id, "rejected")}
-                style={styles.rejectButton}
-            >
-                <Text style={styles.actionText}>✖</Text>
-            </TouchableOpacity>
-        </View>
-    );
-
-    // Render a single request card
-    const renderRequestCard = ({ item, index }: { item: any; index: number }) => (
-        <View style={styles.card}>
-            <Text style={styles.cardText}>{index + 1}</Text>
-            <Text style={styles.cardText}>{item.requester_name}</Text>
-            <View style={styles.actionButtons}>
+    const renderFriendCard = ({ item, index }: { item: any; index: number }) => {
+        console.log("Data From Backend: ", item); // Log the item object to check its structure and data
+    
+        return (
+            <View style={[styles.card, { justifyContent: "space-between" }]}>
+                <View style={{ flexDirection: "row", justifyContent: "flex-start", width: "40%", gap:20 }}>
+                    <Text style={styles.cardText}>{index + 1}</Text>
+                    <Text style={styles.cardText}>{item.username}</Text>
+                </View>
                 <TouchableOpacity
-                    onPress={() => handleResponse(item.friendship_id, "accepted")}
-                    style={styles.acceptButton}
-                >
-                    <Text style={styles.actionText}>✔</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => handleResponse(item.friendship_id, "rejected")}
+                    onPress={() => handleResponse(item.friend_id, "rejected")}
                     style={styles.rejectButton}
                 >
                     <Text style={styles.actionText}>✖</Text>
                 </TouchableOpacity>
             </View>
-        </View>
-    );
+        );
+    };
+
+    // Render a single request card
+    const renderRequestCard = ({ item, index }: { item: any; index: number }) => {
+        console.log(item); // Log the item object to check its structure and data
+    
+        return (
+            <View style={styles.card}>
+                <Text style={styles.cardText}>{index + 1}</Text>
+                <Text style={styles.cardText}>{item.requester_name}</Text>
+                <View style={styles.actionButtons}>
+                    <TouchableOpacity
+                        onPress={() => handleResponse(item.friend_id, "accepted")}
+                        style={styles.acceptButton}
+                    >
+                        <Text style={styles.actionText}>✔</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => handleResponse(item.friend_id, "rejected")}
+                        style={styles.rejectButton}
+                    >
+                        <Text style={styles.actionText}>✖</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        );
+    };    
 
     console.log("Friends Data:", friends);
     console.log("Pending Requests Data:", pendingRequests);
 
 
   return (
-    <SafeAreaView style={styles.container}>
+    <LinearGradient
+              colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+              style={styles.container}
+              start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+              end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+          >
         {/* Screen Title */}
         <Text style={styles.screenTitle}>Manage Your Friends</Text>
 
@@ -171,8 +204,9 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
                     <FlatList
                         data={friends}
                         renderItem={renderFriendCard}
-                        keyExtractor={(item) => item.user_id.toString()}
+                        keyExtractor={(item, index) => `${item.user_id}_${index}`}
                     />
+
                 )
             ) : loadingPending ? (
                 <ActivityIndicator size="large" color="#007BFF" />
@@ -182,14 +216,15 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
                 <FlatList
                     data={pendingRequests}
                     renderItem={renderRequestCard}
-                    keyExtractor={(item) => item.friendship_id.toString()}
+                    keyExtractor={(item, index) => `${item.friend_id}_${index}`}
                 />
+
             )}
         </View>
 
         {/* Bottom Navigation Bar */}
         <BottomNavBar navigation={navigation} activeTab="Friends" setActiveTab={setActiveTab} />
-    </SafeAreaView>
+    </LinearGradient>
   );
 };
 
@@ -201,7 +236,7 @@ const styles = StyleSheet.create({
     paddingTop: calculatePercentage(2, height),
   },
   screenTitle: {
-    color: "white",
+    color: "black",
     fontSize: 24,
     textAlign: "center",
     marginBottom: 16,
@@ -209,11 +244,12 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "#333",
+    backgroundColor: "#B8E0E7",
     paddingVertical: 10,
     borderRadius: 8,
     marginBottom: 16,
-    paddingHorizontal:10
+    paddingHorizontal:10,
+    elevation:1
   },
   tab: {
     flex: 1,
@@ -221,16 +257,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   activeTab: {
-    backgroundColor: "#555",
+    backgroundColor: "#133E87",
     borderRadius: 8,
   },
   tabText: {
-    color: "#fff",
+    color: "#333",
     fontSize: 16,
     fontWeight: "bold",
   },
   activeTabText: {
-    color: "#ffd700",
+    color: "#ffffff",
   },
   searchBarContainer: {
     position: "absolute",
@@ -243,10 +279,11 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     marginTop: calculatePercentage(10, height),
+    marginBottom:80
 
   },
   sectionItem: {
-    backgroundColor: "#e0f7fa",
+    backgroundColor: "#EAF8FF",
     marginVertical: 8,
     padding: 12,
     borderRadius: 8,
@@ -267,17 +304,21 @@ const styles = StyleSheet.create({
     textAlign:"center"
   },
   card: {
-    backgroundColor: "#2c2c2e",
+    backgroundColor: "#EAF8FF",
     flexDirection: "row",
+    elevation:3,
     justifyContent: "space-between",
     padding: calculatePercentage(2.5, width),
     borderRadius: 10,
     paddingBottom: calculatePercentage(3.5, width),
     marginBottom: calculatePercentage(2, height),
     paddingHorizontal: calculatePercentage(5, width),
+    marginRight:2,
+    marginLeft:2,
+    marginTop:2
 },
 cardText: {
-    color: "white",
+    color: "black",
     fontSize: calculatePercentage(4, width),
     paddingTop: calculatePercentage(1, height),
 },

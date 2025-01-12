@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Text, StyleSheet, Dimensions } from "react-native";
+import { View, Text, StyleSheet, Dimensions, SafeAreaView, ActivityIndicator } from "react-native";
 import Svg, { Circle } from "react-native-svg";
+import { useUser } from "../contexts/UserContext";
 
 const { width } = Dimensions.get("screen");
 
@@ -32,7 +33,10 @@ const interpolateColor = (progress: number): string => {
 };
 
 const StepProgressCircle: React.FC<StepProgressCircleProps> = ({ stepCount, stepGoal }) => {
-  const size = 150; // Diameter of the circle
+
+  const { user, setUser } = useUser();
+  
+  const size = 210; // Diameter of the circle
   const strokeWidth = 10; // Thickness of the progress bar
   const radius = (size - strokeWidth) / 2; // Radius of the circle
   const circumference = 2 * Math.PI * radius; // Circumference of the circle
@@ -42,6 +46,34 @@ const StepProgressCircle: React.FC<StepProgressCircleProps> = ({ stepCount, step
   // Get the interpolated color based on progress
   const strokeColor = interpolateColor(progress);
 
+  const calculateMetrics = (steps: number, weight: number, height: number): { distance: number, calories: number } => {
+    const heightInMeters = height / 100; 
+    const STRIDE_LENGTH = heightInMeters * 0.414; // Stride length in meters
+    const distanceInMeters = steps * STRIDE_LENGTH; // Distance in meters
+    const distanceInKm = distanceInMeters / 1000; // Convert to kilometers
+  
+    const caloriesBurned = 0.57 * weight * distanceInKm;
+  
+    return {
+      distance: distanceInKm, // Distance in km
+      calories: caloriesBurned, // Calories burned
+    };
+  };
+
+  if (!user) {
+      return (
+          <SafeAreaView style={[styles.container, { justifyContent: 'center' }]}>
+              <ActivityIndicator size="large" color="#ffffff" />
+              <Text style={{ color: "white", textAlign: 'center', marginTop: 10 }}>
+                  Loading...
+              </Text>
+          </SafeAreaView>
+      );
+  }
+
+  const metrics = calculateMetrics(stepCount, user?.weight, user?.height);
+
+
   return (
     <View style={styles.container}>
       <Svg width={size} height={size}>
@@ -50,7 +82,7 @@ const StepProgressCircle: React.FC<StepProgressCircleProps> = ({ stepCount, step
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="black"
+          stroke="#696969"
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -69,6 +101,9 @@ const StepProgressCircle: React.FC<StepProgressCircleProps> = ({ stepCount, step
       </Svg>
       {/* Centered Text */}
       <View style={styles.centerContent}>
+        <Text style={[styles.stepGoalText, {fontSize:20, top:-10}]}>
+          {metrics.distance.toFixed(2)} km {/* Display calculated distance */}
+        </Text>
         <Text style={styles.stepCountText}>{stepCount}</Text>
         <Text style={styles.stepGoalText}>of {stepGoal} steps</Text>
       </View>
@@ -80,7 +115,7 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 10,
     marginBottom: 20,
   },
   centerContent: {
@@ -89,12 +124,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   stepCountText: {
-    fontSize: 24,
+    fontSize: 40,
     fontWeight: "bold",
     color: "#4caf50",
+    top:-5
   },
   stepGoalText: {
-    fontSize: 14,
+    fontSize: 15,
+    top:-5,
     color: "#757575",
   },
 });

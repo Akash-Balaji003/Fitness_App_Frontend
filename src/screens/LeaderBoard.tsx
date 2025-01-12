@@ -12,6 +12,7 @@ import {
 import { RootStackParamList } from "../App";
 import BottomNavBar from "../components/BottomNavBar";
 import { useUser } from "../contexts/UserContext";
+import LinearGradient from "react-native-linear-gradient";
 
 const { width } = Dimensions.get("window");
 
@@ -51,7 +52,7 @@ const LeaderBoard = ({
   }, []);
 
   const renderItem = (item: LeaderboardEntry, index: number) => (
-    <View key={item.user_id} style={[styles.itemContainer]}>
+    <View key={`others-${item.user_id}-${index}`} style={[styles.itemContainer]}>
       <Text style={styles.positionList}>{index + 4}</Text>
       <View style={styles.textContainer}>
         <Text style={styles.name}>{item.username}</Text>
@@ -73,31 +74,35 @@ const LeaderBoard = ({
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <LinearGradient
+                  colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+                  style={styles.container}
+                  start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+                  end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+              >
       <Text style={styles.title}>LEADER BOARDS</Text>
 
       {/* Top Three Display */}
       <View style={styles.topThreeContainer}>
         {topThree.map((item, index) => (
-            <View key={item.user_id}>
+          <View key={`top-${item.user_id}-${index}`}>
             <View
-                style={[
+              style={[
                 styles.circleContainer,
                 index === 0 && styles.firstPlaceCircle,
                 index === 1 && styles.secondPlaceCircle,
                 index === 2 && styles.thirdPlaceCircle,
-                ]}
+              ]}
             >
-                <Text style={styles.crownIcon}>{index === 0 ? "👑" : ""}</Text>
-                
-                <Text style={styles.stepCountText}>{item.step_count}</Text>
+              <Text style={styles.crownIcon}>{index === 0 ? "👑" : ""}</Text>
+              <Text style={styles.stepCountText}>{item.step_count}</Text>
             </View>
             <Text style={[styles.positionListTop, { textAlign: "center" }]}>
-                {item.username}
+              {item.username}
             </Text>
-            </View>
+          </View>
         ))}
-        </View>
+      </View>
 
 
         {/* Others List */}
@@ -110,7 +115,7 @@ const LeaderBoard = ({
             activeTab={activeTab}
             setActiveTab={setActiveTab}
         />
-    </SafeAreaView>
+    </LinearGradient>
   );
 };
 
@@ -124,7 +129,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "600",
-    color: "white",
+    color: "black",
     textAlign: "center",
     marginBottom: 30,
   },
@@ -135,7 +140,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2B2B2B",
   },
   loadingText: {
-    color: "white",
+    color: "black",
     textAlign: "center",
     marginTop: 10,
   },
@@ -180,12 +185,12 @@ const styles = StyleSheet.create({
     top: -25,
   },
   stepCountText: {
-    color: "white",
+    color: "black",
     fontSize: 18,
     fontWeight: "600",
   },
   nameLarge: {
-    color: "white",
+    color: "black",
     fontSize: 18,
     fontWeight: "600",
     marginTop: 8,
@@ -199,18 +204,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
-    backgroundColor: "#333",
+    backgroundColor: "#EAF8FF",
     borderRadius: 15,
     marginVertical: 8,
+    elevation:3,
+    marginLeft:2,
+    marginRight:2
   },
   positionList: {
-    color: "white",
+    color: "black",
     fontSize: 18,
     fontWeight: "bold",
     marginRight: 14,
   },
   positionListTop: {
-    color: "white",
+    color: "black",
     fontSize: 18,
   },
   textContainer: {
@@ -218,7 +226,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   name: {
-    color: "white",
+    color: "black",
     fontSize: 14,
     fontWeight: "500",
   },
