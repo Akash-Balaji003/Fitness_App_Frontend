@@ -91,6 +91,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
           const data = await response.json();
           
           // Assuming the API returns an object with step counts for each day
+          console.log("Streaks : ", data)
           setStreak(data);
         } catch (error) {
           console.error('Error fetching step data:', error);
@@ -98,8 +99,10 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     };
 
     useEffect(()=>{
-        fetchStreaks();
-    },[]);
+        if (user?.user_id) {
+            fetchStreaks();
+        }
+    },[user]);
     
     if (!user) {
         return (
