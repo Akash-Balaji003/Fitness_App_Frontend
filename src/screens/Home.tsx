@@ -36,6 +36,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     const [activeTab, setActiveTab] = useState('Home');
     const { user, setUser } = useUser();
     const { stepCount, setStepCount } = useStepCounter();
+    const [ streak, setStreak ] = useState(0);
 
     const handleLogout = async () => {
         try {
@@ -82,6 +83,23 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
           calories: caloriesBurned, // Calories burned
         };
     };
+
+    const fetchStreaks = async () => {
+        try {
+          // Replace with your actual API URL
+          const response = await fetch(`https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/get-streaks?id=${user?.user_id}`);
+          const data = await response.json();
+          
+          // Assuming the API returns an object with step counts for each day
+          setStreak(data);
+        } catch (error) {
+          console.error('Error fetching step data:', error);
+        }
+    };
+
+    useEffect(()=>{
+        fetchStreaks();
+    },[]);
     
     if (!user) {
         return (
@@ -118,16 +136,16 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
             <StepProgressCircle stepCount={stepCount} stepGoal={user.stepgoal} />
 
             <View style={styles.statsContainer}>
-                <TouchableOpacity style={styles.statBox}>
+                <View style={styles.statBox}>
                     <FontAwesome name="fire" size={24} color="orange" />
                     <Text style={styles.statValue}>{metrics.calories.toFixed(0)} cals</Text>
                     <Text style={styles.statLabel}>Calories Burned Today</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.statBox}>
+                </View>
+                <View style={styles.statBox}>
                     <Ionicons name="footsteps" size={24} color="#1E3E62" />
-                    <Text style={styles.statValue}>15 Days</Text>
+                    <Text style={styles.statValue}>{streak} Days</Text>
                     <Text style={styles.statLabel}>Longest Streak</Text>
-                </TouchableOpacity>
+                </View>
             </View>
 
             {/*

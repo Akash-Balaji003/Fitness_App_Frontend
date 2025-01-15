@@ -107,12 +107,15 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
     };
     if (!stepData || !user) {
         return (
-            <SafeAreaView style={[{ justifyContent: 'center', flex: 1, padding: 10, backgroundColor: '#2B2B2B' }]}>
-                <ActivityIndicator size="large" color="#ffffff" />
-                <Text style={{ color: "black", textAlign: 'center', marginTop: 10 }}>
-                    Loading...
-                </Text>
-            </SafeAreaView>
+          <LinearGradient
+              colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+              style={styles.loadingContainer}
+              start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+              end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+          >
+            <ActivityIndicator size="large" color="blue" />
+            <Text style={styles.loadingText}>Loading...</Text>
+          </LinearGradient>
         );
     }
     const averageSteps = calculateAverageSteps(stepData.steps);
@@ -246,6 +249,16 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#1c1c1e', // Updated background color
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    color: "black",
+    textAlign: "center",
+    marginTop: 10,
   },
   scrollView: {
     flexGrow: 1,

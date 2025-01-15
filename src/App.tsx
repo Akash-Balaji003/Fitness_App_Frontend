@@ -247,7 +247,7 @@ const checkAndResetSteps = (userId: string) => {
     const intervalId = setInterval(() => {
 
         const now = new Date();
-        if (now.getHours() === 17 && now.getMinutes() === 15) {
+        if (now.getHours() === 23 && now.getMinutes() === 55) {
 
             updateStepsAtEndOfDay(userId, stepCount);
             stepCount = 0;  // Reset the step count for the next day

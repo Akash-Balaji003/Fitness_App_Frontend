@@ -36,7 +36,7 @@ const StepProgressCircle: React.FC<StepProgressCircleProps> = ({ stepCount, step
 
   const { user, setUser } = useUser();
   
-  const size = 210; // Diameter of the circle
+  const size = 200; // Diameter of the circle
   const strokeWidth = 10; // Thickness of the progress bar
   const radius = (size - strokeWidth) / 2; // Radius of the circle
   const circumference = 2 * Math.PI * radius; // Circumference of the circle

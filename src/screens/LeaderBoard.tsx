@@ -66,10 +66,15 @@ const LeaderBoard = ({
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ffffff" />
+      <LinearGradient
+          colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+          style={styles.loadingContainer}
+          start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+          end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+      >
+        <ActivityIndicator size="large" color="blue" />
         <Text style={styles.loadingText}>Loading...</Text>
-      </SafeAreaView>
+      </LinearGradient>
     );
   }
 
@@ -137,7 +142,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#2B2B2B",
   },
   loadingText: {
     color: "black",
