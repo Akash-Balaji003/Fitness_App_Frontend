@@ -3,10 +3,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { accelerometer } from 'react-native-sensors';
 
 let stepCount = 0; // Track total steps
-const alpha = 0.1; // Low-pass filter factor for gravity
-const STEP_THRESHOLD = 1.5; // Threshold for detecting steps
-const CLICK_THRESHOLD = 0.5; // Threshold to ignore clicks/taps
-const MIN_STEP_INTERVAL = 500; // Minimum interval between steps (milliseconds)
+const alpha = 0.7; // Low-pass filter constant
+const STEP_THRESHOLD = 2.5; // Adjust for more or less sensitivity
+const MIN_STEP_INTERVAL = 300; // Minimum time interval between steps in ms
+const CLICK_THRESHOLD = 1.7; // Acceleration threshold to filter out clicks/taps
 
 let lastStepTime = Date.now();
 let lastClickTime = Date.now();

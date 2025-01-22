@@ -101,6 +101,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 let stepCount = 0;
 
+
 const options = {
   taskName: 'StepCounterTask',
   taskTitle: 'Step Counter Running',
