@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { RootStackParamList } from '../App';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import LinearGradient from 'react-native-linear-gradient';
 
 type RegisterProps = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
@@ -82,7 +83,12 @@ const Register = ({ navigation }: RegisterProps) => {
     
 
     return (
-        <SafeAreaView style={[styles.container, { width, height }]}>
+        <LinearGradient
+            colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+            style={styles.container}
+            start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+            end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+        >
 
             {/* Form Title */}
             <Text style={styles.title}>CREATING ACCOUNT</Text>
@@ -106,7 +112,7 @@ const Register = ({ navigation }: RegisterProps) => {
                     <AntDesign name="arrowright" size={20} color="white" />
                 </TouchableOpacity>
             </View>
-        </SafeAreaView>
+        </LinearGradient>
     );
 };
 
@@ -125,7 +131,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: 'white',
+        color: 'black',
         textAlign: 'center',
         marginBottom: '5%',
     },

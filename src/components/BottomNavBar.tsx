@@ -25,7 +25,10 @@ const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps
                     email: 'defaultEmail',
                     password: 'defaultPassword',
                 });
-            } else {
+            } else if(tabName === 'ActivityTracker'){
+                navigation.navigate('ActivityTracker', {isSelected : true})
+            }
+            else {
                 navigation.navigate(tabName as any); // Fallback for tabs with no parameters
             }
         };
@@ -78,7 +81,6 @@ const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps
 
             {renderTabIcon('trophy', 'LeaderBoard', 'FontAwesome5')}
 
-            {/* LeaderBoard */}
             {renderTabIcon('users', 'Friends', 'FontAwesome5')}
             
             {renderTabIcon('user', 'Profile', 'FontAwesome5')}

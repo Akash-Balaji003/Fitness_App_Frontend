@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';  // To format date as YYYY-MM-DD
 
 import BackgroundService from 'react-native-background-actions';
-import { accelerometer } from 'react-native-sensors';
 const { StepCounterModule } = NativeModules;
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -26,10 +25,10 @@ import EditProfile from './screens/EditProfile';
 
 import { UserProvider } from './contexts/UserContext';
 import { StepCounterProvider, useStepCounter } from './contexts/StepCounterContext';
-import { getUserData } from './tasks/Storage';
+import { getUserData, hasAlertBeenShown, saveAlertStatus } from './tasks/Storage';
 import { ActivityIndicator, Alert, NativeModules, PermissionsAndroid, Platform, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import stepDetector from './tasks/StepCounterTask';
 
 enableScreens();
 
@@ -92,7 +91,7 @@ export type RootStackParamList = {
     };
     Home: undefined;
     Profile: undefined;
-    ActivityTracker: undefined;
+    ActivityTracker: {isSelected: boolean};
     LeaderBoard: undefined;
     Friends: undefined;
     EditProfile: undefined;
@@ -100,95 +99,8 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// Constants for step detection
-const alpha = 0.7; // Low-pass filter constant
-const STEP_THRESHOLD = 2.5; // Adjust for more or less sensitivity
-const MIN_STEP_INTERVAL = 300; // Minimum time interval between steps in ms
-const CLICK_THRESHOLD = 1.7; // Acceleration threshold to filter out clicks/taps
-
-let gravity = { x: 0, y: 0, z: 0 };
-let lastStepTime = 0;
-let lastClickTime = 0;
 let stepCount = 0;
 
-const task = async (taskData?: { delay: number; setStepCount: (count: number) => void }) => {
-    const { delay, setStepCount } = taskData || { delay: 1000, setStepCount: () => {} };
-
-  console.log('Background Step Counter Task Running...');
-
-  // Gravity & Step Detection Logic
-  const fallbackAccelerometerLogic = (sensorData: any) => {
-    // Apply low-pass filter to remove gravity
-    gravity.x = alpha * gravity.x + (1 - alpha) * sensorData.x;
-    gravity.y = alpha * gravity.y + (1 - alpha) * sensorData.y;
-    gravity.z = alpha * gravity.z + (1 - alpha) * sensorData.z;
-
-    const linearAcceleration = {
-      x: sensorData.x - gravity.x,
-      y: sensorData.y - gravity.y,
-      z: sensorData.z - gravity.z,
-    };
-
-    const totalAcceleration = Math.sqrt(
-      linearAcceleration.x ** 2 +
-        linearAcceleration.y ** 2 +
-        linearAcceleration.z ** 2
-    );
-
-    const now = Date.now();
-
-    // Ignore clicks/taps
-    if (totalAcceleration > CLICK_THRESHOLD && now - lastClickTime > 500) {
-      lastClickTime = now;
-      return;
-    }
-
-    // Detect steps and log step count
-    if (
-      totalAcceleration > STEP_THRESHOLD &&
-      now - lastStepTime > MIN_STEP_INTERVAL
-    ) {
-      stepCount += 1;
-      console.log(`Step Detected! Total Steps: ${stepCount}`);
-      setStepCount(stepCount);
-      lastStepTime = now;
-    }
-  };
-
-  // Save the updated step count to AsyncStorage
-  const saveStepCount = async () => {
-    try {
-        await AsyncStorage.setItem('stepCount', stepCount.toString());
-        console.log('Step count saved to AsyncStorage:', stepCount);
-    } catch (error) {
-        console.error('Failed to save step count to AsyncStorage', error);
-    }
-  };
-
-
-  try {
-    // Start accelerometer subscription
-    const subscription = accelerometer.subscribe(
-      (data) => fallbackAccelerometerLogic(data),
-      (error) => {
-        console.error('Accelerometer error:', error);
-      }
-    );
-
-    await new Promise<void>((resolve) => {
-      setInterval(() => {
-        console.log('Background task still running...');
-        saveStepCount();  // Save the step count whenever it's updated
-      }, delay);
-    });
-
-    subscription.unsubscribe();
-  } catch (error) {
-    console.error('Error in background task:', error);
-  }
-};
-
-// Background Service options
 const options = {
   taskName: 'StepCounterTask',
   taskTitle: 'Step Counter Running',
@@ -204,13 +116,13 @@ const options = {
 };
 
 const startBackgroundService = async (setStepCount: (count: number) => void) => {
-    try {
-      console.log('Starting Background Step Counter...');
-      await BackgroundService.start(() => task({ delay: 500, setStepCount }), options);
-      console.log('Background Step Counter Started');
-    } catch (error) {
-      console.error('Error starting background task:', error);
-    }
+  try {
+    console.log('Starting Background Step Counter...');
+    await BackgroundService.start(() => stepDetector({ delay: 1000, setStepCount }), options);
+    console.log('Background Step Counter Started');
+  } catch (error) {
+    console.error('Error starting background task:', error);
+  }
 };
 
 const updateStepsAtEndOfDay = async (userId: string, stepCount: number) => {
@@ -240,8 +152,6 @@ const updateStepsAtEndOfDay = async (userId: string, stepCount: number) => {
     }
 };
 
-  
-// Function to check and reset step count every day at 11 PM
 const checkAndResetSteps = (userId: string) => {
 
     const intervalId = setInterval(() => {
@@ -365,19 +275,37 @@ const requestPermissions = async () => {
   }
 };
 
+const showAlertIfNeeded = async () => {
+  const hasShown = await hasAlertBeenShown();
+  if (!hasShown) {
+      Alert.alert(
+          'Important Notice',
+          'To ensure proper functionality, please enable background activity and disable battery optimisation for this app in your Battery Settings. After making the change, restart the app.',
+          [
+              {
+                  text: 'OK',
+                  onPress: async () => {
+                      await saveAlertStatus();
+                  },
+              },
+          ]
+      );
+  }
+};
+
 function App(): React.JSX.Element {
 
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);  // Will hold login state
 
   useEffect(() => {
+
     requestPermissions();
-    Alert.alert(
-      "Important Notice",
-      "To ensure proper functionality, please enable background activity for this app in your Battery Settings. After making the change, restart the app."
-    );
+
+    showAlertIfNeeded()
+
     const checkUserStatus = async () => {
-    const userData = await getUserData();  // Fetch user data
-    setIsLoggedIn(!!userData);  // If user data exists, set logged in to true
+      const userData = await getUserData();  // Fetch user data
+      setIsLoggedIn(!!userData);  // If user data exists, set logged in to true
     };
 
     checkUserStatus();  // Check on app start
@@ -396,7 +324,7 @@ function App(): React.JSX.Element {
         <StepCounterProvider>
             <AppWrapper />
             <NavigationContainer>
-            <Stack.Navigator initialRouteName={isLoggedIn ? 'Home' : 'Login'}>
+            <Stack.Navigator initialRouteName={isLoggedIn ? 'Home' : 'Login'} >
                 <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
                 <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
                 <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />

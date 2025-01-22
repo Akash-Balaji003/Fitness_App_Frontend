@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         paddingHorizontal: 20,
         fontSize: width * 0.045, // Dynamic font size for input text
-        color: '#black',
+        color: 'black',
         marginBottom: height * 0.02,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },

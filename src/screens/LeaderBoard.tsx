@@ -165,6 +165,7 @@ const styles = StyleSheet.create({
     borderRadius: 45,
     justifyContent: "center",
     alignItems: "center",
+    elevation:5
   },
   secondPlaceCircle: {
     backgroundColor: "#C0C0C0",
@@ -173,6 +174,8 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     justifyContent: "center",
     alignItems: "center",
+    elevation:5
+
   },
   thirdPlaceCircle: {
     backgroundColor: "#CD7F32",
@@ -181,6 +184,8 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     justifyContent: "center",
     alignItems: "center",
+    elevation:5
+
   },
   crownIcon: {
     fontSize: 22,

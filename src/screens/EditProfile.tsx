@@ -8,6 +8,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useUser } from '../contexts/UserContext';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // For icons like Tick, Cross, and Pen
 import { saveUserData } from '../tasks/Storage';
+import LinearGradient from 'react-native-linear-gradient';
 
 const { width, height } = Dimensions.get("window");
 
@@ -105,15 +106,20 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
     }
 
     return (
-        <SafeAreaView style={styles.container}>
+        <LinearGradient
+            colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+            style={styles.container}
+            start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+            end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+        >
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Icon name="close" size={28} color="#FFF" />
+                    <Icon name="close" size={28} color="#333" />
                 </TouchableOpacity>
                 <Text style={styles.title}>Edit Profile</Text>
                 <TouchableOpacity onPress={handleDone} style={styles.tickContainer}>
-                    <Icon name="check" size={20} color="#FFF" />
+                    <Icon name="check" size={20} color="#333" />
                 </TouchableOpacity>
             </View>
 
@@ -237,7 +243,7 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
             activeTab={activeTab}
             setActiveTab={setActiveTab}
         />
-        </SafeAreaView>
+        </LinearGradient>
     );
 };
 
@@ -258,7 +264,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: wp(5),
-        color: "#FFF",
+        color: "#333",
         fontWeight: 'bold',
     },
     tickContainer: {
@@ -295,7 +301,7 @@ const styles = StyleSheet.create({
     },
     userName: {
         fontSize: wp(5),
-        color: "#FFF",
+        color: "#333",
         fontWeight: 'bold',
     },
     userInfo: {
@@ -311,7 +317,7 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: wp(4),
-        color: "#AAA",
+        color: "#333",
         marginBottom: hp(0.5),
     },
     value: {
@@ -328,18 +334,20 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     optionButton: {
-        backgroundColor: '#333',
+        backgroundColor: '#fff',
         paddingVertical: hp(1),
         marginVertical: hp(0.5),
         borderRadius: wp(2),
         width: '30%',
         alignItems: 'center',
+        elevation:3
     },
     selectedOption: {
         backgroundColor: "#F0A500",
+        elevation:3
     },
     buttonText: {
-        color: "#FFF",
+        color: "#333",
         fontSize: wp(3.5),
     },
     selectedText: {
@@ -359,6 +367,6 @@ const styles = StyleSheet.create({
     stepValue: {
         fontSize: wp(6),
         fontWeight: 'bold',
-        color: "#FFF",
+        color: "#333",
     },
 });

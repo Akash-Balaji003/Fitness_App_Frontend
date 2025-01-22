@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { RootStackParamList } from "../../App";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import LinearGradient from "react-native-linear-gradient";
 
 const { width, height } = Dimensions.get("window");
 
@@ -46,7 +47,12 @@ const WeightHeightPage = ({ navigation, route }: NativeStackScreenProps<RootStac
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <LinearGradient
+            colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+            style={styles.container}
+            start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+            end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+      >
       {/* Weight Section */}
       <View style={styles.section}>
         <Text style={styles.label}>Current weight</Text>
@@ -112,7 +118,7 @@ const WeightHeightPage = ({ navigation, route }: NativeStackScreenProps<RootStac
           <View style={styles.indicator} />
         </View>
       </View>
-      <View style={{flexDirection:"row", justifyContent:"space-between", margin:10}}>
+      <View style={{flexDirection:"row", justifyContent:"space-between", margin:10, width:"80%", alignSelf:"center"}}>
         <TouchableOpacity style={styles.nextButton} onPress={()=>navigation.goBack()}>
           <Icon name="arrow-left" size={24} color="#FFF" />
         </TouchableOpacity>
@@ -120,7 +126,7 @@ const WeightHeightPage = ({ navigation, route }: NativeStackScreenProps<RootStac
           <Icon name="arrow-right" size={24} color="#FFF" />
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </LinearGradient>
   );
 };
 
@@ -137,17 +143,17 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 18,
-    color: "#FFF",
+    color: "black",
     marginBottom: 5,
   },
   value: {
     fontSize: 28,
-    color: "#FF8C00",
+    color: "black",
     fontWeight: "bold",
     marginBottom: 10,
   },
   highlight: {
-    color: "#FF8C00",
+    color: "black",
     fontSize: 36,
   },
   rulerWrapper: {
@@ -159,13 +165,13 @@ const styles = StyleSheet.create({
   rulerItem: {
     width: 5,
     height: 20,
-    backgroundColor: "#d9d4d6",
+    backgroundColor: "grey",
     opacity: 0.8,
     marginRight: 1,
   },
   rulerItemBold: {
     height: 40,
-    backgroundColor: "white",
+    backgroundColor: "black",
     opacity: 0.8,
   },
   indicator: {

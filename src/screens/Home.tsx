@@ -52,6 +52,8 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     const handleRefresh = async () => {
         try {
             console.log("Refreshing...");
+
+            console.log("current stepcount : ", stepCount);
     
             const storedStepCount = await AsyncStorage.getItem('stepCount');
             console.log("Fetched from AsyncStorage:", storedStepCount);

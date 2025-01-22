@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, View, Text, Image, TouchableOpacity } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../App";
+import LinearGradient from "react-native-linear-gradient";
 
 const WelcomePage = ({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'WelcomePage'>) => {
 
@@ -17,7 +18,12 @@ const WelcomePage = ({ route, navigation }: NativeStackScreenProps<RootStackPara
     };
 
     return (
-        <View style={styles.container}>
+        <LinearGradient
+              colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+              style={styles.container}
+              start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+              end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+        >
             <Image
                 source={require('../../assets/Sample.jpeg')} // Replace with local image file
                 style={styles.profileImage}
@@ -34,7 +40,7 @@ const WelcomePage = ({ route, navigation }: NativeStackScreenProps<RootStackPara
                     <Text style={styles.startQuizButtonText}>Start Journey</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </LinearGradient>
     );
 };
 
@@ -42,7 +48,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#111",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
     gap:50
   },
@@ -56,6 +62,7 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     marginRight: 15,
+    marginTop:"25%"
   },
   overlay: {
     padding: 20,

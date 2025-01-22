@@ -5,6 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Icon from "react-native-vector-icons/FontAwesome";
+import LinearGradient from 'react-native-linear-gradient';
 
 const ActivityLifestyle = ({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'ActivityLifestyle'>) => {
 
@@ -30,7 +31,12 @@ const ActivityLifestyle = ({ route, navigation }: NativeStackScreenProps<RootSta
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <LinearGradient
+          colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+          style={styles.container}
+          start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+          end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+      >
       <Text style={styles.title}>How active are you in your daily lifestyle?</Text>
       <View style={styles.buttonContainer}>
         {activityLevels.map((level) => (
@@ -51,7 +57,7 @@ const ActivityLifestyle = ({ route, navigation }: NativeStackScreenProps<RootSta
           <Icon name="arrow-right" size={24} color="#FFF" />
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </LinearGradient>
   );
 };
 
@@ -59,11 +65,11 @@ export default ActivityLifestyle;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000', padding: 20 },
-  title: { fontSize: 20, color: '#FFF', textAlign: 'center', marginVertical: 20 },
+  title: { fontSize: 20, color: 'black', textAlign: 'center', marginVertical: 20 },
   buttonContainer: { flexDirection: 'row', justifyContent: 'space-around' },
-  optionButton: { backgroundColor: '#333', padding: 15, borderRadius: 8, width: '30%', alignItems: 'center' },
-  selectedOption: { backgroundColor: '#F0A500' },
-  buttonText: { color: '#FFF' },
+  optionButton: { backgroundColor: '#fff', padding: 15, borderRadius: 8, width: '30%', alignItems: 'center', elevation:3 },
+  selectedOption: { backgroundColor: '#F0A500', elevation:3 },
+  buttonText: { color: '#333' },
   selectedText: { color: '#000', fontWeight: 'bold' },
   nextButton: {
     width: 60,

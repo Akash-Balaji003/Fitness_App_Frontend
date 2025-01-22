@@ -5,6 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Icon from "react-native-vector-icons/FontAwesome";
+import LinearGradient from 'react-native-linear-gradient';
 
 
 const DietaryPreference = ({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'DietaryPreference'>) => {
@@ -13,7 +14,7 @@ const DietaryPreference = ({ route, navigation }: NativeStackScreenProps<RootSta
 
   const [diet, setDiet] = useState('None');
 
-  const dietaryOptions = ['Vegetarian', 'Pescatarian', 'Vegan', 'Dairy-free', 'Gluten-free', 'Paleo', 'Ovo-veg', 'Non-veg', 'None'];
+  const dietaryOptions = ['A +', 'B +', 'O +', 'AB +', 'A -', 'B -', 'AB -', 'O -'];
 
   const navigateNext = async() => {
     navigation.navigate('ActivityLifestyle',{
@@ -30,8 +31,13 @@ const DietaryPreference = ({ route, navigation }: NativeStackScreenProps<RootSta
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>What is your dietary preference?</Text>
+    <LinearGradient
+            colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+            style={styles.container}
+            start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+            end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+      >
+      <Text style={styles.title}>What is your blood group?</Text>
       <View style={styles.buttonContainer}>
         {dietaryOptions.map((option) => (
           <TouchableOpacity
@@ -51,20 +57,33 @@ const DietaryPreference = ({ route, navigation }: NativeStackScreenProps<RootSta
           <Icon name="arrow-right" size={24} color="#FFF" />
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 export default DietaryPreference;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000', padding: 20, justifyContent:"center" },
-  title: { fontSize: 20, color: '#FFF', textAlign: 'center', marginVertical: 20 },
-  buttonContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  optionButton: { backgroundColor: '#333', padding: 10, marginVertical: 5, borderRadius: 8, width: '30%', alignItems: 'center' },
-  selectedOption: { backgroundColor: '#F0A500' },
-  buttonText: { color: '#FFF' },
-  selectedText: { color: '#000', fontWeight: 'bold' },
+  container: { flex: 1, padding: 20, justifyContent: "center" },
+  title: { fontSize: 20, color: "black", textAlign: "center", marginVertical: 20 },
+  buttonContainer: {
+    flexDirection: "row", // Arrange items in rows
+    flexWrap: "wrap", // Allow wrapping into multiple rows
+    justifyContent: "space-between", // Space between items
+    alignItems: "center", // Align items vertically
+  },
+  optionButton: {
+    backgroundColor: "#fff",
+    paddingVertical: 15, // Increased for better touch area
+    borderRadius: 8,
+    width: "45%", // Ensure two buttons fit side by side
+    margin: 5, // Spacing between buttons
+    alignItems: "center",
+    elevation: 3, // Shadow for depth
+  },
+  selectedOption: { backgroundColor: "#F0A500", elevation: 3 },
+  buttonText: { color: "black" },
+  selectedText: { color: "#000", fontWeight: "bold" },
   nextButton: {
     width: 60,
     height: 60,
@@ -74,3 +93,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 });
+

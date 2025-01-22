@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const USER_DATA_KEY = 'user_data';
+const ALERT_STATUS_KEY = 'has_shown_alert';
 
 // Save user ID to AsyncStorage
 export const saveUserId = async (userId: string) => {
@@ -59,5 +60,25 @@ export const removeUserData = async () => {
         await AsyncStorage.removeItem(USER_DATA_KEY);
     } catch (error) {
         console.error('Error removing user data:', error);
+    }
+};
+
+// Save alert status to AsyncStorage
+export const saveAlertStatus = async () => {
+    try {
+        await AsyncStorage.setItem(ALERT_STATUS_KEY, 'true');
+    } catch (error) {
+        console.error('Error saving alert status:', error);
+    }
+};
+
+// Check if alert has been shown
+export const hasAlertBeenShown = async (): Promise<boolean> => {
+    try {
+        const status = await AsyncStorage.getItem(ALERT_STATUS_KEY);
+        return status === 'true';
+    } catch (error) {
+        console.error('Error checking alert status:', error);
+        return false;
     }
 };

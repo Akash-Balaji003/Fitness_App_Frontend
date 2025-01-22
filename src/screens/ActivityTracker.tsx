@@ -9,6 +9,7 @@ import {
     ToastAndroid,
     FlatList,
     ActivityIndicator,
+    RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -25,8 +26,10 @@ const { width, height } = Dimensions.get("window");
 const calculatePercentage = (percentage: number, dimension: number) =>
     (percentage / 100) * dimension;
 
-const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'ActivityTracker'>) => {
+const ActivityTracker = ({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'ActivityTracker'>) => {
+
     const { user } = useUser();
+    const [refreshing, setRefreshing] = useState(false); // State for pull-to-refresh
 
     const [activeTab, setActiveTab] = useState('ActivityTimer');
     const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -39,46 +42,50 @@ const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamLi
     const [loading, setLoading] = useState(true);
     const [activities, setActivities] = useState([]);
 
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await Promise.all([fetchActivities()]);
+        setRefreshing(false);
+    };
+
+    const fetchActivities = async () => {
+        try {
+            const response = await fetch(`https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/fetch-activities?id=${user?.user_id}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+            const data = await response.json();
+            console.log("Fetched data:", data); // Debugging
+            setActivities(data || []); // Use the data directly since it's already an array
+        } catch (error) {
+            console.error("Error fetching activities:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-            const fetchActivities = async () => {
-                try {
-                    const response = await fetch(`https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/fetch-activities?id=${user?.user_id}`, {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    });
-                    const data = await response.json();
-                    console.log("Fetched data:", data); // Debugging
-                    setActivities(data || []); // Use the data directly since it's already an array
-                } catch (error) {
-                    console.error("Error fetching activities:", error);
-                } finally {
-                    setLoading(false);
-                }
-            };
-        
-            fetchActivities();
-        }, []);
+        fetchActivities();
+    }, []);
     
-        const formatDuration = (seconds: number) => {
-            const hrs = Math.floor(seconds / 3600);
-            const mins = Math.floor((seconds % 3600) / 60);
-            const secs = seconds % 60;
-            return `${hrs.toString().padStart(2, "0")}:${mins
-                .toString()
-                .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-        };
+    const formatDuration = (seconds: number) => {
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${hrs.toString().padStart(2, "0")}:${mins
+            .toString()
+            .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    };
         
-        
-    
-        const renderActivityCard = ({ item, index }: { item: any; index: number }) => (
-            <View style={styles.card}>
-                <Text style={styles.cardText}>{index + 1}</Text>
-                <Text style={styles.cardText}>{item.activity}</Text>
-                <Text style={styles.cardText}>{formatDuration(item.duration)}</Text>
-            </View>
-        );
+    const renderActivityCard = ({ item, index }: { item: any; index: number }) => (
+        <View style={styles.card}>
+            <Text style={styles.cardText}>{item.activity_date}</Text>
+            <Text style={styles.cardText}>{item.activity}</Text>
+            <Text style={styles.cardText}>{formatDuration(item.duration)}</Text>
+        </View>
+    );
 
     // Timer management
     useEffect(() => {
@@ -124,7 +131,7 @@ const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamLi
 
     // Handle activity switching
     const handleArrowPress = (direction: string) => {
-        const activities = ["WALKING", "RUNNING", "CYCLING", "SWIMMING"];
+        const activities = ["WALKING", "CYCLING", "SWIMMING"];
         const currentIndex = activities.indexOf(user_activity);
         const nextIndex =
             direction === "left"
@@ -147,6 +154,8 @@ const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamLi
 
         // Call API and store in DB
         try {
+            const currentDate = new Date().toISOString().split('T')[0];
+
             const response = await fetch('https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/store-activity', {
                 method: 'POST',
                 headers: {
@@ -155,7 +164,8 @@ const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamLi
                 body: JSON.stringify({
                     activity: user_activity,  // or 'RUNNING', 'CYCLING', etc.
                     duration: user_duration,       // Duration in seconds
-                    user_id: user?.user_id
+                    user_id: user?.user_id,
+                    activity_date: currentDate
                 }), // The activity data to be sent in the body
             });
     
@@ -290,9 +300,9 @@ const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamLi
                 (
                     <View style={styles.containerBodyHistory}>
                         <View style={{flexDirection:"row", padding: calculatePercentage(2.5, width), justifyContent:"space-around"}}>
-                            <Text style={styles.cardTitle}>Sn.No</Text>
-                            <Text style={[styles.cardTitle, {marginRight:calculatePercentage(12, width)}]}>Activity</Text>
-                            <Text style={[styles.cardTitle, {marginRight:calculatePercentage(8, width)}]}>Time</Text>
+                            <Text style={[styles.cardTitle, {marginLeft:calculatePercentage(6, width)}]}>Date</Text>
+                            <Text style={[styles.cardTitle, {marginLeft:calculatePercentage(5, width)}]}>Activity</Text>
+                            <Text style={[styles.cardTitle, {}]}>Time</Text>
                         </View>
                         {loading ? (
                             <View>
@@ -307,6 +317,13 @@ const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamLi
                                 data={activities}
                                 keyExtractor={(item, index) => index.toString()}
                                 renderItem={renderActivityCard}
+                                refreshControl={
+                                    <RefreshControl
+                                        refreshing={refreshing}
+                                        onRefresh={onRefresh}
+                                        colors={["#007BFF"]}
+                                    />
+                                }
                             />
                         ) : (
                             <Text style={styles.noDataText}>No activities found.</Text>
@@ -318,7 +335,7 @@ const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamLi
             {/* Bottom Navigation Bar */}
             <BottomNavBar
                 navigation={navigation}
-                activeTab="ActivityTimer"
+                activeTab="ActivityTracker"
                 setActiveTab={setActiveTab}
             />
         </LinearGradient>

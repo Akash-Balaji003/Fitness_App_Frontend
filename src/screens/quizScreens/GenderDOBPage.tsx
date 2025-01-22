@@ -4,6 +4,7 @@ import { Picker } from "@react-native-picker/picker";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { RootStackParamList } from "../../App";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import LinearGradient from "react-native-linear-gradient";
 
 const GenderDOBPage = ({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'GenderDOBPage'>) => {
   const { username, phone_number, password, email } = route.params;
@@ -38,7 +39,12 @@ const GenderDOBPage = ({ navigation, route }: NativeStackScreenProps<RootStackPa
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+            colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+            style={styles.container}
+            start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+            end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+      >
       <Text style={styles.title}>Select your gender</Text>
       <View style={styles.genderContainer}>
         {[
@@ -65,7 +71,7 @@ const GenderDOBPage = ({ navigation, route }: NativeStackScreenProps<RootStackPa
         <Picker
           selectedValue={selectedDay}
           style={styles.Daypicker}
-          dropdownIconColor={"#FF8C00"}
+          dropdownIconColor={"#fff"}
           onValueChange={(itemValue) => setSelectedDay(itemValue)}
         >
           {Array.from({ length: 31 }, (_, i) => (i + 1).toString().padStart(2, "0")).map((day) => (
@@ -75,7 +81,7 @@ const GenderDOBPage = ({ navigation, route }: NativeStackScreenProps<RootStackPa
         <Picker
           selectedValue={selectedMonth}
           style={styles.Monthpicker}
-          dropdownIconColor={"#FF8C00"}
+          dropdownIconColor={"#fff"}
           onValueChange={(itemValue) => setSelectedMonth(itemValue)}
         >
           {Object.keys(monthMap).map((month) => (
@@ -85,7 +91,7 @@ const GenderDOBPage = ({ navigation, route }: NativeStackScreenProps<RootStackPa
         <Picker
           selectedValue={selectedYear}
           style={styles.Yearpicker}
-          dropdownIconColor={"#FF8C00"}
+          dropdownIconColor={"#fff"}
           onValueChange={(itemValue) => setSelectedYear(itemValue)}
         >
           {years.map((year) => (
@@ -94,10 +100,15 @@ const GenderDOBPage = ({ navigation, route }: NativeStackScreenProps<RootStackPa
         </Picker>
       </View>
 
-      <TouchableOpacity style={styles.nextButton} onPress={navigateNext}>
-        <Icon name="arrow-right" size={24} color="#FFF" />
-      </TouchableOpacity>
-    </View>
+      <View style={{flexDirection:"row", justifyContent:"space-between", margin:10, marginTop:50, width:"80%"}}>
+        <TouchableOpacity style={styles.nextButton} onPress={()=>navigation.goBack()}>
+          <Icon name="arrow-left" size={24} color="#FFF" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.nextButton} onPress={navigateNext}>
+          <Icon name="arrow-right" size={24} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+    </LinearGradient>
   );
 };
 
@@ -111,7 +122,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    color: "#FFF",
+    color: "black",
     marginBottom: 30,
     textAlign: "center",
   },
@@ -138,7 +149,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   subtitle: {
-    color: "#FFF",
+    color: "black",
     fontSize: 18,
     marginBottom: 20,
     textAlign: "center",
@@ -150,19 +161,19 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   Yearpicker: {
-    color: "#FF8C00",
+    color: "#fff",
     backgroundColor: "#333",
     borderRadius: 10,
     width: "40%",
   },
   Daypicker: {
-    color: "#FF8C00",
+    color: "#fff",
     backgroundColor: "#333",
     borderRadius: 10,
     width: "26%",
   },
   Monthpicker: {
-    color: "#FF8C00",
+    color: "#fff",
     backgroundColor: "#333",
     borderRadius: 10,
     width: "30%",
