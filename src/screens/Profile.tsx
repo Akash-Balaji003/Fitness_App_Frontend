@@ -10,13 +10,16 @@ import {
   ScrollView,
   Dimensions,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Import FontAwesome for icons
+import Fontisto from 'react-native-vector-icons/Fontisto'; // Import FontAwesome for icons
 import { RootStackParamList } from '../App';
 import BottomNavBar from '../components/BottomNavBar';
 import { BarChart } from 'react-native-chart-kit';
 import { useUser } from '../contexts/UserContext';
 import LinearGradient from 'react-native-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface WeeklyData {
     labels: string[];
@@ -29,9 +32,20 @@ interface ProcessedData {
 }
 
 const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Profile">) => {
-    const { user } = useUser();
+    const { user, setUser } = useUser();
     const [stepData, setStepData] = useState<ProcessedData | undefined>(undefined);
     const [activeTab, setActiveTab] = useState('Profile');
+
+    const handleLogout = async () => {
+      try {
+          await AsyncStorage.clear();
+          navigation.navigate('Login');
+          setUser(null as any);
+      } catch (error) {
+          Alert.alert('Error', 'Failed to log out. Please try again.');
+          console.error(error);
+      }
+    };
 
     const processWeeklyData = (rawData: WeeklyData): ProcessedData => {
         const fullWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -120,6 +134,8 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
     }
     const averageSteps = calculateAverageSteps(stepData.steps);
     const userBMI = calculateBMI(user?.weight, user?.height);
+
+
   return (
     <LinearGradient
           colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
@@ -155,14 +171,14 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
 
           {/* Information Section */}
           <View style={styles.infoContainer}>
-            <InfoItem icon="phone" text={user?.phone_number || "NULL"} />
-            <InfoItem icon="envelope" text={user?.email || "NULL"} />
-            <InfoItem icon="calendar" text="00-00-2004" />
-            <InfoItem icon="leaf" text={user?.diet || "NULL"} />
+            <InfoItem iconLibrary='' icon="phone" text={user?.phone_number || "NULL"} />
+            <InfoItem iconLibrary="FontAwesome" icon="envelope" text={user?.email || "NULL"} />
+            <InfoItem iconLibrary="FontAwesome" icon="calendar" text={user.DOB} />
+            <InfoItem iconLibrary="Fontisto" icon="blood-drop" text={user.blood} />
 
             {/* Height, Weight, and BMI in one row with spacing */}
             <View style={styles.inlineInfo}>
-              <InfoItem icon="arrows-v" text={String(user?.height) || "NULL"} style={styles.inlineInfoItem} />
+              <InfoItem iconLibrary="FontAwesome" icon="arrows-v" text={String(user?.height) || "NULL"} style={styles.inlineInfoItem} />
               {/* Replaced icon with letter "W" for Weight */}
               <View style={[styles.infoItem, styles.inlineInfoItem]}>
                 <Text style={styles.icon}>W</Text>
@@ -170,7 +186,7 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
               </View>
               {/* Removed icon for BMI */}
               <View style={[styles.infoItem, styles.inlineInfoItem]}>
-                <Text style={styles.infoText}>BMI: {userBMI}</Text>
+                <Text style={styles.infoText}><Text style={[styles.icon,{fontSize:15}]}>BMI: </Text>{userBMI}</Text>
               </View>
             </View>
           </View>
@@ -216,6 +232,24 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
 
             </View>
           </View>
+          <TouchableOpacity style={[styles.logoutButton,{marginTop:10, elevation:5}]} onPress={()=> Alert.alert(
+                "Logout Confirmation", 
+                "Are you sure you want to log out? You will need to log in again to access your account.", 
+                [
+                  {
+                    text: "Cancel",
+                    style: "cancel", // Makes it bold on iOS and dismisses on Android
+                  },
+                  {
+                    text: "OK",
+                    onPress: async () => {
+                      handleLogout();
+                    },
+                  },
+                ]
+              )}>
+            <Text style={styles.logButtonText}>Logout</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
       <BottomNavBar
@@ -227,14 +261,24 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
   );
 };
 
-const InfoItem: React.FC<{ icon: string; text: string; style?: any }> = ({ icon, text, style }) => (
-    <View style={[styles.infoItem, style]}>
-      {/* Dynamically render icons */}
-      <Icon name={icon} size={18} color="#f7941d" style={styles.icon} />
-      <Text style={styles.infoText}>{text}</Text>
-    </View>
-  );
-  
+const IconComponent = ({ library, name, size, color }: { library: string, name: string, size: number, color: string }) => {
+  switch (library) {
+    case 'FontAwesome':
+      return <Icon name={name} size={size} color={color} />;
+    case 'Fontisto':
+      return <Fontisto name={name} size={size} color={color} />;
+    default:
+      return <Icon name={name} size={size} color={color} />; // Default to FontAwesome
+  }
+};
+
+const InfoItem: React.FC<{ iconLibrary: string; icon: string; text: string; style?: any }> = ({ iconLibrary, icon, text, style }) => (
+  <View style={[styles.infoItem, style]}>
+    {/* Dynamically render icons from the selected library */}
+    <IconComponent library={iconLibrary} name={icon} size={18} color="#133E87" />
+    <Text style={styles.infoText}>{text}</Text>
+  </View>
+);
 
 const styles = StyleSheet.create({
 
@@ -321,10 +365,23 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignSelf: 'flex-start',
   },
+  logoutButton: {
+    backgroundColor: '#fff',
+    paddingVertical: 15,
+    paddingHorizontal: 100,
+    borderRadius: 25,
+    alignSelf: 'center',
+    elevation:3
+  },
   editButtonText: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  logButtonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
   },
   infoContainer: {
     marginBottom: 5,
@@ -339,7 +396,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 10,
     marginBottom: 10,
-    elevation:3
+    elevation:3,
+    gap: 5
   },
   inlineInfo: {
     flexDirection: 'row',

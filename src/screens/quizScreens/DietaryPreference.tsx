@@ -12,7 +12,7 @@ const DietaryPreference = ({ route, navigation }: NativeStackScreenProps<RootSta
 
   const { username, phone_number, password, DOB, gender, height, weight, email } = route.params;
 
-  const [diet, setDiet] = useState('None');
+  const [blood, setBlood] = useState('None');
 
   const dietaryOptions = ['A +', 'B +', 'O +', 'AB +', 'A -', 'B -', 'AB -', 'O -'];
 
@@ -26,7 +26,7 @@ const DietaryPreference = ({ route, navigation }: NativeStackScreenProps<RootSta
         DOB: DOB,
         height: height,
         weight: weight,
-        diet: diet
+        blood: blood
     })
   };
 
@@ -42,10 +42,10 @@ const DietaryPreference = ({ route, navigation }: NativeStackScreenProps<RootSta
         {dietaryOptions.map((option) => (
           <TouchableOpacity
             key={option}
-            style={[styles.optionButton, diet === option && styles.selectedOption]}
-            onPress={() => setDiet(option)}
+            style={[styles.optionButton, blood === option && styles.selectedOption]}
+            onPress={() => setBlood(option)}
           >
-            <Text style={[styles.buttonText, diet === option && styles.selectedText]}>{option}</Text>
+            <Text style={[styles.buttonText, blood === option && styles.selectedText]}>{option}</Text>
           </TouchableOpacity>
         ))}
       </View>

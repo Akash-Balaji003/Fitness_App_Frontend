@@ -16,6 +16,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
 
 import FontAwesome from "react-native-vector-icons/FontAwesome";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -37,17 +38,6 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     const { user, setUser } = useUser();
     const { stepCount, setStepCount } = useStepCounter();
     const [ streak, setStreak ] = useState(0);
-
-    const handleLogout = async () => {
-        try {
-            await AsyncStorage.clear();
-            navigation.navigate('Login');
-            setUser(null as any);
-        } catch (error) {
-            Alert.alert('Error', 'Failed to log out. Please try again.');
-            console.error(error);
-        }
-    };
 
     const handleRefresh = async () => {
         try {
@@ -108,12 +98,17 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     
     if (!user) {
         return (
-            <SafeAreaView style={[styles.container, { justifyContent: 'center' }]}>
-                <ActivityIndicator size="large" color="#ffffff" />
-                <Text style={{ color: "white", textAlign: 'center', marginTop: 10 }}>
+            <LinearGradient
+                colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
+                style={styles.container}
+                start={{ x: 0, y: 0 }} // Gradient direction (top-left)
+                end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
+            >
+                <ActivityIndicator size="large" color="blue" />
+                <Text style={{ color: "#333", textAlign: 'center', marginTop: 10 }}>
                     Loading...
                 </Text>
-            </SafeAreaView>
+            </LinearGradient>
         );
     }
 
@@ -132,8 +127,8 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
                     <TouchableOpacity onPress={handleRefresh}>
                         <FontAwesome name="refresh" size={24} color="black" />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={handleLogout}>
-                        <MaterialIcons name="logout" size={24} color="black" />
+                    <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
+                        <FontAwesome5 name="user" size={23} color="black" />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -153,12 +148,6 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
                 </View>
             </View>
 
-            {/*
-                <TouchableOpacity style={[styles.statBoxBig,{width:"100%"}]}>
-                    <Text style={[styles.statValue, {fontSize:20, textAlign:"left", marginTop:1}]}>January</Text>
-                    <Text style={[styles.statLabel, {alignSelf:"center", marginTop:"20%", fontSize:14}]}>Current Month Steps Data Will Be Displayed Here</Text>
-                </TouchableOpacity>
-            */}
             <StepCountGrid />
 
             <BottomNavBar
@@ -166,6 +155,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
             />
+
         </LinearGradient>
     );
 };

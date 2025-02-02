@@ -49,13 +49,14 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 user_id: data.user_id,
                 username: data.username,
                 phone_number: data.phone_number,
-                diet: data.diet,
+                blood: data.blood_group,
                 height: data.height,
                 weight: data.weight,
                 email: data.email,
                 experience: data.experience,
                 stepgoal: data.stepgoal,
-                gender: data.gender
+                gender: data.gender,
+                DOB: data.DOB,
             });
 
 
@@ -63,13 +64,14 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 user_id: data.user_id,
                 username: data.username,
                 phone_number: data.phone_number,
-                diet: data.diet,
+                blood: data.blood_group,
                 height: data.height,
                 weight: data.weight,
                 email: data.email,
                 experience: data.experience,
                 stepgoal: data.stepgoal,
-                gender: data.gender
+                gender: data.gender,
+                DOB: data.DOB
             });
 
             navigation.navigate("Home");

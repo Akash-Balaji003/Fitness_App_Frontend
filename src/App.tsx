@@ -22,6 +22,7 @@ import ActivityTracker from './screens/ActivityTracker';
 import LeaderBoard from './screens/LeaderBoard';
 import Friends from './screens/Friends';
 import EditProfile from './screens/EditProfile';
+import Achievements from './screens/Achievements';
 
 import { UserProvider } from './contexts/UserContext';
 import { StepCounterProvider, useStepCounter } from './contexts/StepCounterContext';
@@ -29,6 +30,7 @@ import { getUserData, hasAlertBeenShown, saveAlertStatus } from './tasks/Storage
 import { ActivityIndicator, Alert, NativeModules, PermissionsAndroid, Platform, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import stepDetector from './tasks/StepCounterTask';
+import SplashScreen from './screens/SplashScreen';
 
 enableScreens();
 
@@ -75,7 +77,7 @@ export type RootStackParamList = {
         DOB: string,
         height: number,
         weight: number,
-        diet: string
+        blood: string
     };
     StepCounterPage: {
         username: string;
@@ -86,7 +88,7 @@ export type RootStackParamList = {
         DOB: string,
         height: number,
         weight: number,
-        diet: string,
+        blood: string,
         experience: string
     };
     Home: undefined;
@@ -95,6 +97,7 @@ export type RootStackParamList = {
     LeaderBoard: undefined;
     Friends: undefined;
     EditProfile: undefined;
+    Achievements: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -297,6 +300,8 @@ const showAlertIfNeeded = async () => {
 function App(): React.JSX.Element {
 
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);  // Will hold login state
+  const [isSplashComplete, setIsSplashComplete] = useState(false); // Track splash screen completion
+
 
   useEffect(() => {
 
@@ -311,6 +316,10 @@ function App(): React.JSX.Element {
 
     checkUserStatus();  // Check on app start
 }, []);
+
+  if (!isSplashComplete) {
+    return <SplashScreen onAnimationEnd={() => setIsSplashComplete(true)} />;
+  }
 
   if (isLoggedIn === null) {
       return (
@@ -340,6 +349,7 @@ function App(): React.JSX.Element {
                 <Stack.Screen name="LeaderBoard" component={LeaderBoard} options={{ headerShown: false }} />
                 <Stack.Screen name="Friends" component={Friends} options={{ headerShown: false }} />
                 <Stack.Screen name="EditProfile" component={EditProfile} options={{ headerShown: false }} />
+                <Stack.Screen name="Achievements" component={Achievements} options={{ headerShown: false }} />
             </Stack.Navigator>
             </NavigationContainer>
         </StepCounterProvider>

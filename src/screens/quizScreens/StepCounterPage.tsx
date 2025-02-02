@@ -7,7 +7,7 @@ import LinearGradient from 'react-native-linear-gradient';
 
 const StepCounterPage = ({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'StepCounterPage'>) => {
 
-  const { username, phone_number, password, DOB, gender, height, weight, diet, experience, email } = route.params;
+  const { username, phone_number, password, DOB, gender, height, weight, blood, experience, email } = route.params;
 
   const [stepGoal, setStepCount] = useState(10000);
 
@@ -33,7 +33,7 @@ const StepCounterPage = ({ route, navigation }: NativeStackScreenProps<RootStack
                 DOB: DOB,
                 height: height,
                 weight: weight,
-                diet: diet,
+                blood: blood,
                 experience: experience,
                 stepgoal: stepGoal
             }),

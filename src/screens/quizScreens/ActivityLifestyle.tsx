@@ -9,7 +9,7 @@ import LinearGradient from 'react-native-linear-gradient';
 
 const ActivityLifestyle = ({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'ActivityLifestyle'>) => {
 
-  const { username, phone_number, password, DOB, gender, height, weight, diet, email } = route.params;
+  const { username, phone_number, password, DOB, gender, height, weight, blood, email } = route.params;
 
   const [activity, setActivity] = useState('Moderate');
 
@@ -25,7 +25,7 @@ const ActivityLifestyle = ({ route, navigation }: NativeStackScreenProps<RootSta
         DOB: DOB,
         height: height,
         weight: weight,
-        diet: diet,
+        blood: blood,
         experience: activity
     })
   };

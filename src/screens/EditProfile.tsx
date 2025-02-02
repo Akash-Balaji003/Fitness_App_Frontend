@@ -22,11 +22,11 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
 
     const [weightValue, setWeight] = useState(user?.weight || 0);
     const [heightValue, setHeightValue] = useState(user?.height || 0);
-    const [dietValue, setDiet] = useState(user?.diet || 'Paleo');
+    const [bloodValue, setBlood] = useState(user?.blood || 'O +');
     const [activity, setActivity] = useState(user?.experience || 'Moderate');
     const [stepCount, setStepCount] = useState(user?.stepgoal || 10000);
 
-    const dietaryOptions = ['Vegetarian', 'Non-veg', 'Vegan', 'Dairy-free', 'Gluten-free', 'Paleo'];
+    const dietaryOptions = ['A +', 'B +', 'O +', 'AB +', 'A -', 'B -', 'AB -', 'O -'];
     const activityLevels = ['Sedentary', 'Moderate', 'Active'];
 
     const handleDone = async () => {
@@ -35,7 +35,7 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
             user_id: user?.user_id,
             height: heightValue,
             weight: weightValue,
-            diet: dietValue,
+            blood: bloodValue,
             experience: activity,
             stepgoal: stepCount
             
@@ -63,13 +63,14 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
                 user_id: user?.user_id || "",
                 username: user?.username || "",
                 phone_number: user?.phone_number || "",
-                diet: dietValue,
+                blood: bloodValue,
                 height: heightValue,
                 weight: weightValue,
                 email: user?.email || "",
                 experience: activity,
                 stepgoal: stepCount,
-                gender: user?.gender || ""
+                gender: user?.gender || "",
+                DOB: user?.DOB || ""
             });
 
 
@@ -77,13 +78,14 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
                 user_id: user?.user_id || "",
                 username: user?.username || "",
                 phone_number: user?.phone_number || "",
-                diet: dietValue,
+                blood: bloodValue,
                 height: heightValue,
                 weight: weightValue,
                 email: user?.email || "",
                 experience: activity,
                 stepgoal: stepCount,
-                gender: user?.gender || ""
+                gender: user?.gender || "",
+                DOB: user?.DOB || ""
             });
             
             Alert.alert('Success', 'Profile updated successfully');
@@ -180,14 +182,14 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
                                 key={option}
                                 style={[
                                     styles.optionButton,
-                                    dietValue === option && styles.selectedOption,
+                                    bloodValue === option && styles.selectedOption,
                                 ]}
-                                onPress={() => setDiet(option)}
+                                onPress={() => setBlood(option)}
                             >
                                 <Text
                                     style={[
                                         styles.buttonText,
-                                        dietValue === option && styles.selectedText,
+                                        bloodValue === option && styles.selectedText,
                                     ]}
                                 >
                                     {option}

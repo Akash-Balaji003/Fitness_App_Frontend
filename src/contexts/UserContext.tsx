@@ -6,13 +6,14 @@ interface User {
     user_id: string;
     username: string;
     phone_number: string;
-    diet: string;
+    blood: string;
     height: number;
     weight: number;
     email: string;
     experience: string;
     stepgoal: number;
     gender: string;
+    DOB: string;
 }
 
 // Define the shape of the context

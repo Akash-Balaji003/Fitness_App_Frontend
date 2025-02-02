@@ -15,7 +15,7 @@ type BottomNavBarProps = {
 };
 
 const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps) => {
-    const renderTabIcon = (iconName: string, tabName: keyof RootStackParamList, iconType: 'Foundation' | 'FontAwesome5') => {
+    const renderTabIcon = (iconName: string, tabName: keyof RootStackParamList, iconType: 'FontAwesome6' | 'FontAwesome5') => {
         const navigateToTab = () => {
             // Ensure correct parameter handling for each tab
             if (tabName === 'WelcomePage') {
@@ -48,10 +48,10 @@ const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps
                     ]}
                 >
                     {/* Conditionally render icons from different packs */}
-                    {iconType === 'Foundation' ? (
+                    {iconType === 'FontAwesome6' ? (
                         <Foundation
                             name={iconName}
-                            size={23}
+                            size={27}
                             color={activeTab === tabName ? '#333333' : '#333333'}
                         />
                     ) : iconType === 'FontAwesome5' ? (
@@ -79,11 +79,12 @@ const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps
 
             {renderTabIcon('running', 'ActivityTracker', 'FontAwesome5')}
 
-            {renderTabIcon('trophy', 'LeaderBoard', 'FontAwesome5')}
+            {renderTabIcon('crown', 'LeaderBoard', 'FontAwesome6')}
 
-            {renderTabIcon('users', 'Friends', 'FontAwesome5')}
-            
-            {renderTabIcon('user', 'Profile', 'FontAwesome5')}
+            {renderTabIcon('users', 'Friends', 'FontAwesome5')}     
+
+            {renderTabIcon('trophy', 'Achievements', 'FontAwesome5')}
+       
         </View>
     );
 };
