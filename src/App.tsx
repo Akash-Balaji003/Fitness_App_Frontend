@@ -23,6 +23,8 @@ import LeaderBoard from './screens/LeaderBoard';
 import Friends from './screens/Friends';
 import EditProfile from './screens/EditProfile';
 import Achievements from './screens/Achievements';
+import Rewardssystem from './screens/Rewardssystem';
+import TypeStepCount from './screens/TypeStepCount';
 
 import { UserProvider } from './contexts/UserContext';
 import { StepCounterProvider, useStepCounter } from './contexts/StepCounterContext';
@@ -98,6 +100,8 @@ export type RootStackParamList = {
     Friends: undefined;
     EditProfile: undefined;
     Achievements: undefined;
+    Rewardssystem: undefined;
+    TypeStepCount: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -350,6 +354,8 @@ function App(): React.JSX.Element {
                 <Stack.Screen name="Friends" component={Friends} options={{ headerShown: false }} />
                 <Stack.Screen name="EditProfile" component={EditProfile} options={{ headerShown: false }} />
                 <Stack.Screen name="Achievements" component={Achievements} options={{ headerShown: false }} />
+                <Stack.Screen name="Rewardssystem" component={Rewardssystem} options={{ headerShown: false }} />
+                <Stack.Screen name="TypeStepCount" component={TypeStepCount} options={{ headerShown: false }} />
             </Stack.Navigator>
             </NavigationContainer>
         </StepCounterProvider>

@@ -7,6 +7,7 @@ import { RootStackParamList } from '../App';
 import ProgressBar from '../components/ProgressBar';
 import { useUser } from '../contexts/UserContext';
 
+
 interface Badge {
     title: string;
     image: any;
@@ -154,6 +155,16 @@ const AchievementsScreen = ({ navigation }: NativeStackScreenProps<RootStackPara
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
         >
+        {/* "My Credits" Button */}
+        <TouchableOpacity
+            style={styles.creditsButton}
+            onPress={() => {        
+                console.log("Navigating to Rewardssystem...");
+                navigation.navigate('Rewardssystem')}}
+        >
+            <Text style={styles.creditsText}>My Credits</Text>
+        </TouchableOpacity>            
+            
             <ScrollView>
                 <Text style={styles.title}>Achievements</Text>
                 <Text style={styles.subtitle}>Earn badges by walking more!</Text>
@@ -287,6 +298,25 @@ const styles = StyleSheet.create({
         height: 150,
         alignSelf:"center"
     },
+    creditsButton: {
+        position: 'absolute',
+        top: 10, 
+        right: 15,
+        backgroundColor: '#FF9800',  // A suitable orange color for visibility
+        paddingVertical: 8,
+        paddingHorizontal: 15,
+        borderRadius: 20,
+        elevation: 5, // Shadow for Android
+        shadowColor: '#000', // Shadow for iOS
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
+    },
+    creditsText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#fff', // White text for contrast
+    },    
     modalTitle: {
         fontSize: 18,
         fontWeight: 'bold',
