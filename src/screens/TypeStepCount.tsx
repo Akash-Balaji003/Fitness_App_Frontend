@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, NativeEventEmitter, NativeModules, StyleSheet } from 'react-native';
+import { View, Text, NativeEventEmitter, NativeModules, StyleSheet } from 'react-native';
 
 const { TypeStepCounterModule } = NativeModules;
 const stepCounterEvent = new NativeEventEmitter(TypeStepCounterModule);
@@ -8,29 +8,24 @@ const TypeStepCount = () => {
   const [steps, setSteps] = useState(0);
 
   useEffect(() => {
+    // Start step counter when the screen loads
+    TypeStepCounterModule.startStepCounter();
+
     const subscription = stepCounterEvent.addListener('StepCounter', (stepCount) => {
       setSteps(parseInt(stepCount, 10));
     });
 
     return () => {
+      // Stop counter when component unmounts
+      TypeStepCounterModule.stopStepCounter();
       subscription.remove();
     };
   }, []);
-
-  const startCounter = () => {
-    TypeStepCounterModule.startStepCounter();
-  };
-
-  const stopCounter = () => {
-    TypeStepCounterModule.stopStepCounter();
-  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Step Counter</Text>
       <Text style={styles.steps}>Steps: {steps}</Text>
-      <Button title="Start Step Counter" onPress={startCounter} />
-      <Button title="Stop Step Counter" onPress={stopCounter} />
     </View>
   );
 };

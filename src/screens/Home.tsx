@@ -9,6 +9,8 @@ import {
   Alert,
   ActivityIndicator,
   ToastAndroid,
+  NativeModules,
+  NativeEventEmitter,
 } from "react-native";
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -29,8 +31,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import StepProgressCircle from "../components/StepProgress";
 import StepCountGrid from "../components/MonthlySteps";
 
+const { TypeStepCounterModule } = NativeModules;
+const stepCounterEvent = new NativeEventEmitter(TypeStepCounterModule);
+
 const { width, height } = Dimensions.get("window");
 const calculatePercentage = (percentage: number, dimension: number) => (percentage / 100) * dimension;
+
+const dummyStepData = {
+    id: 1,
+    date: "2025-02-23",
+    total_steps: 9000,
+  };
 
 const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) => {
 
@@ -38,6 +49,27 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     const { user, setUser } = useUser();
     const { stepCount, setStepCount } = useStepCounter();
     const [ streak, setStreak ] = useState(0);
+    const [steps, setSteps] = useState(0);
+    
+    useEffect(() => {
+        // Start step counter when the screen loads
+        TypeStepCounterModule.startStepCounter();
+    
+        const subscription = stepCounterEvent.addListener('StepCounter', (stepCount) => {
+          setSteps(parseInt(stepCount, 10));
+        });
+    
+        return () => {
+          // Stop counter when component unmounts
+          TypeStepCounterModule.stopStepCounter();
+          subscription.remove();
+        };
+    }, []);
+
+    const startCounter = () => {
+        TypeStepCounterModule.startStepCounter();
+        TypeStepCounterModule.stopStepCounter();
+    };
 
     const handleRefresh = async () => {
         try {
@@ -112,7 +144,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
         );
     }
 
-    const metrics = calculateMetrics(stepCount, user?.weight, user?.height);
+    const metrics = calculateMetrics(steps-dummyStepData.total_steps, user?.weight, user?.height);
 
     return (
         <LinearGradient
@@ -122,9 +154,9 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
             end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
         >
             <View style={styles.header}>
-                <Text style={styles.greeting}>Welcome {user.username},</Text>
+                <Text style={styles.greeting} onPress={()=>navigation.navigate("TypeStepCount")}>Welcome {user.username},</Text>
                 <View style={{flexDirection:"row", gap:30}}>
-                    <TouchableOpacity onPress={handleRefresh}>
+                    <TouchableOpacity onPress={startCounter}>
                         <FontAwesome name="refresh" size={24} color="black" />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
@@ -133,11 +165,11 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
                 </View>
             </View>
 
-            <StepProgressCircle stepCount={stepCount} stepGoal={user.stepgoal} />
+            <StepProgressCircle stepCount={steps-dummyStepData.total_steps} stepGoal={user.stepgoal} />
 
             <View style={styles.statsContainer}>
                 <View style={styles.statBox}>
-                    <FontAwesome name="fire" size={24} color="orange" />
+                    <FontAwesome name="fire" size={24} color="orange" onPress={startCounter} />
                     <Text style={styles.statValue}>{metrics.calories.toFixed(0)} cals</Text>
                     <Text style={styles.statLabel}>Calories Burned Today</Text>
                 </View>
