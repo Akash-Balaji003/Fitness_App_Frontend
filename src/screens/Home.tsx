@@ -19,7 +19,7 @@ import { RootStackParamList } from "../App";
 
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Fontisto from 'react-native-vector-icons/Fontisto';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -156,8 +156,8 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
             <View style={styles.header}>
                 <Text style={styles.greeting} onPress={()=>navigation.navigate("TypeStepCount")}>Welcome {user.username},</Text>
                 <View style={{flexDirection:"row", gap:30}}>
-                    <TouchableOpacity onPress={startCounter}>
-                        <FontAwesome name="refresh" size={24} color="black" />
+                    <TouchableOpacity onPress={() => navigation.navigate("CreditSystem")}>
+                        <Fontisto name="wallet" size={24} color="black" />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
                         <FontAwesome5 name="user" size={23} color="black" />
