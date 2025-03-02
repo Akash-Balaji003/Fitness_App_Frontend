@@ -197,7 +197,7 @@ function App(): React.JSX.Element {
       const userData = await getUserData();  // Fetch user data
       if (userData) {
         console.log('User Data found:', userData);
-        scheduleTask(userData.user_id, 2000);
+        scheduleTask(userData.user_id);
       }
       setIsLoggedIn(!!userData);  // If user data exists, set logged in to true
     };
