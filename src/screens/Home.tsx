@@ -3,12 +3,9 @@ import {
   StyleSheet,
   View,
   Text,
-  Image,
   TouchableOpacity,
   Dimensions,
-  Alert,
   ActivityIndicator,
-  ToastAndroid,
   NativeModules,
   NativeEventEmitter,
 } from "react-native";
@@ -19,14 +16,13 @@ import { RootStackParamList } from "../App";
 
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../components/BottomNavBar";
 
 import { useUser } from '../contexts/UserContext';
-import { useStepCounter } from "../contexts/StepCounterContext"; 
+import { useStepCount } from "../contexts/StepCounterContext";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import StepProgressCircle from "../components/StepProgress";
 import StepCountGrid from "../components/MonthlySteps";
@@ -40,84 +36,109 @@ const calculatePercentage = (percentage: number, dimension: number) => (percenta
 const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>) => {
 
     const [activeTab, setActiveTab] = useState('Home');
-    const { user, setUser } = useUser();
+    const { user } = useUser();
     const [ streak, setStreak ] = useState(0);
-    const [ steps, setSteps ] = useState(0);
+    const [ sensorSteps, setSensorSteps ] = useState(0);
+    const { dailyStepCount, setDailyStepCount } = useStepCount();
     const [ midnightStepCount, setMidnightStepCount ] = useState(0);
+
+    const updateDailyStepCount = async () => {
+        let calculatedDailySteps;
+        if(midnightStepCount < sensorSteps){
+            calculatedDailySteps = sensorSteps - midnightStepCount;
+        } else {
+            calculatedDailySteps = sensorSteps;
+        }
+        setDailyStepCount(calculatedDailySteps);
+    };
+
+    useEffect(() => {
+        updateDailyStepCount();
+
+    }, [sensorSteps, midnightStepCount]);
 
     // Fetch from mysql if its not there in async storage
     const fetchMidnightStepCount = async () => {
         try {
-          const response = await fetch(`https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/get-total-sensor-steps?id=${user?.user_id}`, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-          });
-      
-          const data = await response.json();
-          console.log("Received Data: ", data);
-          if (data["total_steps"]) {
-            console.log("Fetched Midnight Step Count: ", data["total_steps"]);
-            
-            // Set Midnight Step Count
-            setMidnightStepCount(data["total_steps"]);
-      
-            // Store in AsyncStorage along with today's date
-            const midnightStepData = {
-              midnightStepCount: parseInt(data["total_steps"], 10),
-              date: new Date().toISOString().split("T")[0], // Store only YYYY-MM-DD
-            };
-            
-            // Store Midnight Step Count
-            await AsyncStorage.setItem('MIDNIGHT_STEP_COUNT', JSON.stringify(midnightStepData));
-            return ;
+            const response = await fetch(`https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/get-total-sensor-steps?id=${user?.user_id}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            });
 
-          } else {
-            console.log("No Steps Found for Midnight!");
-            return ;
-          }
+            console.log("Received Data: ", response);
+
+            const data = await response.json();
+            console.log("Received Data: ", data);
+            if (data["total_steps"]) {
+                console.log("Fetched Midnight Step Count: ", data["total_steps"]);
+
+                // Set Midnight Step Count
+                setMidnightStepCount(data["total_steps"]);
+                console.log("Set Midnight Step Count: ", data["total_steps"]);
+                if(sensorSteps){
+                    console.log("Updating Daily Step Count");
+                    updateDailyStepCount();
+                }
+                else{
+                    console.log("No sensor step count found!");
+                    refreshButton();
+                }
+                
+                return data["total_steps"];
+            } else {
+                console.log("No Steps Found for Midnight!");
+                return null;
+            }
         } catch (error) {
-          console.error("Error fetching midnight step count:", error);
-          return ;
+            console.error("Error fetching midnight step count:", error);
+            return null;
         }
-      };
+    };
 
     // If it already exists, get the midnight step count
     const getMidnightStepCount = async () => {
         try {
-          const storedData = await AsyncStorage.getItem('MIDNIGHT_STEP_COUNT');
-          const todayDate = new Date().toISOString().split("T")[0]; // Get YYYY-MM-DD
-      
-          if (storedData !== null) {
-            const parsedData = JSON.parse(storedData);
-            console.log("Todays Date: ", todayDate, "\tstoredData: ", parsedData.date);
-            if (parsedData.date === todayDate) {
-              console.log("Using Cached Midnight Step Count:", parsedData.midnightStepCount);
-              setMidnightStepCount(parsedData.midnightStepCount);
-              return;
+            // First, try to fetch from MySQL
+            const fetchedStepCount = await fetchMidnightStepCount();
+            if (fetchedStepCount !== null) {
+                return fetchedStepCount;
             }
 
-            console.log("No Records found!");
-          }
-      
-          // If no valid stored data, fetch from MySQL
-          return await fetchMidnightStepCount();
+            // If fetching from MySQL fails, get the midnight step count from AsyncStorage
+            const storedData = await AsyncStorage.getItem('MIDNIGHT_STEP_COUNT');
+            const todayDate = new Date().toISOString().split("T")[0]; // Get YYYY-MM-DD
+
+            if (storedData !== null) {
+                const parsedData = JSON.parse(storedData);
+                console.log("Todays Date: ", todayDate, "\tstoredData: ", parsedData.date);
+                if (parsedData.date === todayDate) {
+                    console.log("Using Cached Midnight Step Count:", parsedData.midnightStepCount);
+                    setMidnightStepCount(parsedData.midnightStepCount);
+                    return parsedData.midnightStepCount;
+                }
+
+                console.log("No Records found!");
+            }
+
+            return null;
         } catch (error) {
-          console.error("Error retrieving midnight step count:", error);
-          return 0;
+            console.error("Error retrieving midnight step count:", error);
+            return null;
         }
-      };
+    };
       
     useEffect(() => {
         // Start step counter when the screen loads
+        console.log("Step Counter going to start");
         TypeStepCounterModule.startStepCounter();
+        console.log("Step Counter Started");
     
         const subscription = stepCounterEvent.addListener('StepCounter', (stepCount) => {
-          setSteps(parseInt(stepCount, 10));
+          setSensorSteps(parseInt(stepCount, 10));
         });
 
         // Check if midnightStepCount exist in Async Storage
         getMidnightStepCount();
-        
     
         return () => {
           // Stop counter when component unmounts
@@ -126,18 +147,17 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
         };
     }, []);
 
-    const startCounter = () => {
-        TypeStepCounterModule.startStepCounter();
-        TypeStepCounterModule.stopStepCounter();
+    const refreshButton = () => {
+        console.log("Refresh Button Pressed");
+        startCounter();
+        startCounter();
     };
 
-    const getStepCount = async () => {
-        try {
-            ToastAndroid.show('Refreshing...', ToastAndroid.SHORT);
-        } catch (error) {
-            console.error("Failed to fetch updated step count", error);
-            ToastAndroid.show('Error refreshing, try again', ToastAndroid.SHORT);
-        }
+    const startCounter = () => {
+        console.log("Step Counter going to start");
+        TypeStepCounterModule.startStepCounter();
+        console.log("Step Counter Started");
+        TypeStepCounterModule.stopStepCounter();
     };
 
     const calculateMetrics = (steps: number, weight: number, height: number): { distance: number, calories: number } => {
@@ -190,7 +210,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
         );
     }
 
-    const metrics = calculateMetrics(steps - midnightStepCount, user?.weight, user?.height);
+    const metrics = calculateMetrics(dailyStepCount, user?.weight, user?.height);
 
     return (
         <LinearGradient
@@ -200,9 +220,9 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
             end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
         >
             <View style={styles.header}>
-                <Text style={styles.greeting} onPress={()=>navigation.navigate("TypeStepCount")}>Welcome {user.username},</Text>
+                <Text style={styles.greeting}>Welcome {user.username},</Text>
                 <View style={{flexDirection:"row", gap:30}}>
-                    <TouchableOpacity onPress={startCounter}>
+                    <TouchableOpacity onPress={refreshButton}>
                         <FontAwesome name="refresh" size={24} color="black" />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
@@ -211,11 +231,11 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
                 </View>
             </View>
 
-            <StepProgressCircle stepCount={steps - midnightStepCount} stepGoal={user.stepgoal} />
+            <StepProgressCircle stepCount={dailyStepCount} stepGoal={user.stepgoal} />
 
             <View style={styles.statsContainer}>
                 <View style={styles.statBox}>
-                    <FontAwesome name="fire" size={24} color="orange" onPress={startCounter} />
+                    <FontAwesome name="fire" size={24} color="orange" />
                     <Text style={styles.statValue}>{metrics.calories.toFixed(0)} cals</Text>
                     <Text style={styles.statLabel}>Calories Burned Today</Text>
                 </View>

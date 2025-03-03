@@ -154,16 +154,7 @@ const AchievementsScreen = ({ navigation }: NativeStackScreenProps<RootStackPara
             style={styles.safeContainer}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-        >
-        {/* "My Credits" Button */}
-        <TouchableOpacity
-            style={styles.creditsButton}
-            onPress={() => {        
-                console.log("Navigating to Rewardssystem...");
-                navigation.navigate('Rewardssystem')}}
-        >
-            <Text style={styles.creditsText}>My Credits</Text>
-        </TouchableOpacity>            
+        >        
             
             <ScrollView>
                 <Text style={styles.title}>Achievements</Text>

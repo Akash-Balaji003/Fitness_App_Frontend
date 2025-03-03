@@ -18,7 +18,8 @@ const taskOptions = {
 const daily_step_update = async (user_id: string) => {
   // Initialize variable to hold value of current_step_count
   const [prevMidnightSteps, setPrevMidnightSteps] = useState(0);
-  const [steps, setSteps] = useState(0);
+  const [sensorSteps, setSteps] = useState(0);
+  const [today_step_count, setToday_step_count] = useState(0);
 
 
   // Function to get the CURRENT step count
@@ -35,6 +36,8 @@ const daily_step_update = async (user_id: string) => {
 
   // Function to send steps to the server
   const updateStepsAtEndOfDay = async (userId: string) => {
+
+    const today_step_count: number = 0;
     // Get new Date
     const date = format(new Date(), 'yyyy-MM-dd');
 
@@ -42,14 +45,25 @@ const daily_step_update = async (user_id: string) => {
     getCurrentStepCount();
 
     // Subtract stepcount with midnight step to get the step count for the day
-    const today_step_count = steps - prevMidnightSteps;
+    if (sensorSteps >= prevMidnightSteps) {
+      console.log("Sensor Steps is greater than or equal to Midnight Steps");
+      setToday_step_count(sensorSteps - prevMidnightSteps);
+    }
+    else if(sensorSteps < prevMidnightSteps){
+      console.log("Sensor Steps is less than Midnight Steps");
+      setToday_step_count(sensorSteps);
+    } else if(sensorSteps == null){
+      console.log("Sensor Steps is 0");
+      setToday_step_count(0);
+    }
+    
     console.log("Today's Step Count: ", today_step_count);
 
     try {
       const response = await fetch('https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/update-steps', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, date: date, steps: today_step_count, midnight_step_count: steps }),
+        body: JSON.stringify({ user_id: userId, date: date, steps: today_step_count, midnight_step_count: sensorSteps }),
       });
 
       if (!response.ok) throw new Error('Failed to update steps');

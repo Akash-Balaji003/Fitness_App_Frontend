@@ -1,29 +1,26 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-type StepCounterContextType = {
-  stepCount: number;
-  setStepCount: React.Dispatch<React.SetStateAction<number>>;
-};
+interface StepCountContextType {
+  dailyStepCount: number;
+  setDailyStepCount: (count: number) => void;
+}
 
-// Create the context
-const StepCounterContext = createContext<StepCounterContextType | null>(null);
+const StepCountContext = createContext<StepCountContextType | undefined>(undefined);
 
-// Provider component
-export const StepCounterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [stepCount, setStepCount] = useState(0);
+export const StepCountProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [dailyStepCount, setDailyStepCount] = useState(0);
 
   return (
-    <StepCounterContext.Provider value={{ stepCount, setStepCount }}>
+    <StepCountContext.Provider value={{ dailyStepCount, setDailyStepCount }}>
       {children}
-    </StepCounterContext.Provider>
+    </StepCountContext.Provider>
   );
 };
 
-// Custom hook to use the StepCounterContext
-export const useStepCounter = () => {
-  const context = useContext(StepCounterContext);
+export const useStepCount = () => {
+  const context = useContext(StepCountContext);
   if (!context) {
-    throw new Error("useStepCounter must be used within a StepCounterProvider");
+    throw new Error("useStepCount must be used within a StepCountProvider");
   }
   return context;
 };

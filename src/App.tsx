@@ -24,10 +24,9 @@ import Rewardssystem from './screens/Rewardssystem';
 import TypeStepCount from './screens/TypeStepCount';
 
 import { UserProvider } from './contexts/UserContext';
-import { StepCounterProvider, useStepCounter } from './contexts/StepCounterContext';
+import { StepCountProvider } from './contexts/StepCounterContext';
 import { getUserData, hasAlertBeenShown, saveAlertStatus } from './tasks/Storage';
 import { ActivityIndicator, Alert, NativeModules, PermissionsAndroid, Platform, View } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from './screens/SplashScreen';
 import { scheduleTask } from './tasks/DailyStepUpdate';
 
@@ -102,14 +101,6 @@ export type RootStackParamList = {
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-
-let stepCount = 0;
-
-const AppWrapper = () => {
-  const { setStepCount } = useStepCounter();
-
-  return null; // No rendering needed here
-};
 
 const requestPermissions = async () => {
   if (Platform.OS === 'android') {
@@ -219,7 +210,7 @@ function App(): React.JSX.Element {
 
   return (
     <UserProvider>
-        <StepCounterProvider>
+        <StepCountProvider>
             <NavigationContainer>
               <Stack.Navigator initialRouteName={isLoggedIn ? 'Home' : 'Login'} >
                   <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
@@ -241,7 +232,7 @@ function App(): React.JSX.Element {
                   <Stack.Screen name="TypeStepCount" component={TypeStepCount} options={{ headerShown: false }} />
               </Stack.Navigator>
             </NavigationContainer>
-        </StepCounterProvider>
+        </StepCountProvider>
     </UserProvider>
 
   );
