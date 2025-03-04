@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { format } from 'date-fns';  // To format date as YYYY-MM-DD
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { enableScreens } from 'react-native-screens';
@@ -187,7 +186,6 @@ function App(): React.JSX.Element {
     const checkUserStatus = async () => {
       const userData = await getUserData();  // Fetch user data
       if (userData) {
-        console.log('User Data found:', userData);
         scheduleTask(userData.user_id);
       }
       setIsLoggedIn(!!userData);  // If user data exists, set logged in to true
