@@ -20,6 +20,7 @@ import { BarChart } from 'react-native-chart-kit';
 import { useUser } from '../contexts/UserContext';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 interface WeeklyData {
     labels: string[];
@@ -161,8 +162,18 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
               </TouchableOpacity>
             </View>
             <View style={styles.basicInfo}>
-              <Text style={styles.nameText}>{user?.username}</Text>
-              <Text style={styles.genderText}>{user.gender}</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'flex-start' }}>
+                <View style={{ width: '50%', }}>
+                  <Text style={styles.nameText}>{user?.username}</Text>
+                  <Text style={styles.genderText}>{user.gender}</Text>
+                </View>
+                <View>
+                  <TouchableOpacity onPress={()=>navigation.navigate("Achievements")}>
+                    <FontAwesome5 name="award" size={24} color="black" style={{top:5}} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+              
               <TouchableOpacity style={styles.editButton} onPress={()=> navigation.navigate("EditProfile")}>
                 <Text style={styles.editButtonText}>Edit Details</Text>
               </TouchableOpacity>
