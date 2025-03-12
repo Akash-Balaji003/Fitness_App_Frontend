@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { RootStackParamList } from "../../App";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Icon from "react-native-vector-icons/FontAwesome";
 import LinearGradient from 'react-native-linear-gradient';
 
 
-const DietaryPreference = ({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'DietaryPreference'>) => {
+const DietaryPreference = ({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'BloodGroup'>) => {
 
   const { username, phone_number, password, DOB, gender, height, weight, email } = route.params;
 
@@ -81,14 +80,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 3, // Shadow for depth
   },
-  selectedOption: { backgroundColor: "#F0A500", elevation: 3 },
+  selectedOption: { backgroundColor: "#133E87", elevation: 3 },
   buttonText: { color: "black" },
-  selectedText: { color: "#000", fontWeight: "bold" },
+  selectedText: { color: "#fff", fontWeight: "bold" },
   nextButton: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#FF8C00",
+    backgroundColor: "#133E87",
     justifyContent: "center",
     alignItems: "center",
   },

@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   highlighted: {
-    color: "orange",
+    color: "#133E87",
   },
   description: {
     color: "#CCC",
@@ -85,13 +85,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   startQuizButton: {
-    backgroundColor: "orange",
+    backgroundColor: "#133E87",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
   },
   startQuizButtonText: {
-    color: "#000",
+    color: "#fff",
     fontWeight: "bold",
     fontSize: 18,
   },

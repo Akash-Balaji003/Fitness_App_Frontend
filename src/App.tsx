@@ -10,7 +10,7 @@ import Home from './screens/Home';
 import Profile from './screens/Profile';
 import WelcomePage from './screens/quizScreens/WelcomePage';
 import ActivityLifestyle from './screens/quizScreens/ActivityLifestyle';
-import DietaryPreference from './screens//quizScreens/DietaryPreference';
+import BloodGroup from './screens/quizScreens/BloodGroup';
 import GenderDOBPage from './screens/quizScreens/GenderDOBPage';
 import StepCounterPage from './screens/quizScreens/StepCounterPage';
 import WeightHeightPage from './screens/quizScreens/WeightHeightPage';
@@ -22,7 +22,7 @@ import Achievements from './screens/Achievements';
 import Rewardssystem from './screens/Rewardssystem';
 import TypeStepCount from './screens/TypeStepCount';
 import CreditScreen from './screens/CreditScreen';
-
+import CalorieGoal from './screens/quizScreens/CalorieGoal';
 import { UserProvider } from './contexts/UserContext';
 import { StepCountProvider } from './contexts/StepCounterContext';
 import { getUserData, hasAlertBeenShown, saveAlertStatus } from './tasks/Storage';
@@ -56,7 +56,7 @@ export type RootStackParamList = {
         gender: string,
         DOB: string,
     };
-    DietaryPreference: {
+    BloodGroup: {
         username: string;
         phone_number: string;
         email: string;
@@ -89,6 +89,19 @@ export type RootStackParamList = {
         blood: string,
         experience: string
     };
+    CalorieGoal: {
+      username: string;
+      phone_number: string;
+      email: string;
+      password: string;
+      gender: string,
+      DOB: string,
+      height: number,
+      weight: number,
+      blood: string,
+      experience: string,
+      stepgoal: number
+  };
     Home: undefined;
     Profile: undefined;
     ActivityTracker: {isSelected: boolean};
@@ -219,7 +232,7 @@ function App(): React.JSX.Element {
                   <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
                   <Stack.Screen name="WelcomePage" component={WelcomePage} options={{ headerShown: false }} />
                   <Stack.Screen name="ActivityLifestyle" component={ActivityLifestyle} options={{ headerShown: false }} />
-                  <Stack.Screen name="DietaryPreference" component={DietaryPreference} options={{ headerShown: false }} />
+                  <Stack.Screen name="BloodGroup" component={BloodGroup} options={{ headerShown: false }} />
                   <Stack.Screen name="GenderDOBPage" component={GenderDOBPage} options={{ headerShown: false }} />
                   <Stack.Screen name="WeightHeightPage" component={WeightHeightPage} options={{ headerShown: false }} />
                   <Stack.Screen name="StepCounterPage" component={StepCounterPage} options={{ headerShown: false }} />
@@ -231,6 +244,7 @@ function App(): React.JSX.Element {
                   <Stack.Screen name="Rewardssystem" component={Rewardssystem} options={{ headerShown: false }} />
                   <Stack.Screen name="TypeStepCount" component={TypeStepCount} options={{ headerShown: false }} />
                   <Stack.Screen name="CreditScreen" component={CreditScreen} options={{ headerShown: false }} />
+                  <Stack.Screen name="CalorieGoal" component={CalorieGoal} options={{ headerShown: false }} />
               </Stack.Navigator>
             </NavigationContainer>
         </StepCountProvider>
