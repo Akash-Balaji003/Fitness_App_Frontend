@@ -120,9 +120,6 @@ const backgroundTask = async (userId: string) => {
 
     await new Promise((resolve) => setTimeout(resolve, 3 * 60 * 1000)); // Retry every 3 minutes
   }
-
-  console.log('Stopping Task at 12:00 AM or after successful update');
-  await BackgroundService.stop();
 };
 
 // Function to schedule background task execution
@@ -144,4 +141,4 @@ const scheduleTask = (userId: string) => {
   }, delay);
 };
 
-export { scheduleTask };
+export { scheduleTask, backgroundTask };

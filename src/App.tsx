@@ -28,6 +28,7 @@ import { getUserData, hasAlertBeenShown, saveAlertStatus } from './tasks/Storage
 import { ActivityIndicator, Alert, NativeModules, PermissionsAndroid, Platform, View } from 'react-native';
 import SplashScreen from './screens/SplashScreen';
 import { scheduleTask } from './tasks/DailyStepUpdate';
+import stepDetector  from './tasks/testBackground';
 
 enableScreens();
 
@@ -176,6 +177,19 @@ function App(): React.JSX.Element {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);  // Will hold login state
   const [isSplashComplete, setIsSplashComplete] = useState(false); // Track splash screen completion
 
+  const options = {
+    taskName: 'StepCounterTask',
+    taskTitle: 'Step Counter Running',
+    taskDesc: 'Counting your steps in the background',
+    taskIcon: {
+      name: 'ic_launcher',
+      type: 'mipmap',
+    },
+    color: '#FF5733',
+    parameters: {
+      delay: 1000,
+    },
+  };
 
   useEffect(() => {
 
@@ -186,7 +200,8 @@ function App(): React.JSX.Element {
     const checkUserStatus = async () => {
       const userData = await getUserData();  // Fetch user data
       if (userData) {
-        scheduleTask(userData.user_id);
+        // scheduleTask(userData.user_id);
+        stepDetector(userData.user_id);
       }
       setIsLoggedIn(!!userData);  // If user data exists, set logged in to true
     };
