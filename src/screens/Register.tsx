@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     buttonBack: {
-        backgroundColor: '#F0A500',
+        backgroundColor: '#133E87',
         borderRadius: 25,
         paddingVertical: 15,
         alignItems: 'center',
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
         width:'50%'
     },
     buttonArrow: {
-        backgroundColor: '#F0A500',
+        backgroundColor: '#133E87',
         borderRadius: 50,
         paddingVertical: 15,
         alignItems: 'center',

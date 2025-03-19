@@ -33,7 +33,7 @@ const WeightHeightPage = ({ navigation, route }: NativeStackScreenProps<RootStac
   const generateRange = (min: number, max: number) => Array.from({ length: max - min + 1 }, (_, i) => min + i);
 
   const navigateNext = async() => {
-    navigation.navigate('DietaryPreference',{
+    navigation.navigate('BloodGroup',{
         username: username,
         phone_number: phone_number,
         email: email,
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   rulerItem: {
     width: 5,
-    height: 20,
+    height: 17,
     backgroundColor: "grey",
     opacity: 0.8,
     marginRight: 1,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 2,
-    backgroundColor: "#FF8C00",
+    backgroundColor: "#133E87",
     left: "50%",
     marginLeft: -1,
   },
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#FF8C00",
+    backgroundColor: "#133E87",
     justifyContent: "center",
     alignItems: "center",
   },

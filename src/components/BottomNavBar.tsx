@@ -4,6 +4,7 @@ import Foundation from 'react-native-vector-icons/Foundation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 const { height } = Dimensions.get('window');
@@ -15,7 +16,7 @@ type BottomNavBarProps = {
 };
 
 const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps) => {
-    const renderTabIcon = (iconName: string, tabName: keyof RootStackParamList, iconType: 'FontAwesome6' | 'FontAwesome5') => {
+    const renderTabIcon = (iconName: string, tabName: keyof RootStackParamList, iconType: 'FontAwesome6' | 'FontAwesome5' | 'MaterialIcons') => {
         const navigateToTab = () => {
             // Ensure correct parameter handling for each tab
             if (tabName === 'WelcomePage') {
@@ -83,7 +84,7 @@ const BottomNavBar = ({ navigation, activeTab, setActiveTab }: BottomNavBarProps
 
             {renderTabIcon('users', 'Friends', 'FontAwesome5')}     
 
-            {renderTabIcon('trophy', 'Achievements', 'FontAwesome5')}
+            {renderTabIcon('wallet', 'CreditScreen', 'MaterialIcons')}
        
         </View>
     );

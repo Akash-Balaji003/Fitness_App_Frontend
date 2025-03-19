@@ -15,47 +15,21 @@ const StepCounterPage = ({ route, navigation }: NativeStackScreenProps<RootStack
 
   const [loading, setLoading] = useState(false); // Loader state
 
-  
-  const registerUser = async() => {
-    setLoading(true); // Show loader
-    try {
-        const response = await fetch('https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                username: username,
-                phone_number: phone_number,
-                email: email,
-                password: password,
-                gender: gender,
-                DOB: DOB,
-                height: height,
-                weight: weight,
-                blood: blood,
-                experience: experience,
-                stepgoal: stepGoal
-            }),
-        });
-
-        if (response.ok){
-            ToastAndroid.show('Account Created Successfully', ToastAndroid.SHORT);
-            navigation.navigate("Login");
-            console.log("DONE");
-        }
-    }
-    catch (error) {
-        setErrorMessage('Failed to connect to the server. Please try again later.');
-        ToastAndroid.show('Failed to connect to the server. Please try again later.', ToastAndroid.SHORT);
-        console.log("error");
-
-    }
-    finally{
-      setLoading(false); // Hide loader
-    }
+  const navigateNext = async() => {
+    navigation.navigate('CalorieGoal',{
+        username: username,
+        phone_number: phone_number,
+        email: email,
+        password: password,
+        gender: gender,
+        DOB: DOB,
+        height: height,
+        weight: weight,
+        blood: blood,
+        experience: experience,
+        stepgoal: stepGoal
+    })
   };
-
 
   return (
     <LinearGradient
@@ -78,12 +52,12 @@ const StepCounterPage = ({ route, navigation }: NativeStackScreenProps<RootStack
       {loading ? ( // Show loader when loading
         <ActivityIndicator size="large" color="#FF8C00" style={{ marginVertical: 20 }} />
       ) : (
-        <View style={{ flexDirection: "row", justifyContent: "space-between", margin: 10 }}>
-          <TouchableOpacity style={styles.nextButton} onPress={() => navigation.goBack()}>
+        <View style={{flexDirection:"row", justifyContent:"space-between", margin:10,}}>
+          <TouchableOpacity style={styles.nextButton} onPress={()=>navigation.goBack()}>
             <Icon name="arrow-left" size={24} color="#FFF" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.startQuizButton} onPress={registerUser}>
-            <Text style={styles.startQuizButtonText}>Get Fit</Text>
+          <TouchableOpacity style={styles.nextButton} onPress={navigateNext}>
+            <Icon name="arrow-right" size={24} color="#FFF" />
           </TouchableOpacity>
         </View>
       )}
@@ -108,7 +82,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#FF8C00",
+    backgroundColor: "#133E87",
     justifyContent: "center",
     alignItems: "center",
   },

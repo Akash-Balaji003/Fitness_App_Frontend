@@ -60,8 +60,8 @@ const GenderDOBPage = ({ navigation, route }: NativeStackScreenProps<RootStackPa
             ]}
             onPress={() => setSelectedGender(label)}
           >
-            <Icon name={icon} size={28} color={selectedGender === label ? "white" : "white"} />
-            <Text style={styles.genderText}>{label}</Text>
+            <Icon name={icon} size={28} color={selectedGender === label ? "white" : "black"} />
+            <Text style={[styles.genderText,{ color: selectedGender === label ? "white" : "black" }]}>{label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -71,7 +71,7 @@ const GenderDOBPage = ({ navigation, route }: NativeStackScreenProps<RootStackPa
         <Picker
           selectedValue={selectedDay}
           style={styles.Daypicker}
-          dropdownIconColor={"#fff"}
+          dropdownIconColor={"#333"}
           onValueChange={(itemValue) => setSelectedDay(itemValue)}
         >
           {Array.from({ length: 31 }, (_, i) => (i + 1).toString().padStart(2, "0")).map((day) => (
@@ -81,7 +81,7 @@ const GenderDOBPage = ({ navigation, route }: NativeStackScreenProps<RootStackPa
         <Picker
           selectedValue={selectedMonth}
           style={styles.Monthpicker}
-          dropdownIconColor={"#fff"}
+          dropdownIconColor={"#333"}
           onValueChange={(itemValue) => setSelectedMonth(itemValue)}
         >
           {Object.keys(monthMap).map((month) => (
@@ -91,7 +91,7 @@ const GenderDOBPage = ({ navigation, route }: NativeStackScreenProps<RootStackPa
         <Picker
           selectedValue={selectedYear}
           style={styles.Yearpicker}
-          dropdownIconColor={"#fff"}
+          dropdownIconColor={"#333"}
           onValueChange={(itemValue) => setSelectedYear(itemValue)}
         >
           {years.map((year) => (
@@ -136,16 +136,16 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 15,
-    backgroundColor: "#333",
+    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
     gap: 5,
   },
   selectedButton: {
-    backgroundColor: "#FF8C00",
+    backgroundColor: "#133E87",
   },
   genderText: {
-    color: "#FFF",
+    color: "#333",
     fontSize: 14,
   },
   subtitle: {
@@ -161,20 +161,20 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   Yearpicker: {
-    color: "#fff",
-    backgroundColor: "#333",
+    color: "#333",
+    backgroundColor: "#fff",
     borderRadius: 10,
     width: "40%",
   },
   Daypicker: {
-    color: "#fff",
-    backgroundColor: "#333",
+    color: "#333",
+    backgroundColor: "#fff",
     borderRadius: 10,
     width: "26%",
   },
   Monthpicker: {
-    color: "#fff",
-    backgroundColor: "#333",
+    color: "#333",
+    backgroundColor: "#fff",
     borderRadius: 10,
     width: "30%",
   },
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#FF8C00",
+    backgroundColor: "#133E87",
     justifyContent: "center",
     alignItems: "center",
   },
