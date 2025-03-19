@@ -30,7 +30,7 @@ const FeedbackScreen = ({ navigation }: FeedbackProps) => {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('https://1288-49-206-96-84.ngrok-free.app/feedback', {
+            const response = await fetch('https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/feedback', {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ const FeedbackScreen = ({ navigation }: FeedbackProps) => {
     
         if (response.ok) {
             // Pop up saying Feedback Submission was successful
-
+            ToastAndroid.show('FeedBack Submitted Successfully', ToastAndroid.SHORT);
             navigation.navigate("Home");
         } else {
             // Set error message from backend response
