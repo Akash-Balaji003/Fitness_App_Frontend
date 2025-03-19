@@ -60,37 +60,41 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     // Fetch from mysql if its not there in async storage
     const fetchMidnightStepCount = async () => {
         try {
-            const response = await fetch(`https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/get-total-sensor-steps?id=${user?.user_id}`, {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-            });
-
-            console.log("Received Data: ", response);
+            console.log("[Fetch Midnight Step Count] User_ID:", user?.user_id);
+            const response = await fetch(
+                `https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/get-total-sensor-steps?id=${user?.user_id}`, 
+                {
+                    method: "GET",
+                }
+            );
+            
+            // console.log("Received Data: ", response);
 
             const data = await response.json();
-            console.log("Received Data: ", data);
+            console.log("[Fetch Midnight Step Count] Received Data: ", data);
+
             if (data["total_steps"]) {
-                console.log("Fetched Midnight Step Count: ", data["total_steps"]);
+                console.log("[Fetch Midnight Step Count] Fetched Midnight Step Count: ", data["total_steps"]);
 
                 // Set Midnight Step Count
                 setMidnightStepCount(data["total_steps"]);
-                console.log("Set Midnight Step Count: ", data["total_steps"]);
+                console.log("[Fetch Midnight Step Count] Set Midnight Step Count: ", data["total_steps"]);
                 if(sensorSteps){
-                    console.log("Updating Daily Step Count");
+                    console.log("[Fetch Midnight Step Count] Updating Daily Step Count");
                     updateDailyStepCount();
                 }
                 else{
-                    console.log("No sensor step count found!");
+                    console.log("[Fetch Midnight Step Count] No sensor step count found!");
                     refreshButton();
                 }
                 
                 return data["total_steps"];
             } else {
-                console.log("No Steps Found for Midnight!");
+                console.log("[Fetch Midnight Step Count] No Steps Found for Midnight!");
                 return null;
             }
         } catch (error) {
-            console.error("Error fetching midnight step count:", error);
+            console.error("[Fetch Midnight Step Count] Error fetching midnight step count:", error);
             return null;
         }
     };
@@ -98,54 +102,65 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     // If it already exists, get the midnight step count
     const getMidnightStepCount = async () => {
         try {
-            // First, try to fetch from MySQL
-            const fetchedStepCount = await fetchMidnightStepCount();
-            if (fetchedStepCount !== null) {
-                return fetchedStepCount;
-            }
-
-            // If fetching from MySQL fails, get the midnight step count from AsyncStorage
-            const storedData = await AsyncStorage.getItem('MIDNIGHT_STEP_COUNT');
             const todayDate = new Date().toISOString().split("T")[0]; // Get YYYY-MM-DD
-
+            
+            // 1️⃣ Check AsyncStorage for today's step count
+            const storedData = await AsyncStorage.getItem('MIDNIGHT_STEP_COUNT');
+    
             if (storedData !== null) {
                 const parsedData = JSON.parse(storedData);
-                console.log("Todays Date: ", todayDate, "\tstoredData: ", parsedData.date);
+    
                 if (parsedData.date === todayDate) {
-                    console.log("Using Cached Midnight Step Count:", parsedData.midnightStepCount);
+                    console.log("[Get Midnight Step Count] Using Cached Midnight Step Count:", parsedData.midnightStepCount);
                     setMidnightStepCount(parsedData.midnightStepCount);
                     return parsedData.midnightStepCount;
                 }
-
-                console.log("No Records found!");
             }
-
-            return null;
+    
+            // 2️⃣ If not found, fetch from MySQL
+            console.log("[Get Midnight Step Count] ⏳ Fetching midnight step count from MySQL...");
+            const fetchedStepCount = await fetchMidnightStepCount();
+    
+            if (fetchedStepCount !== null) {
+                console.log("[Get Midnight Step Count] Fetched from MySQL:", fetchedStepCount);
+    
+                // 3️⃣ Store it in AsyncStorage
+                const newData = { date: todayDate, midnightStepCount: fetchedStepCount };
+                await AsyncStorage.setItem('MIDNIGHT_STEP_COUNT', JSON.stringify(newData));
+    
+                setMidnightStepCount(fetchedStepCount);
+                return fetchedStepCount;
+            }
+    
+            return null; // If MySQL also fails
         } catch (error) {
-            console.error("Error retrieving midnight step count:", error);
+            console.error("[Get Midnight Step Count] Error retrieving midnight step count:", error);
             return null;
         }
     };
       
     useEffect(() => {
+        if (user?.user_id) {
+            fetchStreaks();
+        }
+
         // Start step counter when the screen loads
-        console.log("Step Counter going to start");
         TypeStepCounterModule.startStepCounter();
-        console.log("Step Counter Started");
+        console.log("[Home Page Useeffect] Step Counter Started");
     
         const subscription = stepCounterEvent.addListener('StepCounter', (stepCount) => {
-          setSensorSteps(parseInt(stepCount, 10));
+            console.log("[Home Page UseEffect] Step Count: ", stepCount);
+            setSensorSteps(parseInt(stepCount, 10));
         });
 
-        // Check if midnightStepCount exist in Async Storage
         getMidnightStepCount();
-    
+
         return () => {
           // Stop counter when component unmounts
           TypeStepCounterModule.stopStepCounter();
           subscription.remove();
         };
-    }, []);
+    }, [user]);
 
     const refreshButton = () => {
         console.log("Refresh Button Pressed");
@@ -181,18 +196,12 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
           const data = await response.json();
           
           // Assuming the API returns an object with step counts for each day
-          console.log("Streaks : ", data)
+          console.log("[FETCH STREAKS] Streaks : ", data)
           setStreak(data);
         } catch (error) {
           console.error('Error fetching step data:', error);
         }
     };
-
-    useEffect(()=>{
-        if (user?.user_id) {
-            fetchStreaks();
-        }
-    },[user]);
     
     if (!user) {
         return (
@@ -222,6 +231,9 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
             <View style={styles.header}>
                 <Text style={styles.greeting}>Welcome {user.username},</Text>
                 <View style={{flexDirection:"row", gap:30}}>
+                    <TouchableOpacity onPress={() => navigation.navigate("FeedbackScreen")}>
+                        <FontAwesome name="thumbs-up" size={24} color="black" />
+                    </TouchableOpacity>
                     <TouchableOpacity onPress={refreshButton}>
                         <FontAwesome name="refresh" size={24} color="black" />
                     </TouchableOpacity>

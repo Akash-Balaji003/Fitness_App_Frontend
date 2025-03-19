@@ -15,14 +15,17 @@ const executeScheduledTask = async (user_id: string) => {
 const waitUntilTargetTime = async () => {
     const now = new Date();
     const targetTime = new Date();
-    targetTime.setHours(2, 5, 0, 0); // Set time to 2:05 AM
+    targetTime.setHours(0, 0, 0, 0);
+
+    console.log("[WAIT UNTIL TARGET TIME] Target Time: ", targetTime);
 
     if (now >= targetTime) {
         targetTime.setDate(targetTime.getDate() + 1); // Move to next day if already past
+        console.log("[WAIT UNTIL TARGET TIME] New Target Time: ", targetTime);
     }
 
     const delay = targetTime.getTime() - now.getTime();
-    console.log(`⏳ Sleeping for ${(delay / 1000 / 60).toFixed(2)} minutes until 2:05 AM...`);
+    console.log(`⏳ Sleeping for ${(delay / 1000 / 60).toFixed(2)} `);
     
     await sleep(delay);
 };
@@ -44,30 +47,21 @@ const stepDetector = async (user_id: string) => {
 
     const task = async () => {
         console.log("🔄 Background task started.");
-        await waitUntilTargetTime(); // Sleep until 2:05 AM
+        await waitUntilTargetTime();
 
-        console.log("⚡ Starting 5-minute time checks from 2:00 AM to 2:05 AM...");
+        const now = new Date();
+        console.log(`[${now.toLocaleTimeString()}] Checking time...`);
 
-        if (intervalId) {
-            clearInterval(intervalId);
+        const targetTime = new Date();
+        targetTime.setHours(23, 55, 0, 0);
+
+        if (now.getTime() >= targetTime.getTime()) {
+            await executeScheduledTask(user_id);
+            console.log("🎯 Task executed. Resetting timer for next day...");
+            await stepDetector(user_id); 
+        } else {
+            console.log(`[${now.toLocaleTimeString()}] ❌. Waiting...`);
         }
-
-        intervalId = setInterval(async () => {
-            const now = new Date();
-            console.log(`[${now.toLocaleTimeString()}] Checking time...`);
-
-            const targetTime = new Date();
-            targetTime.setHours(2, 5, 0, 0);
-
-            if (now.getTime() >= targetTime.getTime()) {
-                await executeScheduledTask(user_id);
-                console.log("🎯 Task executed. Resetting timer for next day...");
-                clearInterval(intervalId);
-                await waitUntilTargetTime(); // Reset and wait for next 2:05 AM
-            } else {
-                console.log(`[${now.toLocaleTimeString()}] ❌ Not 2:05 AM yet. Waiting...`);
-            }
-        }, 5 * 60 * 1000); // Every 5 minutes
 
         await new Promise(() => {}); // Keeps task running
     };

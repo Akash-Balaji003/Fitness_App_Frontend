@@ -27,8 +27,8 @@ import { StepCountProvider } from './contexts/StepCounterContext';
 import { getUserData, hasAlertBeenShown, saveAlertStatus } from './tasks/Storage';
 import { ActivityIndicator, Alert, NativeModules, PermissionsAndroid, Platform, View } from 'react-native';
 import SplashScreen from './screens/SplashScreen';
-import { scheduleTask } from './tasks/DailyStepUpdate';
 import stepDetector  from './tasks/testBackground';
+import FeedbackScreen from './screens/Feedback';
 
 enableScreens();
 
@@ -98,6 +98,7 @@ export type RootStackParamList = {
     Achievements: undefined;
     Rewardssystem: undefined;
     TypeStepCount: undefined;
+    FeedbackScreen: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -177,20 +178,6 @@ function App(): React.JSX.Element {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);  // Will hold login state
   const [isSplashComplete, setIsSplashComplete] = useState(false); // Track splash screen completion
 
-  const options = {
-    taskName: 'StepCounterTask',
-    taskTitle: 'Step Counter Running',
-    taskDesc: 'Counting your steps in the background',
-    taskIcon: {
-      name: 'ic_launcher',
-      type: 'mipmap',
-    },
-    color: '#FF5733',
-    parameters: {
-      delay: 1000,
-    },
-  };
-
   useEffect(() => {
 
     requestPermissions();
@@ -200,14 +187,13 @@ function App(): React.JSX.Element {
     const checkUserStatus = async () => {
       const userData = await getUserData();  // Fetch user data
       if (userData) {
-        // scheduleTask(userData.user_id);
-        stepDetector(userData.user_id);
+        stepDetector(userData.user_id); // Doesnt work on the first go
       }
       setIsLoggedIn(!!userData);  // If user data exists, set logged in to true
     };
 
     checkUserStatus();  // Check on app start
-}, []);
+  }, []);
 
   if (!isSplashComplete) {
     return <SplashScreen onAnimationEnd={() => setIsSplashComplete(true)} />;
@@ -243,6 +229,7 @@ function App(): React.JSX.Element {
                   <Stack.Screen name="Achievements" component={Achievements} options={{ headerShown: false }} />
                   <Stack.Screen name="Rewardssystem" component={Rewardssystem} options={{ headerShown: false }} />
                   <Stack.Screen name="TypeStepCount" component={TypeStepCount} options={{ headerShown: false }} />
+                  <Stack.Screen name="FeedbackScreen" component={FeedbackScreen} options={{ headerShown: false }} />
               </Stack.Navigator>
             </NavigationContainer>
         </StepCountProvider>

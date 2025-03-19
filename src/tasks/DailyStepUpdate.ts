@@ -1,4 +1,3 @@
-import BackgroundService from 'react-native-background-actions';
 import { format } from 'date-fns';
 import { NativeModules, NativeEventEmitter } from 'react-native';
 
@@ -6,32 +5,37 @@ import { NativeModules, NativeEventEmitter } from 'react-native';
 const { TypeStepCounterModule } = NativeModules;
 const stepCounterEvent = new NativeEventEmitter(TypeStepCounterModule);
 
-const taskOptions = {
-  taskName: 'Update Steps Task',
-  taskTitle: 'Updating Steps',
-  taskDesc: 'Syncing step count at the end of the day.',
-  taskIcon: { name: 'ic_launcher', type: 'mipmap' },
-  parameters: { delay: 1000 },
-};
-
-// Function to get the current step count
 const getCurrentStepCount = async (): Promise<number> => {
   return new Promise((resolve) => {
     let stepCount = 0;
+    let receivedData = false; // Flag to check if data was received
 
+    // Stop any TypeStepCounterModule thats going on
+    TypeStepCounterModule.stopStepCounter();
+
+    // Start for get current step count
     TypeStepCounterModule.startStepCounter();
 
-    const subscription = stepCounterEvent.addListener('StepCounter', (data) => {
+    const subscription = stepCounterEvent.addListener("StepCounter", (data) => {
       stepCount = parseInt(data, 10);
-      subscription.remove(); // Properly remove listener
+      receivedData = true;
+      console.log("[GET CURRENT STEP COUNT] Current Step Count:", stepCount);
+
+      // Resolve only after receiving data
+      subscription.remove(); // Remove listener
+      TypeStepCounterModule.stopStepCounter();
       resolve(stepCount);
-      console.log('Current Step Count:', stepCount);
     });
 
+    // Ensure step counter has enough time to gather data
     setTimeout(() => {
-      TypeStepCounterModule.stopStepCounter();
-      resolve(stepCount); // Resolve even if no data received
-    }, 3000);
+      if (!receivedData) {
+        console.warn("[GET CURRENT STEP COUNT] No step data received, resolving with 0.");
+        subscription.remove();
+        TypeStepCounterModule.stopStepCounter(); // Stop only if we started it
+        resolve(0);
+      }
+    }, 3000); // Give it more time to detect steps
   });
 };
 
@@ -43,7 +47,6 @@ const fetchMidnightStepCount = async (userId: string): Promise<number> => {
       `https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/get-total-sensor-steps?id=${userId}`,
       {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
       }
     );
     const data = await response.json();
@@ -59,8 +62,9 @@ const fetchMidnightStepCount = async (userId: string): Promise<number> => {
 // Function to update step count at the end of the day
 const updateStepsAtEndOfDay = async (userId: string, prevMidnightSteps: number) => {
   try {
+    console.log("[UPDATE STEPS AT END OF DAY] Inside the Function...");
     const currentSteps = await getCurrentStepCount();
-    console.log('Current Sensor Step Count:', currentSteps);
+    console.log('[UPDATE STEPS AT END OF DAY] Current Sensor Step Count:', currentSteps);
 
     let todayStepCount;
     if (currentSteps < prevMidnightSteps) {
@@ -74,7 +78,10 @@ const updateStepsAtEndOfDay = async (userId: string, prevMidnightSteps: number) 
 
     const response = await fetch('https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/update-steps', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        "ngrok-skip-browser-warning": "69420"
+      },
       body: JSON.stringify({ user_id: userId, date, steps: todayStepCount, midnight_step_count: currentSteps }),
     });
 
@@ -95,19 +102,20 @@ const backgroundTask = async (userId: string) => {
   stopTime.setDate(stopTime.getDate() + 1);
   stopTime.setHours(0, 0, 0, 0);
 
-  console.log(`Task will run until: ${stopTime.toISOString()}`);
+  console.log(`[BACKGROUND TASK] Task will run until: ${stopTime.toISOString()}`);
 
   // Fetch midnight step count
   const prevMidnightSteps = await fetchMidnightStepCount(userId);
+  console.log("[BACKGROUND TASK] PREVIOUS NIGHT STEPS: ", prevMidnightSteps);
   let attempts = 0;
   const maxAttempts = 5; // Limit retries
 
   while (new Date().getTime() < stopTime.getTime()) {
-    console.log('Updating steps...');
+    console.log('[BACKGROUND TASK] Updating steps...');
 
     try {
       await updateStepsAtEndOfDay(userId, prevMidnightSteps);
-      console.log('Steps updated successfully, stopping background task.');
+      console.log('[BACKGROUND TASK] Steps updated successfully, stopping background task.');
       break; // Exit loop after successful update
     } catch (error) {
       attempts++;
@@ -122,23 +130,4 @@ const backgroundTask = async (userId: string) => {
   }
 };
 
-// Function to schedule background task execution
-const scheduleTask = (userId: string) => {
-  const now = new Date();
-  let targetTime = new Date();
-  targetTime.setHours(19, 20, 0, 0); // Set to 11:45 PM
-
-  // If time has already passed, schedule for tomorrow
-  if (now.getTime() > targetTime.getTime()) {
-    targetTime.setDate(targetTime.getDate() + 1);
-  }
-
-  let delay = targetTime.getTime() - now.getTime();
-  console.log(`Task scheduled to start in ${(delay / 1000 / 60).toFixed(2)} minutes`);
-
-  setTimeout(async () => {
-    await BackgroundService.start(() => backgroundTask(userId), taskOptions);
-  }, delay);
-};
-
-export { scheduleTask, backgroundTask };
+export { backgroundTask };
