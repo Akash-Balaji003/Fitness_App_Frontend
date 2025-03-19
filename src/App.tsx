@@ -201,14 +201,18 @@ function App(): React.JSX.Element {
 
     const checkUserStatus = async () => {
       const userData = await getUserData();  // Fetch user data
-      if (userData) {
-        stepDetector(userData.user_id); // Doesnt work on the first go
-      }
       setIsLoggedIn(!!userData);  // If user data exists, set logged in to true
     };
 
     checkUserStatus();  // Check on app start
   }, []);
+
+  getUserData().then((userData) => {
+    if (userData) {
+      console.log("userData outside", userData);
+      stepDetector(userData.user_id); // Doesnt work on the first go
+    }
+  });
 
   if (!isSplashComplete) {
     return <SplashScreen onAnimationEnd={() => setIsSplashComplete(true)} />;
