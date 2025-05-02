@@ -10,12 +10,11 @@ const sleep = (time: number) => new Promise(resolve => setTimeout(resolve, time)
 const executeScheduledTask = async (user_id: string) => {
     console.log(`[${new Date().toLocaleTimeString()}] 🎯 Scheduled task executed at 2:05 AM!`);
     await backgroundTask(user_id);
-};
-
+}
 const waitUntilTargetTime = async () => {
     const now = new Date();
     const targetTime = new Date();
-    targetTime.setHours(0, 0, 0, 0);
+    targetTime.setHours(13, 25, 0, 0);
 
     console.log("[WAIT UNTIL TARGET TIME] Target Time: ", targetTime);
 
@@ -47,13 +46,13 @@ const stepDetector = async (user_id: string) => {
 
     const task = async () => {
         console.log("🔄 Background task started.");
+        const targetTime = new Date();
+        targetTime.setHours(13, 25, 0, 0);
+
         await waitUntilTargetTime();
 
         const now = new Date();
         console.log(`[${now.toLocaleTimeString()}] Checking time...`);
-
-        const targetTime = new Date();
-        targetTime.setHours(23, 55, 0, 0);
 
         if (now.getTime() >= targetTime.getTime()) {
             await executeScheduledTask(user_id);
