@@ -12,7 +12,7 @@ const updateSteps = async (user_id: string) => {
         console.log("[BACKGROUND TASK] Background task started");
 
         let targetTime = new Date();
-        targetTime.setHours(18, 47, 0, 0); // Midnight of the current day
+        targetTime.setHours(0, 0, 0, 0); // Midnight of the current day
 
         // If the current time is already past midnight, set targetTime to tomorrow
         const now = new Date();
