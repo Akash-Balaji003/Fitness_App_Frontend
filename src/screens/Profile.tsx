@@ -74,16 +74,12 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
     };
 
     function calculateBMI(weight: number, height: number): number {
-      console.log("Weight: ", weight)
-      console.log("Height: ", height)
       height = height / 100;
-      console.log("Height (converted to meters): ", height);
       if (height <= 0 || weight <= 0) {
         throw new Error("Invalid input. Weight and height must be positive numbers.");
       }
     
       const bmi = weight / (height * height); // height in meters
-      console.log("BMI: ", bmi)
       return parseFloat(bmi.toFixed(1)); // Return BMI rounded to one decimal place
     }    
     
@@ -101,7 +97,6 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
               `https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/weekly-steps?id=${user?.user_id}`
             );
             const rawData: WeeklyData = await response.json(); // Cast the response data
-            console.log('rawData: ', rawData);
     
             const processedData = processWeeklyData(rawData);
             setStepData(processedData);

@@ -14,6 +14,7 @@ import { useUser } from '../contexts/UserContext';
 
 import { saveUserData } from '../tasks/Storage';
 import LinearGradient from 'react-native-linear-gradient';
+import updateSteps from '../tasks/BackgroundActionSetup';
 
 type LoginProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -74,6 +75,8 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 DOB: data.DOB
             });
 
+            updateSteps(data.user_id); // Start background task after successful login
+            
             navigation.navigate("Home");
         } else {
             // Set error message from backend response

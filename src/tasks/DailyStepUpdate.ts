@@ -126,8 +126,10 @@ const backgroundTask = async (userId: string) => {
       console.error('Error updating steps, retrying in 3 minutes...');
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 3 * 60 * 1000)); // Retry every 3 minutes
+    await new Promise((resolve) => setTimeout(resolve, 1 * 60 * 1000)); // Retry every 1 minutes
   }
+
+  console.log("[BACKGROUND TASK] OUT OF WHILE LOOP");
 };
 
 export { backgroundTask };
