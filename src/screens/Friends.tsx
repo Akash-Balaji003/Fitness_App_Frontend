@@ -41,7 +41,7 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
     const fetchFriends = async () => {
         try {
             const response = await fetch(
-                `https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/get-friends?id=${user?.user_id}`,
+                `http://172.16.0.60:8002/get-friends?id=${user?.user_id}`, // http://127.0.0.1:8000 "SRM = http://172.16.0.60:8002 Test = https://9kz2rcl6-8000.inc1.devtunnels.ms"
                 {
                     method: "GET",
                     headers: {
@@ -67,7 +67,7 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
     // Function to fetch pending friend requests
     const fetchPendingRequests = async () => {
         try {
-            const response = await fetch(`https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/get-pending-requests?id=${user?.user_id}`, {
+            const response = await fetch(`http://172.16.0.60:8002/get-pending-requests?id=${user?.user_id}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -92,7 +92,7 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
     const handleResponse = async (friendship_id: number, status: string) => {
         try {
             console.log("friendship_id : ", friendship_id)
-            const response = await fetch(`https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/respond-request?id=${friendship_id}&status=${status}`, {
+            const response = await fetch(`http://172.16.0.60:8002/respond-request?id=${friendship_id}&status=${status}`, {
                 headers: {
                     "Content-Type": "application/json",
                 },

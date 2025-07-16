@@ -23,7 +23,7 @@ const StepCounterPage = ({ route, navigation }: NativeStackScreenProps<RootStack
   const registerUser = async() => {
     setLoading(true); // Show loader
     try {
-        const response = await fetch('https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/register', {
+        const response = await fetch('http://172.16.0.60:8002/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

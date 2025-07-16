@@ -16,7 +16,7 @@ const SearchUser = () => {
     useEffect(() => {
         console.log('Search Query:', searchQuery);
         if (searchQuery.length >= 3) {  // Start searching after 3 characters
-            fetch(`https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/users/search/?name=${searchQuery}`)
+            fetch(`http://172.16.0.60:8002/users/search/?name=${searchQuery}`)
                 .then(response => response.json())
                 .then(data => {
                     console.log('Fetched data:', data);  // Log the data to see its structure
@@ -51,7 +51,7 @@ const SearchUser = () => {
     const sendFriendRequest = async (recipientId: number) => {
         try {
             const response = await fetch(
-                `https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/send-request?req_id=${user?.user_id}&rec_id=${recipientId}`,
+                `http://172.16.0.60:8002/send-request?req_id=${user?.user_id}&rec_id=${recipientId}`,
                 {
                     method: 'GET', // Adjust to POST if your API design prefers POST for this endpoint
                 }

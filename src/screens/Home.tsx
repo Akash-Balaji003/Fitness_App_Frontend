@@ -62,7 +62,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
         try {
             console.log("[Fetch Midnight Step Count] User_ID:", user?.user_id);
             const response = await fetch(
-                `https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/get-total-sensor-steps?id=${user?.user_id}`, 
+                `http://172.16.0.60:8002/get-total-sensor-steps?id=${user?.user_id}`, 
                 {
                     method: "GET",
                 }
@@ -192,7 +192,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     const fetchStreaks = async () => {
         try {
           // Replace with your actual API URL
-          const response = await fetch(`https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/get-streaks?id=${user?.user_id}`);
+          const response = await fetch(`http://172.16.0.60:8002/get-streaks?id=${user?.user_id}`);
           const data = await response.json();
           
           // Assuming the API returns an object with step counts for each day

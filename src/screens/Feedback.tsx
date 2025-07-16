@@ -30,7 +30,7 @@ const FeedbackScreen = ({ navigation }: FeedbackProps) => {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/feedback', {
+            const response = await fetch('http://172.16.0.60:8002/feedback', {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',

@@ -44,7 +44,7 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
         console.log("DATA", updatedProfile);
     
         try {
-            const response = await fetch('https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/update-user', {
+            const response = await fetch('http://172.16.0.60:8002/update-user', {
                 method: 'POST', // Use PUT for updates
                 headers: {
                     'Content-Type': 'application/json',

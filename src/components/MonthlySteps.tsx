@@ -28,7 +28,7 @@ const StepCountGrid: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(`https://fitness-backend-server-gkdme7bxcng6g9cn.southeastasia-01.azurewebsites.net/monthly-steps?id=${user?.user_id}`);
+                const response = await fetch(`http://172.16.0.60:8002/monthly-steps?id=${user?.user_id}`);
                 const data = await response.json();
                 setValues(data);
             } catch (error) {
