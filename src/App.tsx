@@ -29,9 +29,8 @@ import { getUserData, hasAlertBeenShown, saveAlertStatus } from './tasks/Storage
 import { ActivityIndicator, Alert, NativeModules, PermissionsAndroid, Platform, View } from 'react-native';
 import SplashScreen from './screens/SplashScreen';
 import FeedbackScreen from './screens/Feedback';
-
-import BackgroundService from "react-native-background-actions";
-import { backgroundTask } from "./tasks/DailyStepUpdate";
+import QrScreen from './screens/QrScreen';
+import QrConfirmation from './screens/QrConfirmation';
 
 enableScreens();
 
@@ -116,6 +115,10 @@ export type RootStackParamList = {
     TypeStepCount: undefined;
     FeedbackScreen: undefined;
     CreditScreen: undefined;
+    QrScreen: undefined;
+    QrConfirmation: { 
+      QRResult: string | undefined;
+    };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -253,6 +256,8 @@ function App(): React.JSX.Element {
                   <Stack.Screen name="FeedbackScreen" component={FeedbackScreen} options={{ headerShown: false }} />
                   <Stack.Screen name="CreditScreen" component={CreditScreen} options={{ headerShown: false }} />
                   <Stack.Screen name="CalorieGoal" component={CalorieGoal} options={{ headerShown: false }} />
+                  <Stack.Screen name="QrScreen" component={QrScreen} options={{ headerShown: false }} />
+                  <Stack.Screen name="QrConfirmation" component={QrConfirmation} options={{ headerShown: false }} />
               </Stack.Navigator>
             </NavigationContainer>
         </StepCountProvider>

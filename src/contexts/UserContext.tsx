@@ -14,6 +14,7 @@ interface User {
     stepgoal: number;
     gender: string;
     DOB: string;
+    caloriegoal: number;
 }
 
 // Define the shape of the context

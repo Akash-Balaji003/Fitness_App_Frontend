@@ -58,6 +58,7 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 stepgoal: data.stepgoal,
                 gender: data.gender,
                 DOB: data.DOB,
+                caloriegoal: data.caloriegoal
             });
 
 
@@ -72,7 +73,8 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 experience: data.experience,
                 stepgoal: data.stepgoal,
                 gender: data.gender,
-                DOB: data.DOB
+                DOB: data.DOB,
+                caloriegoal: data.caloriegoal
             });
 
             updateSteps(data.user_id); // Start background task after successful login
