@@ -30,9 +30,9 @@ interface Friend {
 }
 
 // --- Reusable Friend Card Component ---
-const FriendCard = ({ item, type, onAccept, onReject, onRemove }: { item: Friend, type: 'friend' | 'pending', onAccept?: (id: number) => void, onReject?: (id: number) => void, onRemove?: (id: string) => void }) => {
+// The props now expect simple functions with no arguments.
+const FriendCard = ({ item, type, onAccept, onReject, onRemove }: { item: Friend, type: 'friend' | 'pending', onAccept?: () => void, onReject?: () => void, onRemove?: () => void }) => {
     const name = type === 'pending' ? item.requester_name : item.username;
-    const id = type === 'pending' ? item.friendship_id : item.friend_id;
 
     return (
         <View style={styles.card}>
@@ -44,16 +44,17 @@ const FriendCard = ({ item, type, onAccept, onReject, onRemove }: { item: Friend
             <View style={styles.actionButtons}>
                 {type === 'pending' && onAccept && onReject && (
                     <>
-                        <TouchableOpacity style={[styles.actionButton, styles.acceptButton]} onPress={() => onAccept(id!)}>
+                        {/* The onPress now calls the prop directly, without passing arguments */}
+                        <TouchableOpacity style={[styles.actionButton, styles.acceptButton]} onPress={onAccept}>
                             <Icon name="checkmark-outline" size={22} color="#fff" />
                         </TouchableOpacity>
-                        <TouchableOpacity style={[styles.actionButton, styles.rejectButton]} onPress={() => onReject(id!)}>
+                        <TouchableOpacity style={[styles.actionButton, styles.rejectButton]} onPress={onReject}>
                             <Icon name="close-outline" size={22} color="#fff" />
                         </TouchableOpacity>
                     </>
                 )}
                 {type === 'friend' && onRemove && (
-                    <TouchableOpacity style={[styles.actionButton, styles.rejectButton]} onPress={() => onRemove(id!)}>
+                    <TouchableOpacity style={[styles.actionButton, styles.rejectButton]} onPress={onRemove}>
                         <Icon name="person-remove-outline" size={20} color="#fff" />
                     </TouchableOpacity>
                 )}
@@ -71,7 +72,7 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
     const [refreshing, setRefreshing] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // --- Data Fetching and Handling Logic (remains the same) ---
+    // --- Data Fetching and Handling Logic ---
     const removeDuplicates = (array: any[], key: string | number) => {
         return array.filter((item, index, self) => 
             index === self.findIndex((t) => t[key] === item[key])
@@ -126,6 +127,13 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
         }
     };
 
+    // Placeholder function for removing a friend
+    const handleRemoveFriend = async (friend_id: string) => {
+        // In a real app, you would call your API to remove the friend
+        ToastAndroid.show(`Removing friend... (Not implemented)`, ToastAndroid.SHORT);
+        console.log("Attempting to remove friend with ID:", friend_id);
+    };
+
     const onRefresh = async () => {
         setRefreshing(true);
         await loadData();
@@ -161,9 +169,10 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
                     <FriendCard 
                         item={item} 
                         type={type}
-                        onAccept={handleResponse}
-                        onReject={handleResponse}
-                        onRemove={(id) => console.log("Remove friend:", id)} // Placeholder for remove logic
+                        // The logic is now handled here, passing the correct arguments to handleResponse
+                        onAccept={() => handleResponse(item.friendship_id!, 'accepted')}
+                        onReject={() => handleResponse(item.friendship_id!, 'rejected')}
+                        onRemove={() => handleRemoveFriend(item.friend_id)}
                     />
                 )}
                 keyExtractor={(item, index) => `${item.user_id}_${index}`}
