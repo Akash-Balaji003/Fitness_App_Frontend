@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, LayoutAnimation, UIManager, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
@@ -7,56 +7,117 @@ import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import BottomNavBar from '../components/BottomNavBar';
 
+// Enable LayoutAnimation for Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 const { width, height } = Dimensions.get('window');
 const calculatePercentage = (percentage: number, dimension: number) => (percentage / 100) * dimension;
 
+// --- Helper Types for Data ---
+// Type for data coming from the API
+interface ApiTransaction {
+    transaction_id: number;
+    transaction_type: 'earn' | 'spend';
+    activity_type: string;
+    amount: number;
+    created_at: string;
+}
+
+// Type for data formatted for the UI
+interface FormattedTransaction {
+    id: number;
+    title: string;
+    points: number;
+    date: string;
+    type: 'credit' | 'debit';
+    icon: string;
+    details: any[];
+}
+
+
 const CreditSystem = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'CreditScreen'>) => {
-      const [activeTab, setActiveTab] = useState('CreditScreen');
+    const [activeTab, setActiveTab] = useState('CreditScreen');
     const [selectedFilter, setSelectedFilter] = useState('All');
     const [expandedTransaction, setExpandedTransaction] = useState<number | null>(null);
 
-    const transactions = [
-        {
-            title: 'Swimming @ TP Swimming Pool',
-            points: '-40 fp',
-            date: '2025-02-20',
-            details: []
-        },
-        {
-            title: '10 Day Streak!',
-            points: '+120 fp',
-            date: '2025-02-15',
-            details: [
-                { description: 'You have walked 7000 steps', points: '+70 fp' },
-                { description: 'You have burnt 243 cals', points: '+50 fp' }
-            ]
-        },
-        {
-            title: 'First Place in Leaderboard',
-            points: '+50 fp',
-            date: '2025-02-10',
-            details: []
-        },
-        {
-            title: '10000 cals burnt! MILESTONE',
-            points: '+300 fp',
-            date: '2025-02-05',
-            details: []
-        },
-        {
-            title: 'Bye Bye 20 day streak :(',
-            points: '-100 fp',
-            date: '2025-01-30',
-            details: []
+    // --- State for transactions, loading, and errors ---
+    const [transactions, setTransactions] = useState<FormattedTransaction[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // --- Helper to assign an icon based on activity type ---
+    const getIconForActivity = (activity: string): string => {
+        switch (activity.toLowerCase()) {
+            case 'steps':
+                return 'walk-outline';
+            case 'calories':
+                return 'flame-outline';
+            case 'redeem':
+                return 'wallet-outline';
+            case 'swimming':
+                return 'water-outline';
+            default:
+                return 'cash-outline';
         }
-    ];
+    };
+
+    // --- Function to fetch and format transactions ---
+    const fetchTransactions = async () => {
+        // ⚠️ Replace with your actual backend URL/IP address
+        const API_URL = 'https://9kz2rcl6-8000.inc1.devtunnels.ms/get-transaction?id=${user?.user_id}'; 
+        
+        try {
+            const response = await fetch(API_URL);
+            if (!response.ok) {
+                throw new Error('Could not fetch transaction history.');
+            }
+            const data: ApiTransaction[] = await response.json();
+
+            // Map API data to the new format your component expects
+            const formattedData = data.map((item): FormattedTransaction => {
+                const isCredit = item.transaction_type === 'earn';
+                return {
+                    id: item.transaction_id,
+                    title: `${isCredit ? 'Earned from' : 'Spent on'} ${item.activity_type}`,
+                    points: isCredit ? item.amount : -item.amount, // Use negative for debits
+                    date: new Date(item.created_at).toISOString().split('T')[0],
+                    type: isCredit ? 'credit' : 'debit',
+                    icon: getIconForActivity(item.activity_type),
+                    details: [] // Details are not available from this API endpoint
+                };
+            });
+
+            setTransactions(formattedData);
+        } catch (e: any) {
+            setError(e.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    // --- useEffect to run fetchTransactions on component mount ---
+    useEffect(() => {
+        fetchTransactions();
+    }, []);
+
+
+    const toggleExpand = (index: number) => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setExpandedTransaction(expandedTransaction === index ? null : index);
+    };
 
     const renderHeader = () => (
         <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
                 <Icon name="arrow-back" size={30} color="black" style={styles.arrowIcon} />
             </TouchableOpacity>
-            <Icon name="wallet" size={30} color="black" style={styles.walletIcon} />
+            <View style={styles.rightHeaderIcons}>
+                <TouchableOpacity onPress={() => navigation.navigate('RedeemScreen' as any)}>
+                    <Icon name="qr-code-outline" size={30} color="black" style={styles.qrIcon} />
+                </TouchableOpacity>
+            </View>
         </View>
     );
 
@@ -73,7 +134,7 @@ const CreditSystem = ({ navigation }: NativeStackScreenProps<RootStackParamList,
     const renderFilters = () => (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterContainer}>
             {filters.map((filter) => (
-                <TouchableOpacity 
+                <TouchableOpacity
                     key={filter}
                     style={[styles.filterButton, selectedFilter === filter && styles.selectedFilter]}
                     onPress={() => setSelectedFilter(filter)}
@@ -84,62 +145,70 @@ const CreditSystem = ({ navigation }: NativeStackScreenProps<RootStackParamList,
         </ScrollView>
     );
 
-    const renderTransactions = () => (
-      <ScrollView 
-          contentContainerStyle={{}} // Extra padding at bottom
-          showsVerticalScrollIndicator={false} 
-      >
-          <View style={styles.transactionList}>
-              {transactions.map((item, index) => (
-                  <View key={index}>
-                      <TouchableOpacity 
-                          style={styles.transactionItem} 
-                          onPress={() => setExpandedTransaction(expandedTransaction === index ? null : index)}
-                      >
-                          <Text style={styles.transactionTitle}>{item.title}</Text>
-                          <Text style={styles.transactionPoints}>{item.points}</Text>
-                      </TouchableOpacity>
-                      <Text style={styles.transactionDate}>{item.date}</Text>
-  
-                      {expandedTransaction === index && (
-                          <View style={styles.dropdownContainer}>
-                              <Text style={styles.dropdownTitle}>Daily reward</Text>
-                              <Text style={styles.dropdownPoints}>{item.points}</Text>
-                              {item.details.map((detail, detailIndex) => (
-                                  <View key={detailIndex} style={styles.subDetail}>
-                                      <Text style={styles.subDetailText}>{detail.description}</Text>
-                                      <Text style={styles.subDetailPoints}>{detail.points}</Text>
-                                  </View>
-                              ))}
-                              <TouchableOpacity onPress={() => setExpandedTransaction(null)}>
-                                  <Text style={styles.showLess}>Show less ▲</Text>
-                              </TouchableOpacity>
-                          </View>
-                      )}
-                  </View>
-              ))}
-          </View>
-      </ScrollView>
-  );  
+    const renderTransactionList = () => {
+        if (loading) {
+            return <ActivityIndicator size="large" color="#114D5B" style={{ flex: 1 }} />;
+        }
+
+        if (error) {
+            return <Text style={styles.errorText}>Error: {error}</Text>;
+        }
+
+        return (
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.transactionListContainer} showsVerticalScrollIndicator={false}>
+                {transactions.map((item, index) => {
+                    const isExpanded = expandedTransaction === index;
+                    const pointColor = item.type === 'credit' ? styles.pointsCredit : styles.pointsDebit;
+                    const pointPrefix = item.type === 'credit' ? '+' : '';
+
+                    return (
+                        <View key={item.id} style={styles.transactionCard}>
+                            <TouchableOpacity style={styles.transactionItem} onPress={() => toggleExpand(index)}>
+                                <Icon name={item.icon} size={24} color="#114D5B" style={styles.transactionIcon} />
+                                <View style={styles.transactionDetails}>
+                                    <Text style={styles.transactionTitle}>{item.title}</Text>
+                                    <Text style={styles.transactionDate}>{item.date}</Text>
+                                </View>
+                                <View style={styles.transactionPointsContainer}>
+                                    <Text style={[styles.transactionPoints, pointColor]}>{`${pointPrefix}${item.points} fp`}</Text>
+                                    <Icon name={isExpanded ? "chevron-up-outline" : "chevron-down-outline"} size={20} color="#888" />
+                                </View>
+                            </TouchableOpacity>
+
+                            {isExpanded && (
+                                <View style={styles.dropdownContainer}>
+                                    <Text style={styles.dropdownTitle}>Breakdown</Text>
+                                    {item.details.length > 0 ? (
+                                        item.details.map((detail, detailIndex) => (
+                                            <View key={detailIndex} style={styles.subDetail}>
+                                                <Text style={styles.subDetailText}>{detail.description}</Text>
+                                                <Text style={styles.subDetailPoints}>{`+${detail.points} fp`}</Text>
+                                            </View>
+                                        ))
+                                    ) : (
+                                        <Text style={styles.subDetailText}>No further details available.</Text>
+                                    )}
+                                </View>
+                            )}
+                        </View>
+                    );
+                })}
+            </ScrollView>
+        );
+    };
 
     return (
         <SafeAreaView style={styles.container}>
-            <LinearGradient
-                colors={['#ffffff', '#B1F0F7']}
-                style={styles.container}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-            >            
-                {renderHeader()}
-                {renderCreditContainer()}
-                <Text style={styles.historyHeading}>Transaction History</Text>
-                {renderFilters()}
-                {renderTransactions()}
-                <BottomNavBar
-                    navigation={navigation}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                />
+            <LinearGradient colors={['#ffffff', '#B1F0F7']} style={styles.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                <View style={{ flex: 1 }}>
+                    {renderHeader()}
+                    {renderCreditContainer()}
+                    <Text style={styles.historyHeading}>Transaction History</Text>
+                    {renderFilters()}
+                    {renderTransactionList()}
+                </View>
+
+                <BottomNavBar navigation={navigation} activeTab={activeTab} setActiveTab={setActiveTab} />
             </LinearGradient>
         </SafeAreaView>
     );
@@ -148,133 +217,105 @@ const CreditSystem = ({ navigation }: NativeStackScreenProps<RootStackParamList,
 export default CreditSystem;
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff'
+    container: { flex: 1, backgroundColor: '#fff' },
+    gradient: { flex: 1 },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: calculatePercentage(2, height) },
+    arrowIcon: { marginLeft: calculatePercentage(4, width) },
+    rightHeaderIcons: { flexDirection: 'row', alignItems: 'center' },
+    qrIcon: { marginRight: calculatePercentage(4, width) },
+    walletIcon: { marginRight: calculatePercentage(2, width) },
+    creditContainer: { backgroundColor: '#114D5B', borderRadius: 15, padding: 25, alignItems: 'center', marginVertical: calculatePercentage(0.5, height), marginHorizontal: calculatePercentage(6, width) },
+    fitPoints: { fontSize: 45, fontWeight: 'bold', color: 'white' },
+    fitPointsLabel: { fontSize: 18, color: '#888' },
+    redeemText: { fontSize: 16, color: '#00c853' },
+    historyHeading: { fontSize: 24, fontWeight: 'bold', marginTop: calculatePercentage(1, height), marginLeft: calculatePercentage(4, width), marginBottom: 10 },
+    filterContainer: { flexDirection: 'row', maxHeight: calculatePercentage(6, height), marginVertical: calculatePercentage(1, height), paddingLeft: calculatePercentage(4, width) },
+    filterButton: { paddingHorizontal: 15, paddingVertical: 4, borderRadius: 20, backgroundColor: '#eee', marginRight: 15, height: calculatePercentage(4.5, height), justifyContent: 'center', alignItems: 'center' },
+    selectedFilter: { backgroundColor: '#114D5B' },
+    filterText: { color: '#333333' },
+    filterTextSelected: { color: '#fff' },
+    transactionListContainer: { paddingHorizontal: calculatePercentage(4, width), paddingBottom: 90 },
+    transactionCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        padding: 15,
+        marginBottom: 12,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginVertical: calculatePercentage(2, height)
-    },
-    arrowIcon: {
-        marginLeft: calculatePercentage(2, width)
-    },
-    walletIcon: {
-        marginRight: calculatePercentage(2, width)
-    },
-    creditContainer: {
-        backgroundColor: '#114D5B',
-        borderRadius: 15,
-        padding: 25,
-        alignItems: 'center',
-        marginVertical: calculatePercentage(0.5, height),
-        marginHorizontal: calculatePercentage(6, width)
-    },
-    fitPoints: {
-        fontSize: 45,
-        fontWeight: 'bold',
-        color: 'white'
-    },
-    fitPointsLabel: {
-        fontSize: 18,
-        color: '#888'
-    },
-    redeemText: {
-        fontSize: 16,
-        color: '#00c853'
-    },
-    historyHeading: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginTop: calculatePercentage(1, height),
-        marginLeft: calculatePercentage(2, width),
-    },
-    filterContainer: {
-        flexDirection: 'row',
-        marginVertical: calculatePercentage(1, height),
-        marginLeft: calculatePercentage(2, width),
-    },
-    filterButton: {
-        paddingHorizontal: 15,
-        paddingVertical: 4,
-        borderRadius: 20,
-        backgroundColor: '#eee',
-        marginRight: 20,
-        marginBottom:calculatePercentage(1.5, height),
-        height: calculatePercentage(4.5, height),
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    selectedFilter: {
-        backgroundColor: '#3b5998'
-    },
-    filterText: {
-        color: '#333333'
-    },
-    filterTextSelected: {
-      color: '#fff'
-    },
-    transactionList: {
-      marginTop: calculatePercentage(1, height),
-      marginHorizontal: calculatePercentage(2, width),
-      marginBottom: calculatePercentage(31, height), // Prevents cutoff
-      height: calculatePercentage(40, height), // Prevents cutoff
-      gap: 10
-  },
-  dropdownContainer: {
-      backgroundColor: '#f5f5f5',
-      padding: 10,
-      borderRadius: 10,
-      marginBottom: calculatePercentage(1, height), // Adds space after dropdown
-  },
     transactionItem: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingVertical: 10
+        alignItems: 'center',
+        width: '100%',
+    },
+    transactionIcon: {
+        marginRight: 15,
+    },
+    transactionDetails: {
+        flex: 1,
     },
     transactionTitle: {
         fontSize: 16,
+        fontWeight: '600',
         color: '#333',
-        fontWeight: 'bold',
+    },
+    transactionDate: {
+        fontSize: 13,
+        color: '#777',
+        marginTop: 2,
+    },
+    transactionPointsContainer: {
+        alignItems: 'flex-end',
     },
     transactionPoints: {
         fontSize: 16,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        marginBottom: 2,
     },
-    transactionDate: {
-        color: '#777',
-        marginTop: -8, 
+    pointsCredit: {
+        color: '#2e7d32',
+    },
+    pointsDebit: {
+        color: '#d32f2f',
+    },
+    dropdownContainer: {
+        borderTopWidth: 1,
+        borderTopColor: '#eee',
+        marginTop: 15,
+        paddingTop: 15,
     },
     dropdownTitle: {
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        marginBottom: 10,
+        fontSize: 14,
     },
     subDetail: {
         flexDirection: 'row',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        paddingVertical: 4,
     },
-    showLess: {
-        textAlign: 'right',
-        color: '#3b5998',
-        marginTop: 5
+    subDetailText: {
+        fontSize: 14,
+        color: '#555',
     },
-    dropdownPoints: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      color: '#00c853', // Green color to indicate points earned
-      textAlign: 'right',
-      marginVertical: calculatePercentage(0.5, height),
-  },
-  subDetailText: {
-      fontSize: 14,
-      color: '#555', // Dark grey for better readability
-      flex: 1, // Allows text to take up available space
-  },
-  subDetailPoints: {
-      fontSize: 14,
-      fontWeight: 'bold',
-      color: '#00c853', // Green to indicate positive points
-      textAlign: 'right',
-  }
+    subDetailPoints: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#2e7d32',
+    },
+    // Added error text style for displaying fetch errors
+    errorText: {
+        flex: 1,
+        textAlign: 'center',
+        textAlignVertical: 'center',
+        color: '#d32f2f',
+        fontSize: 16,
+        paddingHorizontal: 20,
+    }
 });

@@ -94,7 +94,7 @@ const ProfileScreen = ({ navigation }: NativeStackScreenProps<RootStackParamList
           try {
             console.log("Fetching weekly data for user ID:", user?.user_id);
             const response = await fetch(
-              `http://172.16.0.60:8002/weekly-steps?id=${user?.user_id}` // http://127.0.0.1:8000 "SRM = http://172.16.0.60:8002 Test = https://9kz2rcl6-8000.inc1.devtunnels.ms"
+              `https://9kz2rcl6-8000.inc1.devtunnels.ms/weekly-steps?id=${user?.user_id}` // http://127.0.0.1:8000 "SRM = https://9kz2rcl6-8000.inc1.devtunnels.ms Test = https://9kz2rcl6-8000.inc1.devtunnels.ms"
             );
             const rawData: WeeklyData = await response.json(); // Cast the response data
     

@@ -1,113 +1,125 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, RefreshControl, Dimensions, ActivityIndicator, ToastAndroid, ScrollView } from "react-native";
+import { 
+    StyleSheet, 
+    View, 
+    Text, 
+    FlatList, 
+    TouchableOpacity, 
+    RefreshControl, 
+    Dimensions, 
+    ActivityIndicator, 
+    ToastAndroid, 
+    Image,
+    TextInput
+} from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
 import BottomNavBar from "../components/BottomNavBar";
 import { useUser } from '../contexts/UserContext';
-import SearchBar from "../components/SearchBar";
 import LinearGradient from "react-native-linear-gradient";
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const { width, height } = Dimensions.get("window");
-
-// Helper function for percentage calculation
-const calculatePercentage = (percentage: number, dimension: number) => (percentage / 100) * dimension;
 
 interface Friend {
     user_id: string;
     friend_id: string;
     username: string;
-    // Add other properties as needed
+    requester_name?: string;
+    friendship_id?: number;
 }
 
+// --- Reusable Friend Card Component ---
+const FriendCard = ({ item, type, onAccept, onReject, onRemove }: { item: Friend, type: 'friend' | 'pending', onAccept?: (id: number) => void, onReject?: (id: number) => void, onRemove?: (id: string) => void }) => {
+    const name = type === 'pending' ? item.requester_name : item.username;
+    const id = type === 'pending' ? item.friendship_id : item.friend_id;
+
+    return (
+        <View style={styles.card}>
+            <Image 
+                source={{ uri: `https://i.pravatar.cc/150?u=${item.user_id}` }} 
+                style={styles.profilePic}
+            />
+            <Text style={styles.cardName}>{name}</Text>
+            <View style={styles.actionButtons}>
+                {type === 'pending' && onAccept && onReject && (
+                    <>
+                        <TouchableOpacity style={[styles.actionButton, styles.acceptButton]} onPress={() => onAccept(id!)}>
+                            <Icon name="checkmark-outline" size={22} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.actionButton, styles.rejectButton]} onPress={() => onReject(id!)}>
+                            <Icon name="close-outline" size={22} color="#fff" />
+                        </TouchableOpacity>
+                    </>
+                )}
+                {type === 'friend' && onRemove && (
+                    <TouchableOpacity style={[styles.actionButton, styles.rejectButton]} onPress={() => onRemove(id!)}>
+                        <Icon name="person-remove-outline" size={20} color="#fff" />
+                    </TouchableOpacity>
+                )}
+            </View>
+        </View>
+    );
+};
+
 const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Friends">) => {
-    const [activeTab, setActiveTab] = useState("Friends");
-
-    // Access the user context
+    const [activeList, setActiveList] = useState<'Friends' | 'Pending'>("Friends");
     const { user } = useUser();
+    const [friends, setFriends] = useState<Friend[]>([]);
+    const [pendingRequests, setPendingRequests] = useState<Friend[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const [friends, setFriends] = useState<Friend[]>([]); // Typing the state
-    const [pendingRequests, setPendingRequests] = useState([]); // State to store fetched requests
-    const [loadingPending, setLoadingPending] = useState(true); // Loading for pending requests
-    const [loadingFriends, setLoadingFriends] = useState(true); // Loading for friends
-    const [refreshing, setRefreshing] = useState(false); // State for pull-to-refresh
-
+    // --- Data Fetching and Handling Logic (remains the same) ---
     const removeDuplicates = (array: any[], key: string | number) => {
         return array.filter((item, index, self) => 
             index === self.findIndex((t) => t[key] === item[key])
         );
     };
     
-    // Function to fetch friends
     const fetchFriends = async () => {
         try {
-            const response = await fetch(
-                `http://172.16.0.60:8002/get-friends?id=${user?.user_id}`, // http://127.0.0.1:8000 "SRM = http://172.16.0.60:8002 Test = https://9kz2rcl6-8000.inc1.devtunnels.ms"
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
+            const response = await fetch(`https://9kz2rcl6-8000.inc1.devtunnels.ms/get-friends?id=${user?.user_id}`);
             let data = await response.json();
-            console.log("Fetched friends list:", data); // Debugging
-    
-            // Remove duplicates based on 'user_id'
             const uniqueFriends = removeDuplicates(data, "user_id");
-    
-            // Update the friends state with unique values
             setFriends(uniqueFriends || []);
         } catch (error) {
             console.error("Error fetching friends list:", error);
-        } finally {
-            setLoadingFriends(false);
         }
     };
 
-    // Function to fetch pending friend requests
     const fetchPendingRequests = async () => {
         try {
-            const response = await fetch(`http://172.16.0.60:8002/get-pending-requests?id=${user?.user_id}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
+            const response = await fetch(`https://9kz2rcl6-8000.inc1.devtunnels.ms/get-pending-requests?id=${user?.user_id}`);
             const data = await response.json();
-            console.log("Fetched pending requests:", data); // Debugging
-            setPendingRequests(data || []); // Use the data directly
+            setPendingRequests(data || []);
         } catch (error) {
             console.error("Error fetching pending requests:", error);
-        } finally {
-            setLoadingPending(false); // Stop loading
         }
+    };
+
+    const loadData = async () => {
+        setLoading(true);
+        await Promise.all([fetchFriends(), fetchPendingRequests()]);
+        setLoading(false);
     };
 
     useEffect(() => {
-        fetchFriends(); // Fetch friends on mount
-        fetchPendingRequests(); // Fetch requests on component mount
-    }, []);
+        if (user?.user_id) {
+            loadData();
+        }
+    }, [user]);
 
-    // Function to handle friend request response
     const handleResponse = async (friendship_id: number, status: string) => {
         try {
-            console.log("friendship_id : ", friendship_id)
-            const response = await fetch(`http://172.16.0.60:8002/respond-request?id=${friendship_id}&status=${status}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-
+            const response = await fetch(`https://9kz2rcl6-8000.inc1.devtunnels.ms/respond-request?id=${friendship_id}&status=${status}`);
             const result = await response.json();
-
             if (response.ok) {
-                console.log(`Friend request ${status} successfully!`, result);
-                fetchFriends(); // Re-fetch friends after accepting or rejecting
-                fetchPendingRequests();
-                ToastAndroid.show('Friendship Status Updated', ToastAndroid.SHORT);
-                
+                ToastAndroid.show(`Request ${status}`, ToastAndroid.SHORT);
+                await loadData(); // Refresh both lists
             } else {
-                console.error("Error responding to request:", result.detail || "Unknown error");
+                console.error("Error responding to request:", result.detail);
             }
         } catch (error) {
             console.error("Error responding to request:", error);
@@ -116,285 +128,202 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
 
     const onRefresh = async () => {
         setRefreshing(true);
-        await Promise.all([fetchFriends(), fetchPendingRequests()]);
+        await loadData();
         setRefreshing(false);
     };
 
-    // Render a single friend card
-    const renderFriendCard = ({ item, index }: { item: any; index: number }) => {
-    
-        return (
-            <View style={[styles.card, { justifyContent: "space-between" }]}>
-                <View style={{ flexDirection: "row", justifyContent: "flex-start", width: "40%", gap:20 }}>
-                    <Text style={styles.cardText}>{index + 1}</Text>
-                    <Text style={styles.cardText}>{item.username}</Text>
+    const filteredFriends = friends.filter(friend => friend.username.toLowerCase().includes(searchQuery.toLowerCase()));
+    const filteredRequests = pendingRequests.filter(req => req.requester_name?.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const ListContent = () => {
+        if (loading) {
+            return <ActivityIndicator size="large" color="#114D5B" style={{ marginTop: 50 }} />;
+        }
+
+        const data = activeList === 'Friends' ? filteredFriends : filteredRequests;
+        const type = activeList === 'Friends' ? 'friend' : 'pending';
+
+        if (data.length === 0) {
+            return (
+                <View style={styles.emptyContainer}>
+                    <Icon name={activeList === 'Friends' ? "people-outline" : "mail-unread-outline"} size={60} color="#ccc" />
+                    <Text style={styles.emptyText}>
+                        {searchQuery ? `No results for "${searchQuery}"` : `No ${activeList.toLowerCase()} requests`}
+                    </Text>
                 </View>
-                <TouchableOpacity
-                    onPress={() => handleResponse(item.friend_id, "rejected")}
-                    style={styles.rejectButton}
-                >
-                    <Text style={styles.actionText}>✖</Text>
-                </TouchableOpacity>
-            </View>
+            );
+        }
+
+        return (
+            <FlatList
+                data={data}
+                renderItem={({ item }) => (
+                    <FriendCard 
+                        item={item} 
+                        type={type}
+                        onAccept={handleResponse}
+                        onReject={handleResponse}
+                        onRemove={(id) => console.log("Remove friend:", id)} // Placeholder for remove logic
+                    />
+                )}
+                keyExtractor={(item, index) => `${item.user_id}_${index}`}
+                contentContainerStyle={{ paddingBottom: 100 }}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#114D5B"]} />}
+            />
         );
     };
 
-    // Render a single request card
-    const renderRequestCard = ({ item, index }: { item: any; index: number }) => {
-        console.log("Pending Data From Backend: ", item); // Log the item object to check its structure and data
-    
-        return (
-            <View style={styles.card}>
-                <Text style={styles.cardText}>{index + 1}</Text>
-                <Text style={styles.cardText}>{item.requester_name}</Text>
-                <View style={styles.actionButtons}>
-                    <TouchableOpacity
-                        onPress={() => handleResponse(item.friendship_id, "accepted")}
-                        style={styles.acceptButton}
-                    >
-                        <Text style={styles.actionText}>✔</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => handleResponse(item.friendship_id, "rejected")}
-                        style={styles.rejectButton}
-                    >
-                        <Text style={styles.actionText}>✖</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        );
-    };    
-
-    console.log("Friends Data:", friends);
-    console.log("Pending Requests Data:", pendingRequests);
-
-
   return (
-    <LinearGradient
-              colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
-              style={styles.container}
-              start={{ x: 0, y: 0 }} // Gradient direction (top-left)
-              end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
-          >
-        {/* Screen Title */}
-        <Text style={styles.screenTitle}>Manage Your Friends</Text>
+    <View style={{ flex: 1 }}>
+        <LinearGradient colors={['#ffffff', '#D9F8FB']} style={styles.container}>
+            <Text style={styles.title}>Friends</Text>
 
-        {/* Header with Tabs */}
-        <View style={styles.headerContainer}>
-
-            <TouchableOpacity
-            style={[styles.tab, activeTab === "Friends" && styles.activeTab]}
-            onPress={() => setActiveTab("Friends")}
-            >
-                <Text style={[styles.tabText, activeTab === "Friends" && styles.activeTabText]}>Friends</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-            style={[styles.tab, activeTab === "Pending" && styles.activeTab]}
-            onPress={() => setActiveTab("Pending")}
-            >
-                <Text style={[styles.tabText, activeTab === "Pending" && styles.activeTabText]}>Pending</Text>
-            </TouchableOpacity>
-        </View>
-
-        {/* Search Bar - Adjusted for positioning */}
-        <View style={styles.searchBarContainer}>
-            <SearchBar />
-        </View>
-
-        {/* Content */}
-        <View style={styles.contentContainer}>
-            {activeTab === "Friends" ? (
-                loadingFriends ? (
-                <ActivityIndicator size="large" color="#007BFF" />
-                ) : friends.length === 0 ? (
-                <ScrollView
-                    contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}
-                    refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                        colors={["#007BFF"]}
-                    />
-                    }
-                >
-                    <Text style={styles.emptyText}>No friends added yet.</Text>
-                </ScrollView>
-                ) : (
-                <FlatList
-                    data={friends}
-                    renderItem={renderFriendCard}
-                    keyExtractor={(item, index) => `${item.user_id}_${index}`}
-                    refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                        colors={["#007BFF"]}
-                    />
-                    }
-                />
-                )
-            ) : loadingPending ? (
-                <ActivityIndicator size="large" color="#007BFF" />
-            ) : pendingRequests.length === 0 ? (
-                <ScrollView
-                contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}
-                refreshControl={
-                    <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                    colors={["#007BFF"]}
-                    />
-                }
-                >
-                <Text style={styles.emptyText}>No pending requests.</Text>
-                </ScrollView>
-            ) : (
-                <FlatList
-                data={pendingRequests}
-                renderItem={renderRequestCard}
-                keyExtractor={(item, index) => `${item.friend_id}_${index}`}
-                refreshControl={
-                    <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                    colors={["#007BFF"]}
-                    />
-                }
-                />
-            )}
+            {/* --- Tab Switcher --- */}
+            <View style={styles.tabContainer}>
+                <TouchableOpacity onPress={() => setActiveList("Friends")} style={[styles.tabButton, activeList === "Friends" && styles.tabButtonActive]}>
+                    <Text style={[styles.tabText, activeList === "Friends" && styles.tabTextActive]}>My Friends ({friends.length})</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setActiveList("Pending")} style={[styles.tabButton, activeList === "Pending" && styles.tabButtonActive]}>
+                    <Text style={[styles.tabText, activeList === "Pending" && styles.tabTextActive]}>Requests ({pendingRequests.length})</Text>
+                </TouchableOpacity>
             </View>
 
+            {/* --- Search Bar --- */}
+            <View style={styles.searchContainer}>
+                <Icon name="search-outline" size={20} color="#999" style={styles.searchIcon} />
+                <TextInput
+                    placeholder="Search friends..."
+                    placeholderTextColor="#999"
+                    style={styles.searchInput}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                />
+            </View>
 
-        {/* Bottom Navigation Bar */}
-        <BottomNavBar navigation={navigation} activeTab="Friends" setActiveTab={setActiveTab} />
-    </LinearGradient>
+            <ListContent />
+        </LinearGradient>
+        <BottomNavBar navigation={navigation} activeTab="Friends" setActiveTab={() => {}} />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1c1c1e",
-    paddingHorizontal: calculatePercentage(2, width),
-    paddingTop: calculatePercentage(2, height),
+    paddingHorizontal: width * 0.05,
   },
-  screenTitle: {
-    color: "black",
-    fontSize: 24,
+  title: {
+    fontSize: width * 0.07,
+    fontWeight: "bold",
+    color: "#114D5B",
     textAlign: "center",
-    marginBottom: 16,
+    marginVertical: height * 0.02,
   },
-  headerContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: "#B8E0E7",
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginBottom: 16,
-    paddingHorizontal:10,
-    elevation:1
+  tabContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(17, 77, 91, 0.1)',
+    borderRadius: 25,
+    padding: 5,
+    marginBottom: 20,
   },
-  tab: {
+  tabButton: {
     flex: 1,
-    alignItems: "center",
-    paddingVertical: 8,
+    paddingVertical: 10,
+    borderRadius: 20,
   },
-  activeTab: {
-    backgroundColor: "#133E87",
-    borderRadius: 8,
+  tabButtonActive: {
+    backgroundColor: '#114D5B',
+    shadowColor: "#114D5B",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
   },
   tabText: {
-    color: "#333",
-    fontSize: 16,
-    fontWeight: "bold",
+    textAlign: 'center',
+    fontWeight: '600',
+    color: '#114D5B',
   },
-  activeTabText: {
-    color: "#ffffff",
+  tabTextActive: {
+    color: '#fff',
   },
-  searchBarContainer: {
-    position: "absolute",
-    marginTop: calculatePercentage(18, height),
-    width: "100%",
-    zIndex:1,
-    alignSelf:"center",
-    marginBottom:60
-},
-  contentContainer: {
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    marginBottom: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
     flex: 1,
-    marginTop: calculatePercentage(10, height),
-    marginBottom:80
-
-  },
-  sectionItem: {
-    backgroundColor: "#EAF8FF",
-    marginVertical: 8,
-    padding: 12,
-    borderRadius: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  sectionText: {
+    height: 45,
+    color: '#333',
     fontSize: 16,
-    color: "#00796b",
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 15,
+    marginBottom: 10,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+  },
+  profilePic: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  cardName: {
+    flex: 1,
+    marginLeft: 15,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  acceptButton: {
+    backgroundColor: '#4CAF50',
+  },
+  rejectButton: {
+    backgroundColor: '#F44336',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: height * 0.1,
   },
   emptyText: {
     fontSize: 16,
     color: "#aaa",
+    marginTop: 15,
     fontStyle: "italic",
-    textAlign:"center"
+    textAlign: "center"
   },
-  card: {
-    backgroundColor: "#EAF8FF",
-    flexDirection: "row",
-    elevation:3,
-    justifyContent: "space-between",
-    padding: calculatePercentage(2.5, width),
-    borderRadius: 10,
-    paddingBottom: calculatePercentage(3.5, width),
-    marginBottom: calculatePercentage(2, height),
-    paddingHorizontal: calculatePercentage(5, width),
-    marginRight:2,
-    marginLeft:2,
-    marginTop:2
-},
-cardText: {
-    color: "black",
-    fontSize: calculatePercentage(4, width),
-    paddingTop: calculatePercentage(1, height),
-},
-noDataText: {
-    color: "gray",
-    fontSize: calculatePercentage(3, width),
-    textAlign: "center",
-    marginTop: calculatePercentage(5, height),
-},
-actionButtons: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    marginLeft: 20,
-    gap:15,
-},
-acceptButton: {
-    backgroundColor: "#4CAF50", // Green
-    padding: 7,
-    borderRadius: 5,
-    marginRight: 5,
-},
-rejectButton: {
-    backgroundColor: "#F44336", // Red
-    padding: 7,
-    borderRadius: 5,
-},
-actionText: {
-    color: "white",
-    fontSize: calculatePercentage(3.5, width),
-    textAlign: "center",
-},
 });
 
 export default Friends;

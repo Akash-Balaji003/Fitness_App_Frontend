@@ -44,7 +44,7 @@ const fetchMidnightStepCount = async (userId: string): Promise<number> => {
   try {
     console.log('Fetching midnight step count... for:', userId);
     const response = await fetch(
-      `http://172.16.0.60:8002/get-total-sensor-steps?id=${userId}`,
+      `https://9kz2rcl6-8000.inc1.devtunnels.ms/get-total-sensor-steps?id=${userId}`,
       {
         method: 'GET',
       }
@@ -76,7 +76,7 @@ const updateStepsAtEndOfDay = async (userId: string, prevMidnightSteps: number) 
     const date = format(new Date(), 'yyyy-MM-dd');
     console.log(`Updating steps for ${date}: ${todayStepCount}`);
 
-    const response = await fetch('http://172.16.0.60:8002/update-steps', {
+    const response = await fetch('https://9kz2rcl6-8000.inc1.devtunnels.ms/update-steps', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',

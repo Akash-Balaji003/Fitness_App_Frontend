@@ -30,11 +30,15 @@ import { ActivityIndicator, Alert, NativeModules, PermissionsAndroid, Platform, 
 import SplashScreen from './screens/SplashScreen';
 import FeedbackScreen from './screens/Feedback';
 
+// 1. Import the new screen
+import RedeemScreen from './screens/RedeemScreen';
+
 import BackgroundService from "react-native-background-actions";
 import { backgroundTask } from "./tasks/DailyStepUpdate";
 
 enableScreens();
 
+// 2. Add RedeemScreen to the RootStackParamList
 export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
@@ -116,6 +120,7 @@ export type RootStackParamList = {
     TypeStepCount: undefined;
     FeedbackScreen: undefined;
     CreditScreen: undefined;
+    RedeemScreen: { vendorName: string; vendorIcon: string; }; // Added line
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -253,6 +258,8 @@ function App(): React.JSX.Element {
                   <Stack.Screen name="FeedbackScreen" component={FeedbackScreen} options={{ headerShown: false }} />
                   <Stack.Screen name="CreditScreen" component={CreditScreen} options={{ headerShown: false }} />
                   <Stack.Screen name="CalorieGoal" component={CalorieGoal} options={{ headerShown: false }} />
+                  {/* 3. Add the new screen to the navigator stack */}
+                  <Stack.Screen name="RedeemScreen" component={RedeemScreen} options={{ headerShown: false }} />
               </Stack.Navigator>
             </NavigationContainer>
         </StepCountProvider>
