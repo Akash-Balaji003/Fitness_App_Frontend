@@ -27,6 +27,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import StepProgressCircle from "../components/StepProgress";
 import StepCountGrid from "../components/MonthlySteps";
 
+import BackgroundService from "react-native-background-actions"
+import { startBackgroundSync } from "../tasks/BackgroundActionSetup";
+import { LAST_MIDNIGHT_STEPS_KEY } from "../tasks/DailyStepUpdate";
+
 const { TypeStepCounterModule } = NativeModules;
 const stepCounterEvent = new NativeEventEmitter(TypeStepCounterModule);
 
@@ -40,6 +44,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     const [ streak, setStreak ] = useState(0);
     const [ sensorSteps, setSensorSteps ] = useState(0);
     const { dailyStepCount, setDailyStepCount } = useStepCount();
+    const isActive = BackgroundService.isRunning();
     const [ midnightStepCount, setMidnightStepCount ] = useState(0);
 
     const updateDailyStepCount = async () => {
@@ -57,45 +62,80 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
 
     }, [sensorSteps, midnightStepCount]);
 
+    useEffect(() => {
+        if (isActive === false && user) {
+            startBackgroundSync(user.user_id, user.stepgoal, user.caloriegoal, user.height, user.weight);
+        }
+        else {
+            console.log("[Home Page UseEffect] Background Service: ", isActive);
+        }
+    }, [user]);
+
     // Fetch from mysql if its not there in async storage
     const fetchMidnightStepCount = async () => {
         try {
             console.log("[Fetch Midnight Step Count] User_ID:", user?.user_id);
             const response = await fetch(
-                `http://172.16.0.60:8002/get-total-sensor-steps?id=${user?.user_id}`, 
-                {
-                    method: "GET",
-                }
+                `http://172.16.0.60:8002/get-total-sensor-steps?id=${user?.user_id}`,
+                { method: "GET" }
             );
             
-            // console.log("Received Data: ", response);
-
+            // If the server is reachable but has an error, throw to trigger the catch block.
+            if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+            }
+    
             const data = await response.json();
             console.log("[Fetch Midnight Step Count] Received Data: ", data);
-
+    
             if (data["total_steps"]) {
-                console.log("[Fetch Midnight Step Count] Fetched Midnight Step Count: ", data["total_steps"]);
-
-                // Set Midnight Step Count
+                console.log("[Fetch Midnight Step Count] Fetched Midnight Step Count from Server: ", data["total_steps"]);
+                
+                // This part remains the same
                 setMidnightStepCount(data["total_steps"]);
-                console.log("[Fetch Midnight Step Count] Set Midnight Step Count: ", data["total_steps"]);
                 if(sensorSteps){
-                    console.log("[Fetch Midnight Step Count] Updating Daily Step Count");
                     updateDailyStepCount();
-                }
-                else{
-                    console.log("[Fetch Midnight Step Count] No sensor step count found!");
+                } else {
                     refreshButton();
                 }
-                
                 return data["total_steps"];
             } else {
-                console.log("[Fetch Midnight Step Count] No Steps Found for Midnight!");
+                console.log("[Fetch Midnight Step Count] No Steps Found for Midnight on Server!");
                 return null;
             }
         } catch (error) {
-            console.error("[Fetch Midnight Step Count] Error fetching midnight step count:", error);
-            return null;
+            console.error("[Fetch Midnight Step Count] Error fetching from server:", error);
+    
+            // --- FALLBACK LOGIC STARTS HERE ---
+            console.log("[Fetch Midnight Step Count] Attempting to get value from local storage fallback...");
+            
+            try {
+                const localData = await AsyncStorage.getItem(LAST_MIDNIGHT_STEPS_KEY);
+                if (localData) {
+                    const parsedData = JSON.parse(localData);
+                    const localSteps = parsedData.steps;
+                    console.log("[Fetch Midnight Step Count] Success! Using local fallback value:", localSteps);
+                    
+                    // Set the state with the local value
+                    setMidnightStepCount(localSteps);
+                    if (sensorSteps) {
+                        updateDailyStepCount();
+                    }
+    
+                    return localSteps; // Return the locally stored value
+                } else {
+                    console.warn("[Fetch Midnight Step Count] Local fallback failed: No data found in AsyncStorage. Defaulting to 0.");
+                    setMidnightStepCount(0); // Set the state to 0
+                    if (sensorSteps) {
+                        updateDailyStepCount();
+                    }
+                    return 0; // Return 0 as the default starting value
+                }
+            } catch (storageError) {
+                console.error("[Fetch Midnight Step Count] Error reading from AsyncStorage fallback:", storageError);
+                return null;
+            }
+            // --- FALLBACK LOGIC ENDS HERE ---
         }
     };
 
@@ -153,7 +193,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
             setSensorSteps(parseInt(stepCount, 10));
         });
 
-        getMidnightStepCount();
+        fetchMidnightStepCount();
 
         return () => {
           // Stop counter when component unmounts
