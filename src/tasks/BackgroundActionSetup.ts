@@ -1,71 +1,73 @@
 import BackgroundService from "react-native-background-actions";
-import { backgroundTask } from "./DailyStepUpdate";
+import { runDailyStepSync } from "./DailyStepUpdate"; 
 
+const sleep = (time: any) => new Promise<void>((resolve) => setTimeout(resolve, time));
 
-const updateSteps = async (user_id: string) => {
+// By typing taskData as 'any', we avoid all the complex type-checking 
+// issues from the library. This is the simplest way to resolve the conflict.
+const periodicSyncTask = async (taskData : any) => {
+    // We still use optional chaining ('?.') for runtime safety
+    const userId = taskData?.userId;
+    const stepGoal = taskData?.stepGoal;
+    const calorieGoal = taskData?.calorieGoal;
+    const height = taskData?.height;
+    const weight = taskData?. weight;
 
-    // Sleep Function
-    const sleep = (time: any) => new Promise<void>((resolve) => setTimeout(() => resolve(), time));
+    console.log('[Background Sync] Task starting with user ID:', userId);
 
-    // Start Background Task
-    const task = async () => {
-        console.log("[BACKGROUND TASK] Background task started");
+    if (!userId) {
+        console.error('[Background Sync] No user ID available. Stopping task logic for this run.');
+        return;
+    }
 
-        let targetTime = new Date();
-        targetTime.setHours(0, 0, 0, 0); // Midnight of the current day
+    await new Promise(async (resolve) => {
+        while (BackgroundService.isRunning()) {
+            console.log('[Background Sync] Performing periodic step sync...');
+            await runDailyStepSync(userId, stepGoal, calorieGoal, height, weight);
 
-        // If the current time is already past midnight, set targetTime to tomorrow
-        const now = new Date();
-        console.log("[TASK] Current Time: ", now);
-        if (now.getTime() > targetTime.getTime()) {
-            targetTime.setDate(targetTime.getDate() + 1);
+            console.log('[Background Sync] Sync complete. Sleeping for 2 hours.');
+            await sleep(2 * 60 * 60 * 1000);
         }
-
-        console.log("[TASK] Initial Target Date: ", targetTime);
-
-        await new Promise( async(resolve) => {
-            while (BackgroundService.isRunning()) {
-                const currentTime = new Date();
-    
-                if (currentTime.getTime() >= targetTime.getTime()) {
-                    console.log("[TASK] Doing something...");
-                    await backgroundTask(user_id);
-    
-                    // Move targetTime to the next day
-                    // targetTime.setMinutes(currentTime.getMinutes() + 1);
-                    targetTime.setDate(targetTime.getDate() + 1);
-                    console.log("[TASK] Next Target Date: ", targetTime);
-                }
-    
-                // Calculate sleep time until the *next* targetTime
-                const sleepTime = targetTime.getTime() - currentTime.getTime();
-                console.log("[TASK] Sleeping for: ", sleepTime, "ms");
-                await sleep(sleepTime);
-                console.log("[TASK] Woke up from sleep");
-                // Check if BackgroundService is still running
-                if (BackgroundService.isRunning()) {
-                    console.log("[TASK] Background service still running.");
-                }
-                else console.log("[TASK] Background service stopped.");
-            }
-        });
-    };
-
-    const options = {
-        taskName: "UpdateSteps",
-        taskTitle: "Updating Steps at Midnight",
-        taskDesc: "Waiting till Midnight for updating Steps!",
-        taskIcon: {
-            name: "ic_launcher",
-            type: "mipmap",
-        },
-        parameters: {},
-        linkingURI: "yourapp://home",
-    };
-
-    await BackgroundService.start(task, options);
-    await BackgroundService.updateNotification({taskDesc: 'Waiting till Midnight for updating Steps!'});
-    // await BackgroundService.stop();
+    });
 };
 
-export default updateSteps;
+export const startBackgroundSync = async (userId: string, stepGoal: number, calorieGoal: number, height: number, weight: number) => {
+    console.log("[START BACKGROUND SYNC] UserID: ", userId);
+    if (BackgroundService.isRunning()) {
+        console.log('Background sync is already running.');
+        return;
+    }
+    
+    try {
+        console.log('Starting background sync service with user ID:', userId);
+
+        const options = {
+            taskName: "PeriodicStepSync",
+            taskTitle: "Syncing Steps",
+            taskDesc: "Ensuring your step data is up to date.",
+            taskIcon: {
+                name: "ic_launcher",
+                type: "mipmap",
+            },
+            parameters: {
+                userId: userId.toString(),
+                stepGoal: stepGoal,
+                calorieGoal: calorieGoal,
+                height: height,
+                weight: weight,
+            },
+            linkingURI: "yourapp://home",
+        };
+        
+        await BackgroundService.start(periodicSyncTask, options);
+        
+        console.log('Background sync service started successfully.');
+    } catch (e) {
+        console.error('Failed to start background sync service', e);
+    }
+};
+
+export const stopBackgroundSync = async () => {
+    console.log('Stopping background sync service.');
+    await BackgroundService.stop();
+};
