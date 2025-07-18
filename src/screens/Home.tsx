@@ -29,6 +29,10 @@ import StepProgressCircle from "../components/StepProgress";
 // 1. Re-import the StepCountGrid component
 import StepCountGrid from "../components/MonthlySteps";
 
+import BackgroundService from "react-native-background-actions"
+import { startBackgroundSync } from "../tasks/BackgroundActionSetup";
+import { LAST_MIDNIGHT_STEPS_KEY } from "../tasks/DailyStepUpdate";
+
 const { TypeStepCounterModule } = NativeModules;
 const stepCounterEvent = new NativeEventEmitter(TypeStepCounterModule);
 
@@ -57,6 +61,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     const [sensorSteps, setSensorSteps] = useState(0);
     const { dailyStepCount, setDailyStepCount } = useStepCount();
     const [midnightStepCount, setMidnightStepCount] = useState(0);
+    const isActive = BackgroundService.isRunning();
 
     // --- All your existing useEffect and data fetching logic remains the same ---
     const updateDailyStepCount = async () => {
@@ -70,55 +75,89 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     };
 
     useEffect(() => {
+        if (isActive === false && user) {
+            startBackgroundSync(user.user_id, user.stepgoal, user.caloriegoal, user.height, user.weight);
+        }
+        else {
+            console.log("[Home Page UseEffect] Background Service: ", isActive);
+        }
+    }, [user]);
+
+    useEffect(() => {
         updateDailyStepCount();
     }, [sensorSteps, midnightStepCount]);
 
     const fetchMidnightStepCount = async () => {
         try {
-            const response = await fetch(`https://9kz2rcl6-8000.inc1.devtunnels.ms/get-total-sensor-steps?id=${user?.user_id}`);
+            console.log("[Fetch Midnight Step Count] User_ID:", user?.user_id);
+            const response = await fetch(
+                `https://9kz2rcl6-8000.inc1.devtunnels.ms/get-total-sensor-steps?id=${user?.user_id}`,
+                { method: "GET" }
+            );
+            
+            // If the server is reachable but has an error, throw to trigger the catch block.
+            if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+            }
+    
             const data = await response.json();
+            console.log("[Fetch Midnight Step Count] Received Data: ", data);
+    
             if (data["total_steps"]) {
+                console.log("[Fetch Midnight Step Count] Fetched Midnight Step Count from Server: ", data["total_steps"]);
+                
+                // This part remains the same
                 setMidnightStepCount(data["total_steps"]);
-                if(sensorSteps){ updateDailyStepCount(); }
-                else{ refreshButton(); }
-                return data["total_steps"];
-            }
-            return null;
-        } catch (error) {
-            console.error("[Fetch Midnight Step Count] Error:", error);
-            return null;
-        }
-    };
-
-    const getMidnightStepCount = async () => {
-        try {
-            const todayDate = new Date().toISOString().split("T")[0];
-            const storedData = await AsyncStorage.getItem('MIDNIGHT_STEP_COUNT');
-            if (storedData !== null) {
-                const parsedData = JSON.parse(storedData);
-                if (parsedData.date === todayDate) {
-                    setMidnightStepCount(parsedData.midnightStepCount);
-                    return parsedData.midnightStepCount;
+                if(sensorSteps){
+                    updateDailyStepCount();
+                } else {
+                    refreshButton();
                 }
+                return data["total_steps"];
+            } else {
+                console.log("[Fetch Midnight Step Count] No Steps Found for Midnight on Server!");
+                return null;
             }
-            const fetchedStepCount = await fetchMidnightStepCount();
-            if (fetchedStepCount !== null) {
-                const newData = { date: todayDate, midnightStepCount: fetchedStepCount };
-                await AsyncStorage.setItem('MIDNIGHT_STEP_COUNT', JSON.stringify(newData));
-                setMidnightStepCount(fetchedStepCount);
-                return fetchedStepCount;
-            }
-            return null;
         } catch (error) {
-            console.error("[Get Midnight Step Count] Error:", error);
-            return null;
+            console.error("[Fetch Midnight Step Count] Error fetching from server:", error);
+    
+            // --- FALLBACK LOGIC STARTS HERE ---
+            console.log("[Fetch Midnight Step Count] Attempting to get value from local storage fallback...");
+            
+            try {
+                const localData = await AsyncStorage.getItem(LAST_MIDNIGHT_STEPS_KEY);
+                if (localData) {
+                    const parsedData = JSON.parse(localData);
+                    const localSteps = parsedData.steps;
+                    console.log("[Fetch Midnight Step Count] Success! Using local fallback value:", localSteps);
+                    
+                    // Set the state with the local value
+                    setMidnightStepCount(localSteps);
+                    if (sensorSteps) {
+                        updateDailyStepCount();
+                    }
+    
+                    return localSteps; // Return the locally stored value
+                } else {
+                    console.warn("[Fetch Midnight Step Count] Local fallback failed: No data found in AsyncStorage. Defaulting to 0.");
+                    setMidnightStepCount(0); // Set the state to 0
+                    if (sensorSteps) {
+                        updateDailyStepCount();
+                    }
+                    return 0; // Return 0 as the default starting value
+                }
+            } catch (storageError) {
+                console.error("[Fetch Midnight Step Count] Error reading from AsyncStorage fallback:", storageError);
+                return null;
+            }
+            // --- FALLBACK LOGIC ENDS HERE ---
         }
     };
       
     useEffect(() => {
         if (user?.user_id) {
             fetchStreaks();
-            getMidnightStepCount();
+            fetchMidnightStepCount();
         }
         TypeStepCounterModule.startStepCounter();
         const subscription = stepCounterEvent.addListener('StepCounter', (stepCount) => {
