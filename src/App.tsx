@@ -33,9 +33,6 @@ import FeedbackScreen from './screens/Feedback';
 // 1. Import the new screen
 import RedeemScreen from './screens/RedeemScreen';
 
-import BackgroundService from "react-native-background-actions";
-import { backgroundTask } from "./tasks/DailyStepUpdate";
-
 enableScreens();
 
 // 2. Add RedeemScreen to the RootStackParamList
