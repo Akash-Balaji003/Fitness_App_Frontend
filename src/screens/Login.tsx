@@ -14,7 +14,7 @@ import { useUser } from '../contexts/UserContext';
 
 import { saveUserData } from '../tasks/Storage';
 import LinearGradient from 'react-native-linear-gradient';
-import updateSteps from '../tasks/BackgroundActionSetup';
+import { startBackgroundSync } from '../tasks/BackgroundActionSetup';
 
 type LoginProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -77,7 +77,7 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 caloriegoal: data.caloriegoal
             });
 
-            updateSteps(data.user_id); // Start background task after successful login
+            startBackgroundSync(data.user_id, data.stepgoal, data.caloriegoal, data.height, data.weight);
             
             navigation.navigate("Home");
         } else {
