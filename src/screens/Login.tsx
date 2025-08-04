@@ -12,9 +12,8 @@ import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useUser } from '../contexts/UserContext';
 
-import { saveUserData } from '../tasks/Storage';
+import { saveUserData, saveUserId } from '../tasks/Storage';
 import LinearGradient from 'react-native-linear-gradient';
-import updateSteps from '../tasks/BackgroundActionSetup';
 
 type LoginProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -31,7 +30,7 @@ const LoginScreen = ({ navigation }: LoginProps) => {
 
     const handleLogin = async () => {
         try {
-        const response = await fetch('http://172.16.0.60:8002/login', {   // http://172.16.0.60:8002
+        const response = await fetch('https://9kz2rcl6-8000.inc1.devtunnels.ms/login', {   // https://9kz2rcl6-8000.inc1.devtunnels.ms
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
@@ -58,6 +57,7 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 stepgoal: data.stepgoal,
                 gender: data.gender,
                 DOB: data.DOB,
+                caloriegoal: data.caloriegoal
             });
 
 
@@ -72,11 +72,10 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 experience: data.experience,
                 stepgoal: data.stepgoal,
                 gender: data.gender,
-                DOB: data.DOB
+                DOB: data.DOB,
+                caloriegoal: data.caloriegoal,
             });
 
-            updateSteps(data.user_id); // Start background task after successful login
-            
             navigation.navigate("Home");
         } else {
             // Set error message from backend response

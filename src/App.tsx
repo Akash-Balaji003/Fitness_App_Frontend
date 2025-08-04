@@ -23,15 +23,12 @@ import Rewardssystem from './screens/Rewardssystem';
 import TypeStepCount from './screens/TypeStepCount';
 import CreditScreen from './screens/CreditScreen';
 import CalorieGoal from './screens/quizScreens/CalorieGoal';
-import { UserProvider } from './contexts/UserContext';
+import { UserProvider, useUser } from './contexts/UserContext';
 import { StepCountProvider } from './contexts/StepCounterContext';
 import { getUserData, hasAlertBeenShown, saveAlertStatus } from './tasks/Storage';
 import { ActivityIndicator, Alert, NativeModules, PermissionsAndroid, Platform, View } from 'react-native';
 import SplashScreen from './screens/SplashScreen';
 import FeedbackScreen from './screens/Feedback';
-
-import BackgroundService from "react-native-background-actions";
-import { backgroundTask } from "./tasks/DailyStepUpdate";
 
 enableScreens();
 
@@ -195,6 +192,7 @@ function App(): React.JSX.Element {
 
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);  // Will hold login state
   const [isSplashComplete, setIsSplashComplete] = useState(false); // Track splash screen completion
+  const [enabled, setEnabled] = useState(false); 
 
   useEffect(() => {
 

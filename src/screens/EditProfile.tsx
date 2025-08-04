@@ -25,6 +25,7 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
     const [bloodValue, setBlood] = useState(user?.blood || 'O +');
     const [activity, setActivity] = useState(user?.experience || 'Moderate');
     const [stepCount, setStepCount] = useState(user?.stepgoal || 10000);
+    const [calorieGoal, setCalorieGoal] = useState(user?.caloriegoal || 300);
 
     const dietaryOptions = ['A +', 'B +', 'O +', 'AB +', 'A -', 'B -', 'AB -', 'O -'];
     const activityLevels = ['Sedentary', 'Moderate', 'Active'];
@@ -37,14 +38,14 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
             weight: weightValue,
             blood: bloodValue,
             experience: activity,
-            stepgoal: stepCount
-            
+            stepgoal: stepCount,
+            calorieGoal: calorieGoal,
         };
 
         console.log("DATA", updatedProfile);
     
         try {
-            const response = await fetch('http://172.16.0.60:8002/update-user', {
+            const response = await fetch('https://9kz2rcl6-8000.inc1.devtunnels.ms/update-user', {
                 method: 'POST', // Use PUT for updates
                 headers: {
                     'Content-Type': 'application/json',
@@ -70,7 +71,8 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
                 experience: activity,
                 stepgoal: stepCount,
                 gender: user?.gender || "",
-                DOB: user?.DOB || ""
+                DOB: user?.DOB || "",
+                caloriegoal: calorieGoal,
             });
 
 
@@ -85,7 +87,8 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
                 experience: activity,
                 stepgoal: stepCount,
                 gender: user?.gender || "",
-                DOB: user?.DOB || ""
+                DOB: user?.DOB || "",
+                caloriegoal: calorieGoal,
             });
             
             Alert.alert('Success', 'Profile updated successfully');

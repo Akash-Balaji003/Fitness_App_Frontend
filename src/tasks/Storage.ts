@@ -35,7 +35,8 @@ export const saveUserData = async (userData: {
     experience: string,
     stepgoal: number,
     gender: string,
-    DOB: string
+    DOB: string,
+    caloriegoal: number,
 }) => {
     try {
         await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(userData));
@@ -83,3 +84,15 @@ export const hasAlertBeenShown = async (): Promise<boolean> => {
         return false;
     }
 };
+
+// Get midnight step Count
+export const getMidnightStepCount = async () => {
+    try {
+        const midnightStepCount = await AsyncStorage.getItem("MIDNIGHT_STEP_COUNT_KEY");
+        console.log("Successfully got midnightstepcount from async: ", midnightStepCount);
+        return midnightStepCount ? parseInt(midnightStepCount, 10) : 0;
+    } catch (error) {
+        console.log("Error getting Midnight Step Count!");
+        return 0;
+    }
+}

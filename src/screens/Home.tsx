@@ -26,6 +26,8 @@ import { useStepCount } from "../contexts/StepCounterContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import StepProgressCircle from "../components/StepProgress";
 import StepCountGrid from "../components/MonthlySteps";
+import { backgroundTask, MIDNIGHT_STEP_KEY } from "../tasks/BackgroundTask";
+import BackgroundFetch from "react-native-background-fetch";
 
 const { TypeStepCounterModule } = NativeModules;
 const stepCounterEvent = new NativeEventEmitter(TypeStepCounterModule);
@@ -53,90 +55,43 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     };
 
     useEffect(() => {
+        // Initialize Background Fetch
+        if (user) {
+          initBackgroundFetch();
+        }
+    }, [user]);
+  
+    const initBackgroundFetch = async () => {
+      const status : number = await BackgroundFetch.configure({
+        minimumFetchInterval: 15,
+        stopOnTerminate: false,
+        startOnBoot: true,
+        enableHeadless: true,
+        requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY,
+      }, async (taskId) => {
+          // Call the Background Task
+          await backgroundTask();
+  
+          // Finish task
+          BackgroundFetch.finish(taskId);
+      }, (taskId : string) => {
+          // Going on for too long, call timeout and finish task
+          console.log("Background Fetch Timeout!");
+  
+          // Finish Task
+          BackgroundFetch.finish(taskId);
+      });
+    }
+
+    useEffect(() => {
         updateDailyStepCount();
 
     }, [sensorSteps, midnightStepCount]);
 
-    // Fetch from mysql if its not there in async storage
     const fetchMidnightStepCount = async () => {
-        try {
-            console.log("[Fetch Midnight Step Count] User_ID:", user?.user_id);
-            const response = await fetch(
-                `http://172.16.0.60:8002/get-total-sensor-steps?id=${user?.user_id}`, 
-                {
-                    method: "GET",
-                }
-            );
-            
-            // console.log("Received Data: ", response);
-
-            const data = await response.json();
-            console.log("[Fetch Midnight Step Count] Received Data: ", data);
-
-            if (data["total_steps"]) {
-                console.log("[Fetch Midnight Step Count] Fetched Midnight Step Count: ", data["total_steps"]);
-
-                // Set Midnight Step Count
-                setMidnightStepCount(data["total_steps"]);
-                console.log("[Fetch Midnight Step Count] Set Midnight Step Count: ", data["total_steps"]);
-                if(sensorSteps){
-                    console.log("[Fetch Midnight Step Count] Updating Daily Step Count");
-                    updateDailyStepCount();
-                }
-                else{
-                    console.log("[Fetch Midnight Step Count] No sensor step count found!");
-                    refreshButton();
-                }
-                
-                return data["total_steps"];
-            } else {
-                console.log("[Fetch Midnight Step Count] No Steps Found for Midnight!");
-                return null;
-            }
-        } catch (error) {
-            console.error("[Fetch Midnight Step Count] Error fetching midnight step count:", error);
-            return null;
-        }
-    };
-
-    // If it already exists, get the midnight step count
-    const getMidnightStepCount = async () => {
-        try {
-            const todayDate = new Date().toISOString().split("T")[0]; // Get YYYY-MM-DD
-            
-            // 1️⃣ Check AsyncStorage for today's step count
-            const storedData = await AsyncStorage.getItem('MIDNIGHT_STEP_COUNT');
-    
-            if (storedData !== null) {
-                const parsedData = JSON.parse(storedData);
-    
-                if (parsedData.date === todayDate) {
-                    console.log("[Get Midnight Step Count] Using Cached Midnight Step Count:", parsedData.midnightStepCount);
-                    setMidnightStepCount(parsedData.midnightStepCount);
-                    return parsedData.midnightStepCount;
-                }
-            }
-    
-            // 2️⃣ If not found, fetch from MySQL
-            console.log("[Get Midnight Step Count] ⏳ Fetching midnight step count from MySQL...");
-            const fetchedStepCount = await fetchMidnightStepCount();
-    
-            if (fetchedStepCount !== null) {
-                console.log("[Get Midnight Step Count] Fetched from MySQL:", fetchedStepCount);
-    
-                // 3️⃣ Store it in AsyncStorage
-                const newData = { date: todayDate, midnightStepCount: fetchedStepCount };
-                await AsyncStorage.setItem('MIDNIGHT_STEP_COUNT', JSON.stringify(newData));
-    
-                setMidnightStepCount(fetchedStepCount);
-                return fetchedStepCount;
-            }
-    
-            return null; // If MySQL also fails
-        } catch (error) {
-            console.error("[Get Midnight Step Count] Error retrieving midnight step count:", error);
-            return null;
-        }
+        // Fetch from Async Storage
+        const midnightCount = await AsyncStorage.getItem(MIDNIGHT_STEP_KEY);
+        setMidnightStepCount(parseInt(midnightCount || '0'));
     };
       
     useEffect(() => {
@@ -153,7 +108,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
             setSensorSteps(parseInt(stepCount, 10));
         });
 
-        getMidnightStepCount();
+        fetchMidnightStepCount();
 
         return () => {
           // Stop counter when component unmounts
@@ -192,7 +147,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     const fetchStreaks = async () => {
         try {
           // Replace with your actual API URL
-          const response = await fetch(`http://172.16.0.60:8002/get-streaks?id=${user?.user_id}`);
+          const response = await fetch(`https://9kz2rcl6-8000.inc1.devtunnels.ms/get-streaks?id=${user?.user_id}`);
           const data = await response.json();
           
           // Assuming the API returns an object with step counts for each day
