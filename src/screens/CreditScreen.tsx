@@ -61,7 +61,7 @@ const CreditSystem = ({ navigation }: NativeStackScreenProps<RootStackParamList,
     // --- Function to fetch the user's balance ---
     const fetchBalance = async () => {
         try {
-          const response = await fetch(`https://9kz2rcl6-8000.inc1.devtunnels.ms/get-balance?id=${user?.user_id}`);
+          const response = await fetch(`http://172.16.0.60:8002/get-balance?id=${user?.user_id}`);
           const data = await response.json();
           
           // Assuming the API returns a direct number or an object like { balance: 500 }
@@ -85,7 +85,7 @@ const CreditSystem = ({ navigation }: NativeStackScreenProps<RootStackParamList,
         setLoading(true);
         setError(null);
 
-        const API_URL = `https://9kz2rcl6-8000.inc1.devtunnels.ms/get-transaction?id=${user.user_id}`; 
+        const API_URL = `http://172.16.0.60:8002/get-transaction?id=${user.user_id}`; 
         
         try {
             const response = await fetch(API_URL);

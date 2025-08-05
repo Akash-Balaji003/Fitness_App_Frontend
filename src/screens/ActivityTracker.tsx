@@ -10,55 +10,69 @@ import {
     FlatList,
     ActivityIndicator,
     RefreshControl,
+    ScrollView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
-import Entypo from "react-native-vector-icons/Entypo";
-import Feather from "react-native-vector-icons/Feather";
-import BottomNavBar from "../components/BottomNavBar";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
+import BottomNavBar from "../components/BottomNavBar";
 import Svg, { Circle } from "react-native-svg";
 import { useUser } from "../contexts/UserContext";
 import LinearGradient from "react-native-linear-gradient";
+import Icon from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const { width, height } = Dimensions.get("window");
-const calculatePercentage = (percentage: number, dimension: number) =>
-    (percentage / 100) * dimension;
 
-const ActivityTracker = ({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'ActivityTracker'>) => {
+const ACTIVITIES = {
+    WALKING: { icon: "walk", color: "#4A90E2" },
+    CYCLING: { icon: "bicycle", color: "#D0021B" },
+    SWIMMING: { icon: "swim", color: "#50E3C2" },
+};
 
+// --- Reusable Activity History Card ---
+const ActivityHistoryCard = ({ item }: { item: any }) => {
+    const activityInfo = ACTIVITIES[item.activity as keyof typeof ACTIVITIES] || { icon: "timer-sand", color: "#777" };
+
+    const formatDuration = (seconds: number) => {
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    };
+
+    return (
+        <View style={styles.historyCard}>
+            <View style={[styles.historyIconContainer, { backgroundColor: `${activityInfo.color}20` }]}>
+                <MaterialCommunityIcons name={activityInfo.icon} size={28} color={activityInfo.color} />
+            </View>
+            <View style={styles.historyDetails}>
+                <Text style={styles.historyActivity}>{item.activity}</Text>
+                <Text style={styles.historyDate}>{new Date(item.activity_date).toDateString()}</Text>
+            </View>
+            <Text style={styles.historyDuration}>{formatDuration(item.duration)}</Text>
+        </View>
+    );
+};
+
+
+const ActivityTracker = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'ActivityTracker'>) => {
     const { user } = useUser();
-    const [refreshing, setRefreshing] = useState(false); // State for pull-to-refresh
-
-    const [activeTab, setActiveTab] = useState('ActivityTimer');
-    const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-    const [user_activity, setActivity] = useState("WALKING");
-    const [user_duration, setDuration] = useState(0); // Timer in seconds
+    const [activeTab, setActiveTab] = useState<'ActivityTimer' | 'ActivityHistory'>('ActivityTimer');
+    const [userActivity, setUserActivity] = useState<keyof typeof ACTIVITIES>("WALKING");
+    const [duration, setDuration] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
-
-    const progress = useRef(new Animated.Value(0)).current; // This will control the progress
-
     const [loading, setLoading] = useState(true);
     const [activities, setActivities] = useState([]);
+    const [refreshing, setRefreshing] = useState(false);
 
-    const onRefresh = async () => {
-        setRefreshing(true);
-        await Promise.all([fetchActivities()]);
-        setRefreshing(false);
-    };
+    // --- Animation and Data Fetching Logic (largely unchanged) ---
+    const progress = useRef(new Animated.Value(0)).current;
 
     const fetchActivities = async () => {
         try {
-            const response = await fetch(`http://172.16.0.60:8002/fetch-activities?id=${user?.user_id}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
+            const response = await fetch(`http://172.16.0.60:8002/fetch-activities?id=${user?.user_id}`);
             const data = await response.json();
-            console.log("Fetched data:", data); // Debugging
-            setActivities(data || []); // Use the data directly since it's already an array
+            setActivities(data || []);
         } catch (error) {
             console.error("Error fetching activities:", error);
         } finally {
@@ -67,444 +81,278 @@ const ActivityTracker = ({ navigation, route }: NativeStackScreenProps<RootStack
     };
 
     useEffect(() => {
-        fetchActivities();
-    }, []);
-    
-    const formatDuration = (seconds: number) => {
-        const hrs = Math.floor(seconds / 3600);
-        const mins = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-        return `${hrs.toString().padStart(2, "0")}:${mins
-            .toString()
-            .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-    };
-        
-    const renderActivityCard = ({ item, index }: { item: any; index: number }) => (
-        <View style={styles.card}>
-            <Text style={styles.cardText}>{item.activity_date}</Text>
-            <Text style={styles.cardText}>{item.activity}</Text>
-            <Text style={styles.cardText}>{formatDuration(item.duration)}</Text>
-        </View>
-    );
+        if (user?.user_id) fetchActivities();
+    }, [user]);
 
-    // Timer management
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchActivities();
+        setRefreshing(false);
+    };
+
     useEffect(() => {
         let timer: NodeJS.Timeout | null = null;
-
         if (isPlaying) {
-            timer = setInterval(() => {
-                setDuration((prev) => prev + 1);
-            }, 1000);
-        } else if (!isPlaying && timer) {
-            clearInterval(timer);
+            timer = setInterval(() => setDuration((prev) => prev + 1), 1000);
         }
-
-        return () => {
-            if (timer) clearInterval(timer);
-        };
+        return () => { if (timer) clearInterval(timer); };
     }, [isPlaying]);
-
-    // Animate the strokeDashoffset based on duration
-    useEffect(() => {
-        if (isPlaying) {
-            // Animate progress based on time
-            Animated.timing(progress, {
-                toValue:  user_duration/60, // Adjust the duration limit as needed (e.g., 300 seconds for 5 minutes)
-                duration: 1000, // Update every second
-                useNativeDriver: false,
-            }).start();
-        } else {
-        }
-    }, [isPlaying, user_duration]);
-
-    // Convert seconds to "HH:MM:SS"
+    
     const formatTime = (seconds: number) => {
         const hrs = Math.floor(seconds / 3600);
         const mins = Math.floor((seconds % 3600) / 60);
         const secs = seconds % 60;
-        return `${hrs.toString().padStart(2, "0")}:${mins
-            .toString()
-            .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-        
-          // Return the formatted string variable
+        return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
     };
 
-    // Handle activity switching
-    const handleArrowPress = (direction: string) => {
-        const activities = ["WALKING", "CYCLING", "SWIMMING"];
-        const currentIndex = activities.indexOf(user_activity);
-        const nextIndex =
-            direction === "left"
-                ? (currentIndex - 1 + activities.length) % activities.length
-                : (currentIndex + 1) % activities.length;
-        setActivity(activities[nextIndex]);
-    };
-
-    const handlePlayPause = () => {
-        setIsPlaying(!isPlaying);
-    };
+    const handlePlayPause = () => setIsPlaying(!isPlaying);
 
     const handleStop = () => {
         setIsPlaying(false);
-        setDuration(0); // Reset timer
-        progress.setValue(0); // Reset animation
+        setDuration(0);
+        progress.setValue(0);
     };
 
     const handleSubmit = async () => {
-
-        // Call API and store in DB
         try {
-            const currentDate = new Date().toISOString().split('T')[0];
-
             const response = await fetch('http://172.16.0.60:8002/store-activity', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    activity: user_activity,  // or 'RUNNING', 'CYCLING', etc.
-                    duration: user_duration,       // Duration in seconds
+                    activity: userActivity,
+                    duration: duration,
                     user_id: user?.user_id,
-                    activity_date: currentDate
-                }), // The activity data to be sent in the body
+                    activity_date: new Date().toISOString().split('T')[0]
+                }),
             });
-    
             if (response.ok) {
-                const data = await response.json();
-                console.log("Activity stored successfully:", data.message);
-                ToastAndroid.show('Activity stored successfully', ToastAndroid.SHORT);
-                
+                ToastAndroid.show('Activity saved!', ToastAndroid.SHORT);
+                handleStop();
+                await fetchActivities(); // Refresh history
             } else {
-                const errorData = await response.json();
-                console.error("Error storing activity:", errorData.detail);
-                ToastAndroid.show('"Error storing activity', ToastAndroid.SHORT);
-
-                
+                ToastAndroid.show('Error saving activity', ToastAndroid.SHORT);
             }
         } catch (error) {
-            console.error("Request failed:", error);
-            ToastAndroid.show('Failed to connect to the server. Please try again later.', ToastAndroid.SHORT);
-            
+            ToastAndroid.show('Server error', ToastAndroid.SHORT);
         }
-
-        setIsPlaying(false);
-        setDuration(0); // Reset timer
-        progress.setValue(0); // Reset animation
     };
 
-    // Circle radius and path length
-    const circleRadius = calculatePercentage(30, width);
-    const strokeDasharray = Math.PI * 2 * circleRadius;
-    const strokeDashoffset = progress.interpolate({
-        inputRange: [0, 1],
-        outputRange: [strokeDasharray, 0], // Animate strokeDashoffset
-    });
+    const circleRadius = width * 0.3;
+    const strokeWidth = 15;
+    const circumference = 2 * Math.PI * circleRadius;
 
     return (
-        <LinearGradient
-            colors={['#ffffff', '#B1F0F7']} // White to #0095B7 gradient
-            style={styles.container}
-            start={{ x: 0, y: 0 }} // Gradient direction (top-left)
-            end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
-        >
-            <Text style={styles.screenTitle}>Track Your Activity</Text>
-            {/* Header with Tabs */}
-            <View style={styles.headerContainer}>
-                <TouchableOpacity
-                style={[styles.tab, activeTab === "ActivityTimer" && styles.activeTab]}
-                onPress={() => setActiveTab("ActivityTimer")}
-                >
-                <Text style={[styles.tabText, activeTab === "ActivityTimer" && styles.activeTabText]}>Stop Watch</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                style={[styles.tab, activeTab === "ActivityHistory" && styles.activeTab]}
-                onPress={() => setActiveTab("ActivityHistory")}
-                >
-                <Text style={[styles.tabText, activeTab === "ActivityHistory" && styles.activeTabText]}>History</Text>
-                </TouchableOpacity>
-            </View>
-            <View style={{}}>
-                {activeTab === "ActivityTimer" ? (
-                    
-                   <View style={styles.containerBodyTimer}>
-                        {/* Title Section */}
-                        <View style={styles.titleContainer}>
-                            <TouchableOpacity onPress={() => handleArrowPress("left")}>
-                                <Entypo name="arrow-left" size={24} color="black" />
-                            </TouchableOpacity>
-                            <Text style={styles.title}>{user_activity}</Text>
-                            <TouchableOpacity onPress={() => handleArrowPress("right")}>
-                                <Entypo name="arrow-right" size={24} color="black" />
-                            </TouchableOpacity>
+        <View style={{ flex: 1 }}>
+            <LinearGradient colors={['#ffffff', '#D9F8FB']} style={styles.container}>
+                <Text style={styles.title}>Activity Tracker</Text>
+                
+                <View style={styles.tabContainer}>
+                    <TouchableOpacity onPress={() => setActiveTab("ActivityTimer")} style={[styles.tabButton, activeTab === "ActivityTimer" && styles.tabButtonActive]}>
+                        <Text style={[styles.tabText, activeTab === "ActivityTimer" && styles.tabTextActive]}>Timer</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setActiveTab("ActivityHistory")} style={[styles.tabButton, activeTab === "ActivityHistory" && styles.tabButtonActive]}>
+                        <Text style={[styles.tabText, activeTab === "ActivityHistory" && styles.tabTextActive]}>History</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {activeTab === 'ActivityTimer' ? (
+                    <ScrollView contentContainerStyle={{alignItems: 'center'}}>
+                        <Text style={styles.sectionTitle}>Select Activity</Text>
+                        <View style={styles.activitySelector}>
+                            {Object.keys(ACTIVITIES).map((key) => {
+                                const act = key as keyof typeof ACTIVITIES;
+                                const { icon, color } = ACTIVITIES[act];
+                                const isSelected = userActivity === act;
+                                return (
+                                    <TouchableOpacity key={act} style={[styles.activityCard, isSelected && { backgroundColor: color, elevation: 8, shadowColor: color }]} onPress={() => setUserActivity(act)}>
+                                        <MaterialCommunityIcons name={icon} size={32} color={isSelected ? '#fff' : color} />
+                                        <Text style={[styles.activityText, isSelected && { color: '#fff' }]}>{act}</Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+                        
+                        <View style={styles.timerContainer}>
+                            <Svg width={circleRadius * 2 + strokeWidth} height={circleRadius * 2 + strokeWidth}>
+                                <Circle cx={circleRadius + strokeWidth/2} cy={circleRadius + strokeWidth/2} r={circleRadius} stroke="#E6E7F2" strokeWidth={strokeWidth} />
+                                <Circle cx={circleRadius + strokeWidth/2} cy={circleRadius + strokeWidth/2} r={circleRadius} stroke={ACTIVITIES[userActivity].color} strokeWidth={strokeWidth} strokeDasharray={circumference} strokeDashoffset={circumference * (1 - (duration % 60) / 60)} strokeLinecap="round" transform={`rotate(-90 ${circleRadius + strokeWidth/2} ${circleRadius + strokeWidth/2})`} />
+                            </Svg>
+                            <Text style={styles.timerText}>{formatTime(duration)}</Text>
                         </View>
 
-                        {/* Distance Widget with Circular Animation */}
-                        <View style={styles.distanceWidget}>
-                                <Svg height={calculatePercentage(70, width)} width={calculatePercentage(70, width)} style={{}}>
-                                    <Circle
-                                        cx={calculatePercentage(35, width)}
-                                        cy={calculatePercentage(35, width)}
-                                        r={circleRadius}
-                                        stroke="#e6e6e6"
-                                        strokeWidth="8"
-                                        fill="none"
-                                    />
-                                    <AnimatedCircle
-                                        cx={calculatePercentage(35, width)}
-                                        cy={calculatePercentage(35, width)}
-                                        r={circleRadius}
-                                        stroke="#133E87"
-                                        strokeWidth="8"
-                                        fill="none"
-                                        strokeDasharray={`${strokeDasharray}, ${strokeDasharray}`}
-                                        strokeDashoffset={strokeDashoffset}
-                                    />
-                                    <Text
-                                        style={[styles.distanceValue, {
-                                            position: 'absolute',
-                                            top: calculatePercentage(15, height),
-                                            left: calculatePercentage(20, width),
-                                            textAlign: 'center',
-                                            fontSize: calculatePercentage(7, width),
-                                        }]}
-                                    >
-                                        {formatTime(user_duration)} {/* Update this with dynamic time */}
-                                    </Text>
-                                </Svg>
-                        </View>
-
-                        {/* Controls */}
                         <View style={styles.controlsContainer}>
-                            <TouchableOpacity style={styles.stopButton} onPress={handleStop}>
-                                <FontAwesome name="stop" size={24} color="white" style={{textAlign:'center'}}/>
+                            <TouchableOpacity style={[styles.controlButton, { backgroundColor: '#777' }]} onPress={handleStop}>
+                                <Icon name="stop-outline" size={30} color="white" />
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.playPauseButton} onPress={handlePlayPause}>
-                                <FontAwesome
-                                    name={isPlaying ? "pause" : "play"}
-                                    size={30}
-                                    color="white"
-                                    style={{textAlign:'center'}}
-                                />
+                            <TouchableOpacity style={[styles.controlButton, styles.playPauseButton]} onPress={handlePlayPause}>
+                                <Icon name={isPlaying ? "pause-outline" : "play-outline"} size={40} color="white" />
                             </TouchableOpacity>
-                            <TouchableOpacity style={[styles.playPauseButton, { backgroundColor: user_duration === 0 ? 'black' : 'green', }]} onPress={handleSubmit} disabled={user_duration === 0}>
-                                <Feather
-                                    name={"check"}
-                                    size={30}
-                                    color="white"
-                                    style={{textAlign:'center'}}
-                                />
+                            <TouchableOpacity style={[styles.controlButton, { backgroundColor: duration > 0 ? '#4CAF50' : '#ccc' }]} onPress={handleSubmit} disabled={duration === 0}>
+                                <Icon name="checkmark-done-outline" size={30} color="white" />
                             </TouchableOpacity>
                         </View>
-                   </View>
-                ) :
-                (
-                    <View style={styles.containerBodyHistory}>
-                        <View style={{flexDirection:"row", padding: calculatePercentage(2.5, width), justifyContent:"space-around"}}>
-                            <Text style={[styles.cardTitle, {marginLeft:calculatePercentage(6, width)}]}>Date</Text>
-                            <Text style={[styles.cardTitle, {marginLeft:calculatePercentage(5, width)}]}>Activity</Text>
-                            <Text style={[styles.cardTitle, {}]}>Time</Text>
-                        </View>
-                        {loading ? (
-                            <View>
-                                <ActivityIndicator size="large" color="#ffffff" />
-                                <Text style={{ color: "white", textAlign: 'center', marginTop: 10 }}>
-                                    Loading...
-                                </Text>
+                    </ScrollView>
+                ) : (
+                    loading ? <ActivityIndicator size="large" color="#114D5B" style={{marginTop: 50}} /> :
+                    <FlatList
+                        data={activities}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={({item}) => <ActivityHistoryCard item={item} />}
+                        ListEmptyComponent={() => (
+                            <View style={styles.emptyContainer}>
+                                <Icon name="time-outline" size={60} color="#ccc" />
+                                <Text style={styles.emptyText}>No activity history found.</Text>
                             </View>
-                            
-                        ) : activities.length > 0 ? (
-                            <FlatList
-                                data={activities}
-                                keyExtractor={(item, index) => index.toString()}
-                                renderItem={renderActivityCard}
-                                refreshControl={
-                                    <RefreshControl
-                                        refreshing={refreshing}
-                                        onRefresh={onRefresh}
-                                        colors={["#007BFF"]}
-                                    />
-                                }
-                            />
-                        ) : (
-                            <Text style={styles.noDataText}>No activities found.</Text>
                         )}
-                    </View>
+                        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#114D5B"]} />}
+                        contentContainerStyle={{ paddingBottom: 100 }}
+                    />
                 )}
-
-            </View>
-            {/* Bottom Navigation Bar */}
-            <BottomNavBar
-                navigation={navigation}
-                activeTab="ActivityTracker"
-                setActiveTab={setActiveTab}
-            />
-        </LinearGradient>
+            </LinearGradient>
+            <BottomNavBar navigation={navigation} activeTab="ActivityTracker" setActiveTab={() => {}} />
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
-
-
-    headerContainer: {
-        flexDirection: "row",
-        justifyContent: "space-around",
-        backgroundColor: "#B8E0E7",
-        paddingVertical: 10,
-        borderRadius: 8,
-        marginBottom: 16,
-        paddingHorizontal:10
-      },
-      tab: {
-        flex: 1,
-        alignItems: "center",
-        paddingVertical: 8,
-      },
-      activeTab: {
-        backgroundColor: "#133E87",
-        borderRadius: 8,
-      },
-      tabText: {
-        color: "#333",
-        fontSize: 16,
-        fontWeight: "bold",
-      },
-      activeTabText: {
-        color: "#ffffff",
-      },
-
-      screenTitle: {
-        color: "black",
-        fontSize: 24,
-        textAlign: "center",
-        marginBottom: 16,
-      },
-
     container: {
         flex: 1,
-        backgroundColor: "#1c1c1e",
-        paddingHorizontal: calculatePercentage(2, width),
-        paddingTop: calculatePercentage(2, height),
-    },
-    containerBodyTimer:{
-        paddingHorizontal: calculatePercentage(10, width),
-        marginTop: calculatePercentage(6, width),
-
-    },
-    containerBodyHistory: {
-        paddingHorizontal: calculatePercentage(0, width),
-    },
-    titleContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: calculatePercentage(3, height),
-    },
-    topbar:{
-        height: calculatePercentage(12.5, height),
-        justifyContent:'space-between',
-        marginBottom: calculatePercentage(4, height),
-        backgroundColor:"#3C3D37"
+        paddingHorizontal: width * 0.05,
     },
     title: {
-        color: "#333",
-        fontSize: calculatePercentage(6, width),
+        fontSize: width * 0.07,
         fontWeight: "bold",
+        color: "#114D5B",
+        textAlign: "center",
+        marginVertical: height * 0.02,
     },
-    infoContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: calculatePercentage(4, height),
+    tabContainer: {
+        flexDirection: 'row',
+        backgroundColor: 'rgba(17, 77, 91, 0.1)',
+        borderRadius: 25,
+        padding: 5,
+        marginBottom: 20,
     },
-    rectContainer: {
-        backgroundColor: "#2c2c2e",
-        padding: calculatePercentage(4, width),
-        borderRadius: 10,
-        alignItems: "center",
+    tabButton: {
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 20,
     },
-    squareContainer: {
-        backgroundColor: "#2c2c2e",
-        padding: calculatePercentage(4, width),
-        borderRadius: 10,
-        alignItems: "center",
-        width: "40%",
+    tabButtonActive: {
+        backgroundColor: '#114D5B',
+        elevation: 8,
     },
-    infoLabel: {
-        color: "black",
-        fontSize: calculatePercentage(3, width),
-        marginTop: calculatePercentage(1, height),
-        marginBottom: calculatePercentage(1, height),
+    tabText: {
+        textAlign: 'center',
+        fontWeight: '600',
+        color: '#114D5B',
     },
-    infoValue: {
-        color: "#E37D00",
-        fontWeight: "bold",
-        fontSize: calculatePercentage(8, width),
-        marginTop: calculatePercentage(0.5, height),
+    tabTextActive: {
+        color: '#fff',
     },
-    distanceWidget: {
-        alignItems: "center",
-        marginTop: calculatePercentage(3, height),
-        marginBottom: calculatePercentage(4, height),
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#333',
+        textAlign: 'center',
+        marginVertical: 20,
     },
-    circularLoader: {
-        width: calculatePercentage(60, width),
-        height: calculatePercentage(60, width),
-        borderRadius: calculatePercentage(30, width),
-        borderWidth: 8,
-        borderColor: "black",
-        justifyContent: "center",
-        alignItems: "center",
-        position: "relative",
+    activitySelector: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: '100%',
     },
-    distanceValue: {
-        color: "#333",
-        fontSize: calculatePercentage(8, width),
-        fontWeight: "bold",
+    activityCard: {
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        paddingVertical: 15,
+        width: width * 0.25,
+        borderRadius: 15,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+    },
+    activityText: {
+        marginTop: 8,
+        fontWeight: '600',
+        fontSize: 12,
+    },
+    timerContainer: {
+        marginVertical: height * 0.05,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    timerText: {
+        position: 'absolute',
+        fontSize: width * 0.12,
+        fontWeight: 'bold',
+        color: '#114D5B',
+        fontVariant: ['tabular-nums'],
     },
     controlsContainer: {
         flexDirection: "row",
-        justifyContent: "center",
-        marginBottom: calculatePercentage(4, height),
-        gap: 10
+        justifyContent: "space-around",
+        alignItems: 'center',
+        width: '80%',
+    },
+    controlButton: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 5,
     },
     playPauseButton: {
-        backgroundColor: "#133E87",
-        height: calculatePercentage(15, width),
-        width: calculatePercentage(15, width),
-        borderRadius: calculatePercentage(7.5, width),
-        justifyContent:'center',
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#114D5B',
     },
-    stopButton: {
-        backgroundColor: "#C62E2E",
-        height: calculatePercentage(15, width),
-        width: calculatePercentage(15, width),
-        borderRadius: calculatePercentage(7.5, width),
-        justifyContent:'center',
+    historyCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        padding: 15,
+        borderRadius: 15,
+        marginBottom: 10,
+        elevation: 2,
     },
-    noDataText: {
-        color: "gray",
-        fontSize: calculatePercentage(3, width),
-        textAlign: "center",
-        marginTop: calculatePercentage(5, height),
+    historyIconContainer: {
+        padding: 12,
+        borderRadius: 25,
+        marginRight: 15,
     },
-    card: {
-        backgroundColor: "#EAF8FF",
-        flexDirection:"row",
-        justifyContent:"space-around",
-        padding: calculatePercentage(2.5, width),
-        borderRadius: 10,
-        marginBottom: calculatePercentage(2, height),
-        elevation:3
+    historyDetails: {
+        flex: 1,
     },
-    cardText: {
-        color: "black",
-        fontSize: calculatePercentage(3.5, width),
-        marginBottom: 5,
+    historyActivity: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333',
+        textTransform: 'capitalize',
     },
-    cardTitle: {
-        color: "black",
-        fontSize: calculatePercentage(5, width),
-        marginBottom: 5,
-        marginRight:calculatePercentage(6, width),
+    historyDate: {
+        fontSize: 12,
+        color: '#777',
+    },
+    historyDuration: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#114D5B',
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: height * 0.1,
+    },
+    emptyText: {
+        fontSize: 16,
+        color: "#aaa",
+        marginTop: 15,
+        fontStyle: "italic",
     },
 });
 

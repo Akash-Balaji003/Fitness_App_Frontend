@@ -37,7 +37,8 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
             weight: weightValue,
             blood: bloodValue,
             experience: activity,
-            stepgoal: stepCount
+            stepgoal: stepCount,
+            caloriegoal: user?.caloriegoal
             
         };
 
@@ -70,7 +71,8 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
                 experience: activity,
                 stepgoal: stepCount,
                 gender: user?.gender || "",
-                DOB: user?.DOB || ""
+                DOB: user?.DOB || "",
+                caloriegoal: user?.caloriegoal || 0
             });
 
 
@@ -85,7 +87,8 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
                 experience: activity,
                 stepgoal: stepCount,
                 gender: user?.gender || "",
-                DOB: user?.DOB || ""
+                DOB: user?.DOB || "",
+                caloriegoal: user?.caloriegoal || 0
             });
             
             Alert.alert('Success', 'Profile updated successfully');
