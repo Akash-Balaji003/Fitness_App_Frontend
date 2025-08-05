@@ -70,7 +70,7 @@ const syncOfflineData = async (user_id: string | undefined) => {
                     };
 
                     try {
-                        const stepRes = await fetch('http://1psc5nc9-8000.inc1.devtunnels.ms/update-steps', {
+                        const stepRes = await fetch('http://172.16.0.60:8002/update-steps', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload),
@@ -84,7 +84,7 @@ const syncOfflineData = async (user_id: string | undefined) => {
                         }
 
                         // Send step credits
-                        await fetch('http://1psc5nc9-8000.inc1.devtunnels.ms/new-transaction', {
+                        await fetch('http://172.16.0.60:8002/new-transaction', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -96,7 +96,7 @@ const syncOfflineData = async (user_id: string | undefined) => {
                         });
 
                         // Send calorie credits
-                        await fetch('http://1psc5nc9-8000.inc1.devtunnels.ms/new-transaction', {
+                        await fetch('http://172.16.0.60:8002/new-transaction', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({

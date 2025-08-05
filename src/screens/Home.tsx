@@ -147,7 +147,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     const fetchStreaks = async () => {
         try {
           // Replace with your actual API URL
-          const response = await fetch(`https://9kz2rcl6-8000.inc1.devtunnels.ms/get-streaks?id=${user?.user_id}`);
+          const response = await fetch(`http://172.16.0.60:8002/get-streaks?id=${user?.user_id}`);
           const data = await response.json();
           
           // Assuming the API returns an object with step counts for each day

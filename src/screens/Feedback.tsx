@@ -30,7 +30,7 @@ const FeedbackScreen = ({ navigation }: FeedbackProps) => {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('https://9kz2rcl6-8000.inc1.devtunnels.ms/feedback', {
+            const response = await fetch('http://172.16.0.60:8002/feedback', {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
