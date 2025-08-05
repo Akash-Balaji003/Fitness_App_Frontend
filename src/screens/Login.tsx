@@ -77,7 +77,7 @@ const LoginScreen = ({ navigation }: LoginProps) => {
                 caloriegoal: data.caloriegoal
             });
 
-            startBackgroundSync(data.user_id, data.stepgoal, data.caloriegoal, data.height, data.weight)
+            startBackgroundSync(data.user_id, data.stepgoal, data.caloriegoal, data.height, data.weight);
             
             navigation.navigate("Home");
         } else {

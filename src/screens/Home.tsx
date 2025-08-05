@@ -31,8 +31,6 @@ import BackgroundService from "react-native-background-actions"
 import { startBackgroundSync } from "../tasks/BackgroundActionSetup";
 import { LAST_MIDNIGHT_STEPS_KEY } from "../tasks/DailyStepUpdate";
 
-
-
 const { TypeStepCounterModule } = NativeModules;
 const stepCounterEvent = new NativeEventEmitter(TypeStepCounterModule);
 
@@ -80,22 +78,24 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
         try {
             console.log("[Fetch Midnight Step Count] User_ID:", user?.user_id);
             const response = await fetch(
-                `http://172.16.0.60:8002/get-total-sensor-steps?id=${user?.user_id}`,
-                { method: "GET" }
+                `http://172.16.0.60:8002/get-total-sensor-steps?id=${user?.user_id}`, 
+                {
+                    method: "GET",
+                }
             );
             
             // If the server is reachable but has an error, throw to trigger the catch block.
             if (!response.ok) {
-                throw new Error("Server responded with status: ${response.status}");
+                throw new Error(`Server responded with status: ${response.status}`);
             }
     
             const data = await response.json();
             console.log("[Fetch Midnight Step Count] Received Data: ", data);
-    
+
             if (data["total_steps"]) {
-                console.log("[Fetch Midnight Step Count] Fetched Midnight Step Count from Server: ", data["total_steps"]);
-                
-                // This part remains the same
+                console.log("[Fetch Midnight Step Count] Fetched Midnight Step Count: ", data["total_steps"]);
+
+                // Set Midnight Step Count
                 setMidnightStepCount(data["total_steps"]);
                 if(sensorSteps){
                     updateDailyStepCount();
@@ -140,6 +140,46 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
                 return null;
             }
             // --- FALLBACK LOGIC ENDS HERE ---
+        }
+    };
+
+    // If it already exists, get the midnight step count
+    const getMidnightStepCount = async () => {
+        try {
+            const todayDate = new Date().toISOString().split("T")[0]; // Get YYYY-MM-DD
+            
+            // 1️⃣ Check AsyncStorage for today's step count
+            const storedData = await AsyncStorage.getItem('MIDNIGHT_STEP_COUNT');
+    
+            if (storedData !== null) {
+                const parsedData = JSON.parse(storedData);
+    
+                if (parsedData.date === todayDate) {
+                    console.log("[Get Midnight Step Count] Using Cached Midnight Step Count:", parsedData.midnightStepCount);
+                    setMidnightStepCount(parsedData.midnightStepCount);
+                    return parsedData.midnightStepCount;
+                }
+            }
+    
+            // 2️⃣ If not found, fetch from MySQL
+            console.log("[Get Midnight Step Count] ⏳ Fetching midnight step count from MySQL...");
+            const fetchedStepCount = await fetchMidnightStepCount();
+    
+            if (fetchedStepCount !== null) {
+                console.log("[Get Midnight Step Count] Fetched from MySQL:", fetchedStepCount);
+    
+                // 3️⃣ Store it in AsyncStorage
+                const newData = { date: todayDate, midnightStepCount: fetchedStepCount };
+                await AsyncStorage.setItem('MIDNIGHT_STEP_COUNT', JSON.stringify(newData));
+    
+                setMidnightStepCount(fetchedStepCount);
+                return fetchedStepCount;
+            }
+    
+            return null; // If MySQL also fails
+        } catch (error) {
+            console.error("[Get Midnight Step Count] Error retrieving midnight step count:", error);
+            return null;
         }
     };
 

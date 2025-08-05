@@ -35,7 +35,7 @@ const syncQueuedTransactions = async () => {
 
   for (const [index, transactionData] of queue.entries()) {
       try {
-          const response = await fetch('http://172.16.0.60:8002/new-transaction', {
+          const response = await fetch('https://9kz2rcl6-8000.inc1.devtunnels.ms/new-transaction', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(transactionData),
@@ -88,7 +88,7 @@ const fetchMidnightStepCount = async (userId: string): Promise<number> => {
   try {
     console.log('Fetching midnight step count from server for:', userId);
     const response = await fetch(
-      `http://172.16.0.60:8002/get-total-sensor-steps?id=${userId}`,
+      `https://9kz2rcl6-8000.inc1.devtunnels.ms/get-total-sensor-steps?id=${userId}`,
       { method: 'GET' }
     );
     if (!response.ok) throw new Error('Server response not OK');
@@ -205,7 +205,7 @@ const syncQueuedSteps = async () => {
           };
 
           try {
-              const response = await fetch('http://172.16.0.60:8002/update-steps', {
+              const response = await fetch('https://9kz2rcl6-8000.inc1.devtunnels.ms/update-steps', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify(payloadToSend), // Send the trimmed payload
@@ -261,7 +261,7 @@ const runDailyStepSync = async (userId: string, stepGoal: number, calorieGoal: n
           midnight_step_count: currentSteps,
       };
 
-      const response = await fetch('http://172.16.0.60:8002/update-steps', {
+      const response = await fetch('https://9kz2rcl6-8000.inc1.devtunnels.ms/update-steps', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(stepPayload),
@@ -283,7 +283,7 @@ const runDailyStepSync = async (userId: string, stepGoal: number, calorieGoal: n
                   amount: earnedStepCredits,
               };
               try {
-                  const txResponse = await fetch('http://172.16.0.60:8002/new-transaction', {
+                  const txResponse = await fetch('https://9kz2rcl6-8000.inc1.devtunnels.ms/new-transaction', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify(stepTransaction)
@@ -303,7 +303,7 @@ const runDailyStepSync = async (userId: string, stepGoal: number, calorieGoal: n
                   amount: earnedCalorieCredits,
               };
                try {
-                  const txResponse = await fetch('http://172.16.0.60:8002/new-transaction', {
+                  const txResponse = await fetch('https://9kz2rcl6-8000.inc1.devtunnels.ms/new-transaction', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify(calorieTransaction)
