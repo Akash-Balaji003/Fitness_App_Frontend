@@ -45,7 +45,7 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
         console.log("DATA", updatedProfile);
     
         try {
-            const response = await fetch('http://172.16.0.60:8002/update-user', {
+            const response = await fetch('https://1psc5nc9-8001.inc1.devtunnels.ms/update-user', {
                 method: 'POST', // Use PUT for updates
                 headers: {
                     'Content-Type': 'application/json',

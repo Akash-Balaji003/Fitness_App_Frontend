@@ -46,22 +46,25 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
 
     const updateDailyStepCount = async () => {
         let calculatedDailySteps;
-        if(midnightStepCount < sensorSteps){
+        if(midnightStepCount <= sensorSteps){
             calculatedDailySteps = sensorSteps - midnightStepCount;
         } else {
             calculatedDailySteps = sensorSteps;
         }
         setDailyStepCount(calculatedDailySteps);
+        console.log("[HOME PAGE] Daily Steps: ", dailyStepCount);
     };
 
     useEffect(() => {
         // Initialize Background Fetch
+        console.log("user: ", user);
         if (user) {
           initBackgroundFetch();
         }
     }, [user]);
   
     const initBackgroundFetch = async () => {
+        console.log("In InitBackgroundTask now!");
       const status : number = await BackgroundFetch.configure({
         minimumFetchInterval: 15,
         stopOnTerminate: false,
@@ -70,6 +73,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
         requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY,
       }, async (taskId) => {
           // Call the Background Task
+          console.log("Starting background Task: ", taskId);
           await backgroundTask();
   
           // Finish task
@@ -92,6 +96,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
         // Fetch from Async Storage
         const midnightCount = await AsyncStorage.getItem(MIDNIGHT_STEP_KEY);
         setMidnightStepCount(parseInt(midnightCount || '0'));
+        console.log("[HOME PAGE] Midnight Step Count: ", midnightCount);
     };
       
     useEffect(() => {
@@ -117,10 +122,10 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
         };
     }, [user]);
 
-    const refreshButton = () => {
-        console.log("Refresh Button Pressed");
-        startCounter();
-        startCounter();
+    const refreshButton = async () => {
+        console.log("[HOME PAGE] Refresh Button Pressed");
+        await startCounter();
+        await updateDailyStepCount();
     };
 
     const startCounter = () => {
@@ -147,14 +152,14 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
     const fetchStreaks = async () => {
         try {
           // Replace with your actual API URL
-          const response = await fetch(`http://172.16.0.60:8002/get-streaks?id=${user?.user_id}`);
+          const response = await fetch(`https://1psc5nc9-8001.inc1.devtunnels.ms/get-streaks?id=${user?.user_id}`);
           const data = await response.json();
           
           // Assuming the API returns an object with step counts for each day
           console.log("[FETCH STREAKS] Streaks : ", data)
           setStreak(data);
         } catch (error) {
-          console.error('Error fetching step data:', error);
+          console.error('Error fetching streaks:', error);
         }
     };
     

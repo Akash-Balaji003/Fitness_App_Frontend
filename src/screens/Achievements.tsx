@@ -95,7 +95,7 @@ const AchievementsScreen = ({ navigation }: NativeStackScreenProps<RootStackPara
     const fetchStreaks = async () => {
         try {
             // Replace with your actual API URL
-            const response = await fetch(`http://172.16.0.60:8002/get-streaks?id=${user?.user_id}`);
+            const response = await fetch(`https://1psc5nc9-8001.inc1.devtunnels.ms/get-streaks?id=${user?.user_id}`);
             const data = await response.json();
             
             // Assuming the API returns an object with step counts for each day
@@ -109,7 +109,7 @@ const AchievementsScreen = ({ navigation }: NativeStackScreenProps<RootStackPara
     const fetchTotalSteps = async () => {
         try {
             // Replace with your actual API URL
-            const response = await fetch(`http://172.16.0.60:8002/get-total-steps?id=${user?.user_id}`);
+            const response = await fetch(`https://1psc5nc9-8001.inc1.devtunnels.ms/get-total-steps?id=${user?.user_id}`);
             const data = await response.json();
             
             // Assuming the API returns an object with step counts for each day
