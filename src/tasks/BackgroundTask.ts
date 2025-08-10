@@ -5,7 +5,7 @@ import SQLite from 'react-native-sqlite-storage';
 
 const LAST_DATE_KEY = 'last_run_date';
 export const MIDNIGHT_STEP_KEY = 'midnight_step_count';
-const TEST_URL = "https://1psc5nc9-8001.inc1.devtunnels.ms/test";
+const TEST_URL = "http://172.16.0.60:8002/test";
 
 const testNetwork = async () => {
   const controller = new AbortController();
@@ -88,7 +88,7 @@ const syncOfflineData = async (user_id: string | undefined) => {
 
                     try {
                         console.log(`[Background Task] Sending step data for date: ${item.date}`);
-                        const stepRes = await fetch('https://1psc5nc9-8001.inc1.devtunnels.ms/update-steps', {
+                        const stepRes = await fetch('http://172.16.0.60:8002/update-steps', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload),
@@ -103,7 +103,7 @@ const syncOfflineData = async (user_id: string | undefined) => {
 
                         console.log(`[Background Task] Step data synced for ID ${item.id}`);
 
-                        await fetch('https://1psc5nc9-8001.inc1.devtunnels.ms/new-transaction', {
+                        await fetch('http://172.16.0.60:8002/new-transaction', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -115,7 +115,7 @@ const syncOfflineData = async (user_id: string | undefined) => {
                         });
                         console.log(`[Background Task] Step credit sent for ID ${item.id}`);
 
-                        await fetch('https://1psc5nc9-8001.inc1.devtunnels.ms/new-transaction', {
+                        await fetch('http://172.16.0.60:8002/new-transaction', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -181,15 +181,13 @@ function calculateStepAndCalorieCredits(dailySteps: number, stepGoal: number, ca
     return { stepCredits, calorieCredits };
 }
 
-export const backgroundTask = async () => {
+const doWork = async () => {
     console.log('[Background Task] Background task started.');
 
     await initDB();
 
     const { TypeStepCounterModule } = NativeModules;
     const stepCounterEvent = new NativeEventEmitter(TypeStepCounterModule);
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
     const today = new Date().toISOString().split('T')[0];
 
     let currSteps = 0;
@@ -227,6 +225,7 @@ export const backgroundTask = async () => {
     };
 
     currSteps = await getStepCount();
+    TypeStepCounterModule.stopStepCounter(); // Ensure the step counter is stopped after fetching the count
     console.log(`[Background Task] Current steps: ${currSteps}`);
 
     const dailySteps = currSteps - midnightStepCount;
@@ -254,12 +253,8 @@ export const backgroundTask = async () => {
                                 () => {
                                     console.log('[Background Task] Inserted log into SQLite.');
                                     resolve();
-                                },
-                                (_, error) => {
-                                    console.error(
-                                        '[Background Task] DB insert error:',
-                                        error?.message || JSON.stringify(error) || 'Unknown error'
-                                    );
+                                }, (_, error) => {
+                                    console.error('[Background Task] DB insert error:', error?.message || JSON.stringify(error) || 'Unknown error');
                                     reject(error);
                                     return false;
                                 }
@@ -294,4 +289,9 @@ export const backgroundTask = async () => {
     }
 
     console.log("[Background Task] Background task completed.");
+};
+
+export const backgroundTask = async () => {
+    console.log("-----------------------------------------------------");
+    await doWork();
 };

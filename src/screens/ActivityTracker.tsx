@@ -50,7 +50,7 @@ const ActivityTracker = ({ navigation, route }: NativeStackScreenProps<RootStack
 
     const fetchActivities = async () => {
         try {
-            const response = await fetch(`https://1psc5nc9-8001.inc1.devtunnels.ms/fetch-activities?id=${user?.user_id}`, {
+            const response = await fetch(`http://172.16.0.60:8002/fetch-activities?id=${user?.user_id}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -156,7 +156,7 @@ const ActivityTracker = ({ navigation, route }: NativeStackScreenProps<RootStack
         try {
             const currentDate = new Date().toISOString().split('T')[0];
 
-            const response = await fetch('https://1psc5nc9-8001.inc1.devtunnels.ms/store-activity', {
+            const response = await fetch('http://172.16.0.60:8002/store-activity', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -34,7 +34,7 @@ const LeaderBoard = ({
   const fetchLeaderboardData = async () => {
     try {
       const response = await fetch(
-        `https://1psc5nc9-8001.inc1.devtunnels.ms/get-leaderboard?id=${user?.user_id}` // http://127.0.0.1:8000 "SRM = https://9kz2rcl6-8000.inc1.devtunnels.ms Test = https://9kz2rcl6-8000.inc1.devtunnels.ms"
+        `http://172.16.0.60:8002/get-leaderboard?id=${user?.user_id}` // http://127.0.0.1:8000 "SRM = https://9kz2rcl6-8000.inc1.devtunnels.ms Test = https://9kz2rcl6-8000.inc1.devtunnels.ms"
       );
       const data: LeaderboardEntry[] = await response.json();
       // Sort the data by step_count in descending order

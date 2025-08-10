@@ -51,7 +51,7 @@ const Register = ({ navigation }: RegisterProps) => {
     
         try {
             // Make an API call to check if the phone number or email is already in use
-            const response = await fetch("https://1psc5nc9-8001.inc1.devtunnels.ms/check-user", {
+            const response = await fetch("http://172.16.0.60:8002/check-user", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
