@@ -257,6 +257,8 @@ function App(): React.JSX.Element {
                   <Stack.Screen name="FeedbackScreen" component={FeedbackScreen} options={{ headerShown: false }} />
                   <Stack.Screen name="CreditScreen" component={CreditScreen} options={{ headerShown: false }} />
                   <Stack.Screen name="CalorieGoal" component={CalorieGoal} options={{ headerShown: false }} />
+                  <Stack.Screen name="QrConfirmation" component={QrConfirmation} options={{ headerShown: false }} />
+                  <Stack.Screen name="QrScreen" component={QrScreen} options={{ headerShown: false }} />
               </Stack.Navigator>
             </NavigationContainer>
         </StepCountProvider>
