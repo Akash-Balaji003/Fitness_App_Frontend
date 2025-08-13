@@ -25,7 +25,6 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
     const [bloodValue, setBlood] = useState(user?.blood || 'O +');
     const [activity, setActivity] = useState(user?.experience || 'Moderate');
     const [stepCount, setStepCount] = useState(user?.stepgoal || 10000);
-    const [calorieGoal, setCalorieGoal] = useState(user?.caloriegoal || 300);
 
     const dietaryOptions = ['A +', 'B +', 'O +', 'AB +', 'A -', 'B -', 'AB -', 'O -'];
     const activityLevels = ['Sedentary', 'Moderate', 'Active'];
@@ -38,8 +37,8 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
             weight: weightValue,
             blood: bloodValue,
             experience: activity,
-            stepgoal: stepCount,
-            calorieGoal: calorieGoal,
+            stepgoal: stepCount
+            
         };
 
         console.log("DATA", updatedProfile);
@@ -72,7 +71,7 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
                 stepgoal: stepCount,
                 gender: user?.gender || "",
                 DOB: user?.DOB || "",
-                caloriegoal: calorieGoal,
+                caloriegoal: data.caloriegoal || 250
             });
 
 
@@ -88,7 +87,7 @@ const EditProfile = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
                 stepgoal: stepCount,
                 gender: user?.gender || "",
                 DOB: user?.DOB || "",
-                caloriegoal: calorieGoal,
+                caloriegoal: data.caloriegoal || 250
             });
             
             Alert.alert('Success', 'Profile updated successfully');
