@@ -41,7 +41,7 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
     const fetchFriends = async () => {
         try {
             const response = await fetch(
-                `http://172.16.0.60:8002/get-friends?id=${user?.user_id}`, // http://127.0.0.1:8000 "SRM = https://9kz2rcl6-8000.inc1.devtunnels.ms Test = https://9kz2rcl6-8000.inc1.devtunnels.ms"
+                `https://9kz2rcl6-8000.inc1.devtunnels.ms/get-friends?id=${user?.user_id}`, // http://127.0.0.1:8000 "SRM = https://9kz2rcl6-8000.inc1.devtunnels.ms Test = https://9kz2rcl6-8000.inc1.devtunnels.ms"
                 {
                     method: "GET",
                     headers: {
