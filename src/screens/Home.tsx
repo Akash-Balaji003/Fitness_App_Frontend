@@ -26,8 +26,7 @@ import { useStepCount } from "../contexts/StepCounterContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import StepProgressCircle from "../components/StepProgress";
 import StepCountGrid from "../components/MonthlySteps";
-import { backgroundTask, MIDNIGHT_STEP_KEY } from "../tasks/BackgroundTask";
-import BackgroundFetch from "react-native-background-fetch";
+import { MIDNIGHT_STEP_KEY } from "../tasks/BackgroundTask";
 
 const { TypeStepCounterModule } = NativeModules;
 const stepCounterEvent = new NativeEventEmitter(TypeStepCounterModule);
@@ -46,42 +45,15 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
 
     const updateDailyStepCount = async () => {
         let calculatedDailySteps;
-        if(midnightStepCount < sensorSteps){
+        if(midnightStepCount <= sensorSteps){
             calculatedDailySteps = sensorSteps - midnightStepCount;
         } else {
             calculatedDailySteps = sensorSteps;
         }
         setDailyStepCount(calculatedDailySteps);
+        console.log("[HOME PAGE] sensor Steps: ", sensorSteps);
+        console.log("[HOME PAGE] Daily Steps: ", calculatedDailySteps);
     };
-
-    useEffect(() => {
-        // Initialize Background Fetch
-        if (user) {
-          initBackgroundFetch();
-        }
-    }, [user]);
-  
-    const initBackgroundFetch = async () => {
-      const status : number = await BackgroundFetch.configure({
-        minimumFetchInterval: 15,
-        stopOnTerminate: false,
-        startOnBoot: true,
-        enableHeadless: true,
-        requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY,
-      }, async (taskId) => {
-          // Call the Background Task
-          await backgroundTask();
-  
-          // Finish task
-          BackgroundFetch.finish(taskId);
-      }, (taskId : string) => {
-          // Going on for too long, call timeout and finish task
-          console.log("Background Fetch Timeout!");
-  
-          // Finish Task
-          BackgroundFetch.finish(taskId);
-      });
-    }
 
     useEffect(() => {
         updateDailyStepCount();
@@ -92,8 +64,9 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
         // Fetch from Async Storage
         const midnightCount = await AsyncStorage.getItem(MIDNIGHT_STEP_KEY);
         setMidnightStepCount(parseInt(midnightCount || '0'));
+        console.log("[HOME PAGE] Midnight Step Count: ", midnightCount);
     };
-      
+
     useEffect(() => {
         if (user?.user_id) {
             fetchStreaks();
@@ -109,6 +82,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
         });
 
         fetchMidnightStepCount();
+        NativeModules.StartStepServiceModule.startService();
 
         return () => {
           // Stop counter when component unmounts
@@ -117,10 +91,10 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
         };
     }, [user]);
 
-    const refreshButton = () => {
-        console.log("Refresh Button Pressed");
-        startCounter();
-        startCounter();
+    const refreshButton = async () => {
+        console.log("[HOME PAGE] Refresh Button Pressed");
+        await startCounter();
+        await updateDailyStepCount();
     };
 
     const startCounter = () => {
@@ -154,7 +128,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
           console.log("[FETCH STREAKS] Streaks : ", data)
           setStreak(data);
         } catch (error) {
-          console.error('Error fetching step data:', error);
+          console.error('Error fetching streaks:', error);
         }
     };
     

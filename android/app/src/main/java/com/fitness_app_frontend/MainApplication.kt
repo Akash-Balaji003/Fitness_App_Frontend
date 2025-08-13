@@ -22,7 +22,8 @@
                 // Packages that cannot be autolinked yet can be added manually here, for example:
                 // add(MyReactNativePackage())
                 BatteryOptimizationPackage() // Register the module here
-                add(TypeStepCounterPackage()) 
+                add(TypeStepCounterPackage())
+                add(StartStepServicePackage())
               }
 
           override fun getJSMainModuleName(): String = "index"

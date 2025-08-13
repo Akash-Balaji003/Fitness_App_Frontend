@@ -26,7 +26,7 @@ import CalorieGoal from './screens/quizScreens/CalorieGoal';
 import { UserProvider, useUser } from './contexts/UserContext';
 import { StepCountProvider } from './contexts/StepCounterContext';
 import { getUserData, hasAlertBeenShown, saveAlertStatus } from './tasks/Storage';
-import { ActivityIndicator, Alert, NativeModules, PermissionsAndroid, Platform, View } from 'react-native';
+import { ActivityIndicator, Alert, NativeModules, Permission, PermissionsAndroid, Platform, View } from 'react-native';
 import SplashScreen from './screens/SplashScreen';
 import FeedbackScreen from './screens/Feedback';
 import QrConfirmation from './screens/QrConfirmation';
@@ -123,55 +123,50 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const requestPermissions = async () => {
-  if (Platform.OS === 'android') {
-    // Check for Activity Recognition permission
-    const activityRecognitionGranted = await PermissionsAndroid.check(
-      PermissionsAndroid.PERMISSIONS.ACTIVITY_RECOGNITION
-    );
+const requestAllPermissions = async () => {
+  // We only need to ask for permissions on Android
+  if (Platform.OS !== 'android') {
+    return true;
+  }
 
-    if (activityRecognitionGranted) {
-      console.log('Activity Recognition permission is already granted.');
+  const permissionsToRequest: Permission[] = [];
+
+  // Activity Recognition: Required for Android 10 (API 29) and above
+  if (Platform.Version >= 29) {
+    permissionsToRequest.push(PermissionsAndroid.PERMISSIONS.ACTIVITY_RECOGNITION);
+  }
+
+  // Post Notifications: Required for Android 13 (API 33) and above for the foreground service
+  if (Platform.Version >= 33) {
+    permissionsToRequest.push(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+  }
+
+  // If we don't need to request any permissions (e.g., on an older Android version)
+  if (permissionsToRequest.length === 0) {
+    return true; // All good to go
+  }
+
+  try {
+    // Request all permissions at once
+    const granted = await PermissionsAndroid.requestMultiple(permissionsToRequest);
+
+    const isActivityRecognitionGranted =
+      Platform.Version < 29 || granted[PermissionsAndroid.PERMISSIONS.ACTIVITY_RECOGNITION] === PermissionsAndroid.RESULTS.GRANTED;
+
+    const isPostNotificationsGranted =
+      Platform.Version < 33 || granted[PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS] === PermissionsAndroid.RESULTS.GRANTED;
+
+    if (isActivityRecognitionGranted && isPostNotificationsGranted) {
+      console.log('All required permissions granted! Starting service');
+      NativeModules.StartStepServiceModule.startService();
+      return true;
     } else {
-      const activityRecognitionResult = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACTIVITY_RECOGNITION,
-        {
-          title: 'Activity Recognition Permission',
-          message: 'The app needs to track your activity for step counting.',
-          buttonPositive: 'OK',
-        }
-      );
-      console.log(
-        activityRecognitionResult === PermissionsAndroid.RESULTS.GRANTED
-          ? 'Activity Recognition permission granted.'
-          : 'Activity Recognition permission denied.'
-      );
+      console.log('Some permissions were denied.');
+      return false;
     }
-
-    // Check for Foreground Service permission (Android 11+)
-    if (Platform.Version >= 30) {
-      const foregroundServiceGranted = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.FOREGROUND_SERVICE
-      );
-
-      if (foregroundServiceGranted) {
-        console.log('Foreground Service permission is already granted.');
-      } else {
-        const foregroundServiceResult = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.FOREGROUND_SERVICE,
-          {
-            title: 'Foreground Service Permission',
-            message: 'The app needs to run in the background to count steps.',
-            buttonPositive: 'OK',
-          }
-        );
-        console.log(
-          foregroundServiceResult === PermissionsAndroid.RESULTS.GRANTED
-            ? 'Foreground Service permission granted.'
-            : 'Foreground Service permission denied.'
-        );
-      }
-    }
+  } catch (err) {
+    console.warn(err);
+    return false;
   }
 };
 
@@ -198,12 +193,11 @@ function App(): React.JSX.Element {
 
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);  // Will hold login state
   const [isSplashComplete, setIsSplashComplete] = useState(false); // Track splash screen completion
-  const [enabled, setEnabled] = useState(false); 
 
   useEffect(() => {
 
-    requestPermissions();
-
+    requestAllPermissions();
+    
     showAlertIfNeeded()
 
     const checkUserStatus = async () => {
@@ -212,6 +206,7 @@ function App(): React.JSX.Element {
     };
 
     checkUserStatus();  // Check on app start
+
   }, []);
 
   getUserData().then((userData) => {

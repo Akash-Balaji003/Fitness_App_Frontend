@@ -32,7 +32,7 @@ const StepCountGrid: React.FC = () => {
                 const data = await response.json();
                 setValues(data);
             } catch (error) {
-                console.error('Error fetching step data:', error);
+                console.error('Error fetching monthly steps:', error);
             }
         };
 
