@@ -29,12 +29,16 @@ import { getUserData, hasAlertBeenShown, saveAlertStatus } from './tasks/Storage
 import { ActivityIndicator, Alert, NativeModules, PermissionsAndroid, Platform, View } from 'react-native';
 import SplashScreen from './screens/SplashScreen';
 import FeedbackScreen from './screens/Feedback';
+import QrConfirmation from './screens/QrConfirmation';
 
 enableScreens();
 
 export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
+    QrConfirmation: {
+        QRResult: string;
+    };
 
     WelcomePage: {
         username: string;
