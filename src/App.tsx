@@ -30,6 +30,7 @@ import { ActivityIndicator, Alert, NativeModules, PermissionsAndroid, Platform, 
 import SplashScreen from './screens/SplashScreen';
 import FeedbackScreen from './screens/Feedback';
 import QrConfirmation from './screens/QrConfirmation';
+import QrScreen from './screens/QrScreen';
 
 enableScreens();
 
@@ -39,6 +40,7 @@ export type RootStackParamList = {
     QrConfirmation: {
         QRResult: string;
     };
+    QrScreen: undefined;
 
     WelcomePage: {
         username: string;
