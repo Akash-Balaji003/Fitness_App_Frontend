@@ -37,10 +37,6 @@ enableScreens();
 export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
-    QrConfirmation: {
-        QRResult: string;
-    };
-    QrScreen: undefined;
 
     WelcomePage: {
         username: string;
@@ -119,6 +115,10 @@ export type RootStackParamList = {
     TypeStepCount: undefined;
     FeedbackScreen: undefined;
     CreditScreen: undefined;
+    QrScreen: undefined;
+    QrConfirmation: { 
+      QRResult: string | undefined;
+    };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
