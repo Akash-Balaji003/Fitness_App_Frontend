@@ -28,7 +28,7 @@ import { StepCountProvider } from './contexts/StepCounterContext';
 import { getUserData, hasAlertBeenShown, saveAlertStatus } from './tasks/Storage';
 import { ActivityIndicator, Alert, NativeModules, Permission, PermissionsAndroid, Platform, View } from 'react-native';
 import SplashScreen from './screens/SplashScreen';
-import FeedbackScreen from './screens/Feedback';
+import About from './screens/About';
 import QrConfirmation from './screens/QrConfirmation';
 import QrScreen from './screens/QrScreen';
 
@@ -113,7 +113,7 @@ export type RootStackParamList = {
     Achievements: undefined;
     Rewardssystem: undefined;
     TypeStepCount: undefined;
-    FeedbackScreen: undefined;
+    About: undefined;
     CreditScreen: undefined;
     QrScreen: undefined;
     QrConfirmation: { 
@@ -249,7 +249,7 @@ function App(): React.JSX.Element {
                   <Stack.Screen name="Achievements" component={Achievements} options={{ headerShown: false }} />
                   <Stack.Screen name="Rewardssystem" component={Rewardssystem} options={{ headerShown: false }} />
                   <Stack.Screen name="TypeStepCount" component={TypeStepCount} options={{ headerShown: false }} />
-                  <Stack.Screen name="FeedbackScreen" component={FeedbackScreen} options={{ headerShown: false }} />
+                  <Stack.Screen name="About" component={About} options={{ headerShown: false }} />
                   <Stack.Screen name="CreditScreen" component={CreditScreen} options={{ headerShown: false }} />
                   <Stack.Screen name="CalorieGoal" component={CalorieGoal} options={{ headerShown: false }} />
                   <Stack.Screen name="QrConfirmation" component={QrConfirmation} options={{ headerShown: false }} />

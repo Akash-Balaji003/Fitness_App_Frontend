@@ -160,8 +160,8 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
             <View style={styles.header}>
                 <Text style={styles.greeting}>Welcome {user.username},</Text>
                 <View style={{flexDirection:"row", gap:30}}>
-                    <TouchableOpacity onPress={() => navigation.navigate("FeedbackScreen")}>
-                        <FontAwesome name="thumbs-up" size={24} color="black" />
+                    <TouchableOpacity onPress={() => navigation.navigate("About")}>
+                        <FontAwesome name="info-circle" size={25} color="black" />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={refreshButton}>
                         <FontAwesome name="refresh" size={24} color="black" />
