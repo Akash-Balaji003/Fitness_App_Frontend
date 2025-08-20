@@ -51,7 +51,7 @@ const LeaderBoard = ({ navigation }: NativeStackScreenProps<RootStackParamList, 
     try {
       // You can modify the endpoint based on the timeFilter state in a real app
       const response = await fetch(
-        `http://172.16.0.60:8002get-leaderboard?id=${user?.user_id}&filter=${timeFilter.toLowerCase()}`
+        `http://172.16.0.60:8002/get-leaderboard?id=${user?.user_id}&filter=${timeFilter.toLowerCase()}`
       );
       const data: LeaderboardEntry[] = await response.json();
       const sortedData = data.sort((a, b) => b.step_count - a.step_count);
