@@ -18,6 +18,7 @@ import BottomNavBar from "../components/BottomNavBar";
 import { useUser } from '../contexts/UserContext';
 import LinearGradient from "react-native-linear-gradient";
 import Icon from 'react-native-vector-icons/Ionicons';
+import { SearchUsers } from "../components/SearchBar"
 
 const { width, height } = Dimensions.get("window");
 
@@ -198,16 +199,7 @@ const Friends = ({ navigation }: NativeStackScreenProps<RootStackParamList, "Fri
             </View>
 
             {/* --- Search Bar --- */}
-            <View style={styles.searchContainer}>
-                <Icon name="search-outline" size={20} color="#999" style={styles.searchIcon} />
-                <TextInput
-                    placeholder="Search friends..."
-                    placeholderTextColor="#999"
-                    style={styles.searchInput}
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                />
-            </View>
+            <SearchUsers />
 
             <ListContent />
         </LinearGradient>
