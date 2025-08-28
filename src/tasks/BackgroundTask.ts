@@ -228,7 +228,7 @@ const doWork = async () => {
     TypeStepCounterModule.stopStepCounter(); // Ensure the step counter is stopped after fetching the count
     console.log(`[Background Task] Current steps: ${currSteps}`);
 
-    const dailySteps = currSteps - midnightStepCount;
+    const dailySteps = Math.max(0, currSteps - midnightStepCount);
     console.log(`[Background Task] Daily steps: ${dailySteps}`);
 
     try {
