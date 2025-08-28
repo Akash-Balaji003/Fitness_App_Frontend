@@ -18,7 +18,7 @@ import BottomNavBar from "../components/BottomNavBar";
 import { useUser } from '../contexts/UserContext';
 import LinearGradient from "react-native-linear-gradient";
 import Icon from 'react-native-vector-icons/Ionicons';
-import { SearchUsers } from "../components/SearchBar"
+import  SearchUsers from "../components/SearchBar"
 
 const { width, height } = Dimensions.get("window");
 
