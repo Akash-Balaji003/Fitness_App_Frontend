@@ -69,7 +69,7 @@ const StepCounterPage = ({ route, navigation }: NativeStackScreenProps<RootStack
                 start={{ x: 0, y: 0 }} // Gradient direction (top-left)
                 end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
           >
-          <Text style={styles.title}>What is your blood group?</Text>
+          <Text style={styles.title}>What is your calorie goal?</Text>
           <View style={styles.buttonContainer}>
             {CalorieOptions.map((option) => (
               <TouchableOpacity
