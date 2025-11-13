@@ -58,15 +58,6 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
-
-        <!-- OAuth2 Redirect URI for Google Fit -->
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data 
-              android:scheme="com.googleusercontent.apps.115771399305-civdip3bp5413g9r7v43q0vlbv74tvre" />
-        </intent-filter>
       </activity>
       <meta-data
         android:name="com.google.android.gms.version"
