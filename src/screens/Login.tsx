@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Dimensions,
   ToastAndroid,
+  Modal,
 } from 'react-native';
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -27,6 +28,12 @@ const LoginScreen = ({ navigation }: LoginProps) => {
     const [mobileNumber, setMobileNumber] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [showInfoModal, setShowInfoModal] = useState(true);
+
+    useEffect(() => {
+        // Show the modal when the component mounts
+        setShowInfoModal(true);
+    }, []);
 
     const handleLogin = async () => {
         try {
@@ -97,6 +104,28 @@ const LoginScreen = ({ navigation }: LoginProps) => {
             start={{ x: 0, y: 0 }} // Gradient direction (top-left)
             end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
         >
+            <Modal
+                visible={showInfoModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowInfoModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Important Information</Text>
+                        <Text style={styles.modalText}>
+                            Please use your NetID and the same password ONLY.
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.modalButton}
+                            onPress={() => setShowInfoModal(false)}
+                        >
+                            <Text style={styles.modalButtonText}>OK</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
             <Text style={styles.header}>Hi there!</Text>
             <Text style={styles.subHeader}>LOGIN</Text>
 
@@ -125,10 +154,6 @@ const LoginScreen = ({ navigation }: LoginProps) => {
             {errorMessage ? (
                 <Text style={styles.errorText}>{errorMessage}</Text> // Show error message
             ) : null}
-
-            <TouchableOpacity>
-                <Text style={styles.forgotPassword}>Forgot password?</Text>
-            </TouchableOpacity>
 
             <View style={styles.signUpContainer}>
                 <Text style={styles.newHere}>If you’re new here, please </Text>
@@ -188,12 +213,6 @@ const styles = StyleSheet.create({
         fontSize: width * 0.05,
         fontWeight: 'bold',
     },
-    forgotPassword: {
-        color: '#333',
-        fontSize: width * 0.04,
-        textDecorationLine: 'underline',
-        marginBottom: height * 0.05,
-    },
     signUpContainer: {
         flexDirection: 'row',
     },
@@ -211,6 +230,51 @@ const styles = StyleSheet.create({
         color: 'red',
         fontSize: width * 0.04,
         marginTop: height * 0.02,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        padding: width * 0.06,
+        width: width * 0.8,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    modalTitle: {
+        fontSize: width * 0.06,
+        fontWeight: 'bold',
+        color: '#133E87',
+        marginBottom: height * 0.02,
+        textAlign: 'center',
+    },
+    modalText: {
+        fontSize: width * 0.04,
+        color: '#333',
+        textAlign: 'center',
+        marginBottom: height * 0.03,
+        lineHeight: width * 0.05,
+    },
+    modalButton: {
+        backgroundColor: '#133E87',
+        borderRadius: 10,
+        paddingVertical: height * 0.015,
+        paddingHorizontal: width * 0.1,
+        minWidth: width * 0.3,
+    },
+    modalButtonText: {
+        color: '#FFFFFF',
+        fontSize: width * 0.045,
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
 });
 

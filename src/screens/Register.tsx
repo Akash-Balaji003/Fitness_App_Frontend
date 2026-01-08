@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Alert,
     Platform,
@@ -9,13 +9,18 @@ import {
     TextInput,
     TouchableOpacity,
     View,
-    useWindowDimensions
+    useWindowDimensions,
+    Modal,
+    Dimensions
 } from 'react-native';
 import { RootStackParamList } from '../App';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import LinearGradient from 'react-native-linear-gradient';
 
 type RegisterProps = NativeStackScreenProps<RootStackParamList, 'Register'>;
+
+// Get device dimensions for dynamic sizing
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const Register = ({ navigation }: RegisterProps) => {
     const { width, height } = useWindowDimensions();
@@ -28,6 +33,12 @@ const Register = ({ navigation }: RegisterProps) => {
 
 
     const [errorMessage, setErrorMessage] = useState('');
+    const [showInfoModal, setShowInfoModal] = useState(true);
+
+    useEffect(() => {
+        // Show the modal when the component mounts
+        setShowInfoModal(true);
+    }, []);
 
     const navigateNext = async() => {
         navigation.navigate('WelcomePage',{
@@ -89,6 +100,27 @@ const Register = ({ navigation }: RegisterProps) => {
             start={{ x: 0, y: 0 }} // Gradient direction (top-left)
             end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
         >
+            <Modal
+                visible={showInfoModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowInfoModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Important Information</Text>
+                        <Text style={styles.modalText}>
+                            Please use your NetID and the same password ONLY.
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.modalButton}
+                            onPress={() => setShowInfoModal(false)}
+                        >
+                            <Text style={styles.modalButtonText}>OK</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
 
             {/* Form Title */}
             <Text style={styles.title}>CREATING ACCOUNT</Text>
@@ -169,6 +201,51 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 20,
         width: 50
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        padding: screenWidth * 0.06,
+        width: screenWidth * 0.8,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    modalTitle: {
+        fontSize: screenWidth * 0.06,
+        fontWeight: 'bold',
+        color: '#133E87',
+        marginBottom: screenHeight * 0.02,
+        textAlign: 'center',
+    },
+    modalText: {
+        fontSize: screenWidth * 0.04,
+        color: '#333',
+        textAlign: 'center',
+        marginBottom: screenHeight * 0.03,
+        lineHeight: screenWidth * 0.05,
+    },
+    modalButton: {
+        backgroundColor: '#133E87',
+        borderRadius: 10,
+        paddingVertical: screenHeight * 0.015,
+        paddingHorizontal: screenWidth * 0.1,
+        minWidth: screenWidth * 0.3,
+    },
+    modalButtonText: {
+        color: '#FFFFFF',
+        fontSize: screenWidth * 0.045,
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
 });
 

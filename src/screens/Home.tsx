@@ -158,7 +158,7 @@ const Home = ({ navigation }: NativeStackScreenProps<RootStackParamList, 'Home'>
             end={{ x: 1, y: 1 }} // Gradient direction (bottom-right)
         >
             <View style={styles.header}>
-                <Text style={styles.greeting}>Welcome {user.username},</Text>
+                <Text style={styles.greeting} numberOfLines={2}>Welcome {user.username},</Text>
                 <View style={{flexDirection:"row", gap:30}}>
                     <TouchableOpacity onPress={() => navigation.navigate("About")}>
                         <FontAwesome name="info-circle" size={25} color="black" />
@@ -211,11 +211,14 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
         marginBottom: calculatePercentage(2, height),
+        gap: 10,
     },
     greeting: {
         color: "black",
         fontSize: calculatePercentage(5, width),
         fontWeight: "bold",
+        flex: 1,
+        flexWrap: "wrap",
     },
     statsContainer: {
         flexDirection: "row",
